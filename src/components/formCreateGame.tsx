@@ -36,8 +36,6 @@ function FormCrearPartida() {
             <div className="w-full h-dvh flex gap-4 justify-center items-center flex-col ">
                 <div className="text-xl m-3 ">Crear partida</div>
 
-                {errorMessage && <div className="text-red-500">{errorMessage}</div>}
-
                 <label htmlFor='player_name' className="block dark:text-white mb-2">
                     Nombre de usuario
                     </label>
@@ -55,7 +53,7 @@ function FormCrearPartida() {
                     Nombre de la partida
                     </label>
                 <input 
-                    className='rounded border-2  border-black text-black dark:bg-slate-300 w-1/3 sm:w-auto'
+                    className='rounded border-2  border-black text-grey-900 dark:bg-slate-300 w-1/3 sm:w-auto'
                     type="text" 
                     id="game_name"
                     value={formData.game_name}
@@ -64,9 +62,9 @@ function FormCrearPartida() {
                     autoComplete='off'
                 />
 
-                {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+                {errorMessage && <p className="text-red-500 mb-3">{errorMessage}</p>}
 
-                <button type="submit" className='bg-blue-500 hover:bg-blue-600 rounded-full p-2'>
+                <button type="submit" className='bg-grey-900 hover:bg-grey-700 rounded p-2'>
                     Crear partida
                     </button>
             </div>
