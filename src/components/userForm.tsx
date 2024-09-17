@@ -1,13 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import create_game from "@/lib/game";
-
-/*interface UserFormProps {
-  onSubmit?: (data: { gameName: string; playerName: string }) => void;
-}*/
+import join_game from "@/lib/game";
 
 const UserForm = () => {
-  const [gameName, setGameName] = useState<string>("");
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
 
@@ -16,13 +11,12 @@ const UserForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!gameName || !playerName) {
-      setError("Completar ambos campos");
+    if (!playerName) {
+      setError("Completar el campo");
       return;
     }
 
     if (
-      !alphanumericRegex.test(gameName) ||
       !alphanumericRegex.test(playerName)
     ) {
       setError("Solo se permiten caracteres alfanuméricos");
@@ -31,8 +25,7 @@ const UserForm = () => {
 
     setError("");
 
-    const result = await create_game({
-      game_name: gameName,
+    const result = await join_game({
       player_name: playerName,
     });
 
@@ -49,19 +42,7 @@ const UserForm = () => {
         className="border-solid border-white p-6 rounded-lg"
       >
         <div>
-         <h2 className="text-2xl font-bold mb-4">Crear Partida</h2>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="gameName" className="block text-white mb-2">
-            Nombre de partida
-          </label>
-          <input
-            id="gameName"
-            type="text"
-            value={gameName}
-            onChange={(e) => setGameName(e.target.value)}
-            className="w-full p-2 border bg-black border-gray-300 rounded"
-          />
+         <h2 className="text-2xl font-bold mb-4">Unirse a la Partida</h2>
         </div>
         <div className="mb-4">
           <label htmlFor="playerName" className="block text-white mb-2">
@@ -80,7 +61,7 @@ const UserForm = () => {
           type="submit"
           className="w-full border-2 text-white p-2 rounded hover:bg-gray-600 transition"
         >
-         Crear Partida
+         Unirse a la Partida
         </button>
       </form>
     </div>
