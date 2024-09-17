@@ -15,6 +15,7 @@ function FormCrearPartida() {
         if (formData.game_name === '' || formData.player_name === '') {
             setErrorMessage('All fields are required');
             return;}
+
         if (
             !alphanumericRegex.test(formData.game_name) ||
             !alphanumericRegex.test(formData.player_name)) {
@@ -37,7 +38,7 @@ function FormCrearPartida() {
 
                 {errorMessage && <div className="text-red-500">{errorMessage}</div>}
 
-                <label htmlFor='player_name' className="block text-white mb-2">
+                <label htmlFor='player_name' className="block dark:text-white mb-2">
                     Nombre de usuario
                     </label>
                 <input 
@@ -50,7 +51,7 @@ function FormCrearPartida() {
                     autoComplete='off'
                 />
 
-                <label htmlFor='game_name' className="block text-white mb-2">
+                <label htmlFor='game_name' className="block dark:text-white mb-2">
                     Nombre de la partida
                     </label>
                 <input 
@@ -62,6 +63,8 @@ function FormCrearPartida() {
                     required 
                     autoComplete='off'
                 />
+
+                {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
 
                 <button type="submit" className='bg-blue-500 hover:bg-blue-600 rounded-full p-2'>
                     Crear partida
