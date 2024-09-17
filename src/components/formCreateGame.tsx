@@ -32,7 +32,7 @@ function FormCrearPartida() {
 
     return (
         <form onSubmit= {() => {create}}>
-            <div className="grid gap-4  justify-items-center ">
+            <div className="w-full h-dvh flex gap-4 justify-center items-center flex-col ">
                 <div className="text-xl m-3 ">Crear partida</div>
 
                 {errorMessage && <div className="text-red-500">{errorMessage}</div>}
