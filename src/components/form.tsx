@@ -2,11 +2,7 @@
 import React, { useState } from "react";
 import { join_game } from "@/lib/game";
 
-interface UserFormProps {
-  gameId: number;
-}
-
-const UserForm: React.FC<UserFormProps> = ({ gameId }) => {
+export function UserForm({gameId}:{gameId:number}) {
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
 
@@ -65,5 +61,3 @@ const UserForm: React.FC<UserFormProps> = ({ gameId }) => {
     </div>
   );
 };
-
-export default UserForm;
