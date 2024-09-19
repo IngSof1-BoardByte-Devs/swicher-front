@@ -1,6 +1,6 @@
 "use client";
 
-import create_game from '@/lib/game';
+import { create_game } from '@/lib/game';
 import React, { useState } from 'react';
 
 
