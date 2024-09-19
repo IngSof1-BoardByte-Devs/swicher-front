@@ -1,30 +1,40 @@
-export async function create_game({game_name, player_name}: {game_name: string, player_name: string}) {
-   if (!game_name || !player_name) {
-     console.error('Error: game_name and player_name must be provided and cannot be empty');
-     return { status: 'ERROR', message: 'Invalid game_name or player_name' };
-   }
- 
-   try {
-     const response = await fetch('http://localhost:8000/create_game', {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify({ game_name, player_name })
-     });
- 
-     if (!response.ok) {
-       throw new Error(`Server responded with status ${response.status}`);
-     }
- 
-     const result = await response.json();
- 
-     return result;
- 
-   } catch (error) {
-     console.error('Failed to create game:', error);
-     return { status: 'ERROR', message: 'An error occurred while creating the game' };
-   }
+export async function create_game({
+  player_name,
+  game_name,
+}: {
+  player_name: string;
+  game_name: string;
+}) {
+  if (!player_name || !game_name) {
+    console.error(
+      "Error: player_name and game_name must be provided and cannot be empty"
+    );
+    return { status: "ERROR", message: "Invalid player_name or game_name" };
+  }
+
+  try {
+    const response = await fetch("http://localhost:8000/game/create_game", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ "player_name": player_name, "game_name": game_name }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return result;
+  } catch (error) {
+    console.error("Failed to create game:", error);
+    return {
+      status: "ERROR",
+      message: "An error occurred while creating the game",
+    };
+  }
 }
 
 export async function join_game({
@@ -42,7 +52,7 @@ export async function join_game({
   }
 
   try {
-    const response = await fetch("http://localhost:8000/join_game", {
+    const response = await fetch("http://localhost:8000/game/join_game", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,5 +89,31 @@ export async function fetch_games() {
   } catch (error) {
     console.error('Failed to fetch games:', error);
     return { status: 'ERROR', message: 'An error occurred while fetching the games' };
+  }
+}
+
+export async function start_game({ game_id, player_id }: { game_id: number, player_id: number }) {
+  try {
+    const response = await fetch("http://localhost:8000/game/start_game", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ "game_id": game_id, "player_id": player_id }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return result;
+  } catch (error) {
+    console.error("Failed to start game:", error);
+    return {
+      status: "ERROR",
+      message: "An error occurred while starting the game",
+    };
   }
 }
