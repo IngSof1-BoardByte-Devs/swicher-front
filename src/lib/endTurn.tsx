@@ -1,6 +1,5 @@
-import { METHODS } from "http";
 
-export async function EndTurn(player_id:number) {
+export async function EndTurn(player_id: number) {
 
     if (!player_id) {
         console.error("Error: el player_id must be filed")
@@ -24,7 +23,7 @@ export async function EndTurn(player_id:number) {
      console.error("Faild to end turn:", error);
      return{
         status: "ERROR",
-        message: "An error ocurred while ending the turn"
+        message: "An error occurred while ending the turn"
      }
     }
 }
