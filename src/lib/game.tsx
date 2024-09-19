@@ -67,12 +67,28 @@ export async function join_game({
     const result = await response.json();
 
     return result;
+
   } catch (error) {
-    console.error("Failed to create game:", error);
-    return {
-      status: "ERROR",
-      message: "An error occurred while creating the game",
-    };
+    console.error('Failed to create game:', error);
+    return { status: 'ERROR', message: 'An error occurred while creating the game' };
+  }
+}
+
+export async function fetch_games() {
+  try {
+    const response = await fetch('http://localhost:8000/game/get_games');
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return result;
+
+  } catch (error) {
+    console.error('Failed to fetch games:', error);
+    return { status: 'ERROR', message: 'An error occurred while fetching the games' };
   }
 }
 
