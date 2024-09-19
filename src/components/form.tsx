@@ -62,7 +62,7 @@ export function UserForm({gameId}:{gameId:number}) {
   );
 };
 
-function FormCreateGame() {
+export function CreateGameForm() {
 
     const [formData, setFormData] = useState({ player_name: '', game_name: '' });
     const [errorMessage, setErrorMessage] = useState('');
