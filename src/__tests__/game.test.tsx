@@ -1,8 +1,4 @@
-<<<<<<< feature_SCRUM-24_funcion_para_solicitar_datos_de_partidas
-import { create_game, fetch_games, join_game } from '@/lib/game';
-=======
-import { create_game, join_game, start_game } from '@/lib/game';
->>>>>>> develop
+import { create_game, fetch_games, join_game, start_game } from '@/lib/game';
 import fetchMock from 'jest-fetch-mock';
 
 
@@ -112,8 +108,6 @@ describe('join_game', () => {
   });
 });
 
-<<<<<<< feature_SCRUM-24_funcion_para_solicitar_datos_de_partidas
-=======
 
 describe('start_game', () => {
   beforeEach(() => {
@@ -134,4 +128,3 @@ describe('start_game', () => {
     expect(result).toEqual(mockResponse);
   });
 }); 
->>>>>>> develop
