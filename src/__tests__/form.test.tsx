@@ -51,29 +51,29 @@ describe('UserForm', () => {
     });
   
     it('should render input and button', () => {
-      const input = screen.getByPlaceholderText(/nombre del jugador/i);
-      const button = screen.getByRole('button', { name: /unirse/i });
+      const input = screen.getByPlaceholderText(/Nombre del jugador/i);
+      const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
   
       expect(input).toBeInTheDocument();
       expect(button).toBeInTheDocument();
     });
   
     it('should show error if player name is empty', async () => {
-      const button = screen.getByRole('button', { name: /unirse/i });
+      const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
       fireEvent.click(button);
   
-      const errorMessage = await screen.findByText(/completar el campo/i);
+      const errorMessage = await screen.findByText(/Completar el campo/i);
       expect(errorMessage).toBeInTheDocument();
     });
   
     it('should show error if player name is not alphanumeric', async () => {
-      const input = screen.getByPlaceholderText(/nombre del jugador/i);
-      const button = screen.getByRole('button', { name: /unirse/i });
+      const input = screen.getByPlaceholderText(/Nombre del jugador/i);
+      const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
   
       fireEvent.change(input, { target: { value: 'Nombre@123' } });
       fireEvent.click(button);
   
-      const errorMessage = await screen.findByText(/solo se permiten caracteres alfanuméricos/i);
+      const errorMessage = await screen.findByText(/Solo se permiten caracteres alfanuméricos/i);
       expect(errorMessage).toBeInTheDocument();
     });
 
