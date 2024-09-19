@@ -44,7 +44,7 @@ export function UserForm({gameId}:{gameId:number}) {
           Nombre de Jugador
         </label>
         <input
-          id="playerName"
+          data-testid="playerName"
           type="text"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}

@@ -51,7 +51,7 @@ describe('UserForm', () => {
     });
   
     it('should render input and button', () => {
-      const input = screen.getByPlaceholderText(/Nombre del jugador/i);
+      const input = screen.getByTestId("playerName");
       const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
   
       expect(input).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('UserForm', () => {
     });
   
     it('should show error if player name is not alphanumeric', async () => {
-      const input = screen.getByPlaceholderText(/Nombre del jugador/i);
+      const input = screen.getByTestId("playerName");
       const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
   
       fireEvent.change(input, { target: { value: 'Nombre@123' } });
