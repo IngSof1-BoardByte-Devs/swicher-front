@@ -6,6 +6,7 @@ export function UserForm({gameId}:{gameId:number}) {
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
 
+
   const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
   const handleSubmit = async (e: React.FormEvent) => {
