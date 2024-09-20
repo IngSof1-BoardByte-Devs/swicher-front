@@ -38,7 +38,7 @@ export function UserForm({gameId}:{gameId:number}) {
     <div className="w-full h-dvh flex justify-center items-center">
       <form
         onSubmit={handleSubmit}
-        className="border-solid border-white p-6 rounded-lg flex flex-col gap-2 max-w-sm w-full overflow-hidden"
+        className="border-solid border-white p-6 rounded-lg flex flex-col items-center gap-2 max-w-sm w-full overflow-hidden"
       >
         <h2 className="text-2xl font-bold">Unirse a la Partida</h2>
         <label htmlFor="playerName" className="block">
@@ -49,7 +49,7 @@ export function UserForm({gameId}:{gameId:number}) {
           type="text"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          className="w-full p-2 border dark:bg-black dark:text-white dark:border-gray-300 rounded"
+          className="w-full p-2 border border-gray-900 dark:bg-black dark:text-white dark:border-gray-300 rounded"
         />
         {error && <p className="text-red-500 max-w-full text-sm">{error}</p>}
         <button
@@ -98,15 +98,18 @@ export function CreateGameForm() {
     }
 
     return (
-        <form onSubmit={create}>
-            <div className="w-full h-dvh flex gap-4 justify-center items-center flex-col ">
-                <div className="text-xl m-3 ">Crear partida</div>
+        <form onSubmit={create}
+        className="w-full h-dvh flex justify-center items-center ">
+            <div className="border-solid flex justify-center flex-col items-center  border-white p-6 rounded-lg  gap-2 max-w-sm w-full overflow-hidden">
+                <div className="text-2xl font-bold">Crear partida</div>
 
                 <label htmlFor='player_name' className="block dark:text-white mb-2">
                     Nombre de usuario
                 </label>
                 <input
-                    className='rounded border-2  border-black  text-black dark:bg-slate-300 w-1/3 sm:w-auto'
+                    //className='rounded border-2  border-black  text-black dark:bg-slate-300 w-1/3 sm:w-auto'
+                    className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
+                    
                     type="text"
                     id="player_name"
                     name="player_name"
@@ -120,7 +123,9 @@ export function CreateGameForm() {
                     Nombre de la partida
                 </label>
                 <input
-                    className='rounded border-2  border-black text-black dark:bg-slate-300 w-1/3 sm:w-auto'
+                    //className='rounded border-2  border-black text-black dark:bg-slate-300 w-1/3 sm:w-auto'
+                    className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
+                    
                     type="text"
                     id="game_name"
                     value={formData.game_name}
@@ -129,9 +134,9 @@ export function CreateGameForm() {
                     autoComplete='off'
                 />
 
-                {errorMessage && <p className="text-red-500 mb-3">{errorMessage}</p>}
+                {errorMessage && <p className="text-red-500 max-w-full text-sm">{errorMessage}</p>}
 
-                <button type="submit" className='bg-grey-900  hover:bg-grey-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded p-2'>
+                <button type="submit" className='w-full border-2 text-white p-2 rounded bg-gray-900 hover:bg-gray-700'>
                     Crear partida
                 </button>
             </div>
