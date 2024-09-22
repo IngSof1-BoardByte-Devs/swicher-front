@@ -35,7 +35,7 @@ describe('CreateGameForm', () => {
         fireEvent.change(inputGameName, { target: { value: '' } });
         const inputPlayerName = screen.getByRole('textbox', { name: /Nombre de usuario/i });
         fireEvent.change(inputPlayerName, { target: { value: '' } });
-        const submitButton = screen.getByRole('button', { name: /Unirse a la partida/i });
+        const submitButton = screen.getByRole('button', { name: /Crear partida/i });
         fireEvent.click(submitButton);
     
         const errorMessage = screen.getByText('Todos los campos son obligatorios');
