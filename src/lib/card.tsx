@@ -1,7 +1,7 @@
 export async function fetch_figure_cards({ player_id }: { player_id: number }) {
    try {
        const response = await fetch(`http://localhost:8000/game/figure_cards`, {
-           method: 'GET',
+           method: 'POST',
            headers: {
                "Content-Type": "application/json",
            },
