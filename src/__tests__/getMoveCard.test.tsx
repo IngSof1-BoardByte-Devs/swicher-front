@@ -22,4 +22,11 @@ describe("GetMoveCard", () => {
         const result = await GetMoveCard({ player_id: 1 });
         expect(result).toEqual(mockResponse);
     });
+
+    test('should return error when the fetch request fails', async () => {
+        const mockResponse = { status: 'ERROR', message: 'An error occurred while getting the movement cards' };
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        const result = await GetMoveCard({ player_id: 1 });
+        expect(result).toEqual(mockResponse);
+    });
 });
