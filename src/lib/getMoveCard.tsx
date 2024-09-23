@@ -4,11 +4,12 @@ export async function GetMoveCard({player_id}: {player_id: number}) {
         return {status: "ERROR", message:"invalid player id"}
     }
     try {
-        const response = await fetch(`http://localhost:8000/movement-cards?player_id=${player_id}`, {
-            method: "GET",
+        const response = await fetch(`http://localhost:8000/movement-cards`, {
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
+            body: JSON.stringify({ "player_id":player_id }),
           });
           if (!response.ok) {
             throw new Error (`Server responded with ${response.status}`);         
@@ -16,7 +17,7 @@ export async function GetMoveCard({player_id}: {player_id: number}) {
           const result = await response.json();
           return result;
     } catch (error) {
-     console.error("Faild to end turn:", error);
+     console.error("Faild to get movment cards:", error);
      return{
         status: "ERROR",
         message: "An error occurred while getting the movement cards"

@@ -10,9 +10,10 @@ describe("GetMoveCard", () => {
     test('url should be correct', async () => {
         const result = await GetMoveCard({ player_id: 1 });
         console.log(result);
-        expect(fetch).toHaveBeenCalledWith('http://localhost:8000/movement-cards?player_id=1', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+        expect(fetch).toHaveBeenCalledWith('http://localhost:8000/movement-cards', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ player_id: 1 }),
         });
     });
 
