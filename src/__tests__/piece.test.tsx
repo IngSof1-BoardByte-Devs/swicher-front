@@ -1,20 +1,55 @@
 import React from "react";
-import { render } from "@testing-library/react";
-import Piece from "@/components/piece";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { Piece } from "@/components/piece";
 
 describe("Piece Component", () => {
-  test("renders with the correct background color", () => {
-    const { getByTestId } = render(<Piece color="red" />);
+  const mockSetSelectedPiece = jest.fn();
 
-    const pieceElement = getByTestId("pieceElement");
+  it("renders with the correct color and class", () => {
+    render(
+      <Piece
+        color="red"
+        index={0}
+        selectedPiece={-1}
+        setSelectedPiece={mockSetSelectedPiece}
+      />
+    );
 
-    expect(pieceElement).toHaveStyle("background-color: red");
+    const pieceElement = screen.getByTestId("pieceElement");
+    expect(pieceElement).toHaveTextContent("red");
+    expect(pieceElement).toHaveClass("bg-red-700/75");
   });
 
-  test("renders without crashing", () => {
-    const { container } = render(<Piece color="blue" />);
+  it("applies the selected styles when the piece is selected", () => {
+    render(
+      <Piece
+        color="green"
+        index={1}
+        selectedPiece={1}
+        setSelectedPiece={mockSetSelectedPiece}
+      />
+    );
 
-    expect(container).toBeInTheDocument();
+    const pieceElement = screen.getByTestId("pieceElement");
+    expect(pieceElement).toHaveClass("scale-90 brightness-150 animate-pulse");
+  });
+
+  it("calls setSelectedPiece with the correct index when clicked", () => {
+    render(
+      <Piece
+        color="blue"
+        index={2}
+        selectedPiece={-1}
+        setSelectedPiece={mockSetSelectedPiece}
+      />
+    );
+
+    const pieceElement = screen.getByTestId("pieceElement");
+    fireEvent.click(pieceElement);
+
+    // Verificar que setSelectedPiece se haya llamado con el índice correcto
+    expect(mockSetSelectedPiece).toHaveBeenCalledWith(2);
+    expect(mockSetSelectedPiece).toHaveBeenCalledTimes(1);
   });
 });
