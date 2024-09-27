@@ -10,7 +10,7 @@ function Gameboard() {
     //console.log(fetch_board({game_id}));
 
     return (
-        <div className="grid grid-cols-6 p-5 justify-items-center grid-rows-6 gap-1" style={{ aspectRatio: "1 / 1" }}>
+        <div role="grid" className="grid grid-cols-6 p-5 justify-items-center grid-rows-6 gap-1" style={{ aspectRatio: "1 / 1" }}>
             {Array.from({ length: 36 }, (_, i) => (
                 <Piece color="red" index={i} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} key={i} />
             ))}
