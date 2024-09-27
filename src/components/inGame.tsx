@@ -4,6 +4,7 @@ import Gameboard from "./gameboard";
 import { LeaveGame } from "@/lib/quit";
 import { useState } from "react";
 import { Winner } from "./winner";
+import { Card } from "./cards";
 
 interface InGameProps {
     jugador_id: number;
@@ -35,10 +36,24 @@ export function InGame({ jugadores: initialJugadores, game_id }: InGameComponent
 
     return (
         <div className="w-full h-dvh flex items-center justify-center relative">
+            <div>
+                <p className="text-xl absolute left-0 top-0 m-5">Turno de {jugadores[turnoActual].nombre_jugador}</p>
+            </div>
             {jugadores.map((jugador, index) => (
                 <div key={jugador.jugador_id} className={`absolute text-center ${positions[index]}`}>
-                    <p>{jugador.nombre_jugador}</p>
+                <p>{jugador.nombre_jugador}</p>
+                <div className="flex justify-center space-x-2 mt-2">
+                    <div className="aspect-square "> 
+                        <Card link="c0" />
+                    </div>    
+                    <div className="w-12 h-12"> 
+                        <Card link="c0" />
+                    </div>
+                    <div className="w-12 h-12"> 
+                        <Card link="c0" />
+                    </div>
                 </div>
+            </div>
             ))}
             <div className="relative w-full max-w-sm max-h-sm">
                 <Gameboard /> 
