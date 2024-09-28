@@ -1,23 +1,24 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { List } from "@/components/list";
-import { start_game } from "@/lib/game";
+import { start_game, fetch_players } from "@/lib/game";
 import { useCookies } from "react-cookie";
 import clsx from "clsx";
 
 export default function LobbyPage() {
   const [error, setError] = useState<string>("");
-  const [cookie, setCookie] = useCookies(["player_id", "game_id"]);
-  const mockPlayers = ["Player1", "Player2", "Player3", "Player4"];
+  const [cookie, setCookie] = useCookies(["player_id", "game_id", "game_name"]);
+  const [players, setPlayers] = useState([]);
+
   useEffect(() => {
-    fetch_players().then((data) => {});
+    fetch_players({player_id : cookie.player_id}).then((data) => {setPlayers(data)});
   });
 
   const handleStartGame = async () => {
     const result = await start_game({
-      game_id: gameId,
-      player_id: playerId,
-    });
+      player_id: cookie.player_id,
+      game_id: cookie.game_id
+  });
 
     if (result.status === "ERROR") {
       setError(result.message);
@@ -28,12 +29,12 @@ export default function LobbyPage() {
   return (
     <div className="flex flex-col items-center justify-between min-h-screen p-8 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="text-center">
-        <h1 className="text-4xl font-bold uppercase">Nombre de partida</h1>
+        <h1 className="text-4xl font-bold uppercase">{cookie.game_name}</h1>
         <h1 className="text-lg font-semibold">LOBBY</h1>
       </div>
       <div className="w-full border overflow-auto">
         <div className="flex-col flex divide-y-2">
-          {mockPlayers.map((player_id) => {
+          {players.map((player_id) => {
             return (
               <button
                 key={player_id}

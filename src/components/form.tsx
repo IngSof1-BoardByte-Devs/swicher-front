@@ -4,10 +4,10 @@ import { join_game, create_game } from "@/lib/game";
 import { useRouter } from "next/navigation";
 import { useCookies } from "react-cookie";
 
-export function UserForm({ gameId }: { gameId: number }) {
+export function UserForm({ gameId, gameName }: { gameId: number, gameName: string}) {
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [cookies, setCookie] = useCookies(['player_id', 'game_id']);
+  const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
 
   const router = useRouter()
 
@@ -40,6 +40,7 @@ export function UserForm({ gameId }: { gameId: number }) {
     else
       setCookie('player_id', 1, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
       setCookie('game_id', gameId, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
     router.push(`/lobby/`);
   };
 
@@ -73,8 +74,8 @@ export function UserForm({ gameId }: { gameId: number }) {
 };
 
 export function CreateGameForm() {
-  const [cookies, setCookie] = useCookies(['player_id', 'game_id']);
-  const [formData, setFormData] = useState({ player_name: '', game_name: '' });
+  const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
+  const [formData, setFormData] = useState({ player_name: '', gameName: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
@@ -83,30 +84,31 @@ export function CreateGameForm() {
   const create = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.game_name === '' || formData.player_name === '') {
+    if (formData.gameName === '' || formData.player_name === '') {
       setErrorMessage('Todos los campos son obligatorios');
       return;
     }
 
     if (
-      !alphanumericRegex.test(formData.game_name) ||
+      !alphanumericRegex.test(formData.gameName) ||
       !alphanumericRegex.test(formData.player_name)) {
       setErrorMessage("Solo se permiten caracteres alfanuméricos");
       return;
     } else {
       setErrorMessage('');
-      send(formData);
+      send({player_name: formData.player_name, game_name: formData.gameName});
     }
   }
-  const send = async (data: { player_name: string; game_name: string; }) => {
+  const send = async ({ player_name, game_name}: {player_name: string, game_name: string}) => {
     const result = await create_game({
-      player_name: formData.player_name, game_name: formData.game_name
+      player_name, game_name
     });
     if (result.status === "ERROR")
       setErrorMessage(result.message);
     else
       setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
       setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('game_name', game_name, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) })
       router.push(`/lobby/`);
   }
 
@@ -132,7 +134,7 @@ export function CreateGameForm() {
           autoComplete='off'
         />
 
-        <label htmlFor='game_name' className="block dark:text-white mb-2">
+        <label htmlFor='gameName' className="block dark:text-white mb-2">
           Nombre de la partida
         </label>
         <input
@@ -140,9 +142,9 @@ export function CreateGameForm() {
           className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
 
           type="text"
-          id="game_name"
-          value={formData.game_name}
-          onChange={(e) => setFormData({ ...formData, game_name: e.target.value })}
+          id="gameName"
+          value={formData.gameName}
+          onChange={(e) => setFormData({ ...formData, gameName: e.target.value })}
 
           autoComplete='off'
         />
