@@ -118,3 +118,23 @@ export async function start_game({ game_id, player_id }: { game_id: number, play
     };
   }
 }
+
+export async function fetch_players({player_id}: { player_id: number}) {
+  try {
+    const response = await fetch(`http://localhost:8000/player/get_player${player_id}`);
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return result;
+  } catch (error) {
+    console.error("Failed to fetch players:", error);
+    return {
+      status: "ERROR",
+      message: "An error occurred while fetching the players",
+    };
+  }
+}
