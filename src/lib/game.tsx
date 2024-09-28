@@ -13,7 +13,7 @@ export async function create_game({
   }
 
   try {
-    const response = await fetch("http://localhost:8000/game/create_game", {
+    const response = await fetch("http://localhost:8000/game/create-game", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,7 +52,7 @@ export async function join_game({
   }
 
   try {
-    const response = await fetch("http://localhost:8000/game/join_game", {
+    const response = await fetch("http://localhost:8000/game/join-game", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,6 +65,7 @@ export async function join_game({
     }
 
     const result = await response.json();
+
 
     return result;
 

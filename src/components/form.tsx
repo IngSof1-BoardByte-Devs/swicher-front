@@ -1,10 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { join_game, create_game } from "@/lib/game";
+import { useRouter } from "next/navigation";
 
 export function UserForm({gameId}:{gameId:number}) {
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const router = useRouter()
 
 
   const alphanumericRegex = /^[a-zA-Z0-9]+$/;
@@ -29,13 +31,15 @@ export function UserForm({gameId}:{gameId:number}) {
       game_id: gameId,
     });
 
-    if (result.status === "ERROR") {
+
+    if (result.status === "ERROR") 
       setError(result.message);
-    }
+    else 
+      router.push(`/game/`);
   };
 
   return (
-    <div className="w-full h-dvh flex justify-center items-center">
+    <div className="w-full flex justify-center items-center">
       <form
         onSubmit={handleSubmit}
         className="border-solid border-white p-6 rounded-lg flex flex-col items-center gap-2 max-w-sm w-full overflow-hidden"
@@ -67,6 +71,7 @@ export function CreateGameForm() {
 
     const [formData, setFormData] = useState({ player_name: '', game_name: '' });
     const [errorMessage, setErrorMessage] = useState('');
+    const router = useRouter();
 
     const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
@@ -92,14 +97,15 @@ export function CreateGameForm() {
         const result = await create_game({
             player_name: formData.player_name, game_name: formData.game_name
         });
-        if (result.status === "ERROR") {
+        if (result.status === "ERROR") 
             setErrorMessage(result.message);
-        }
+        else 
+            router.push(`/game/`);
     }
 
     return (
         <form onSubmit={create}
-        className="w-full h-dvh flex justify-center items-center ">
+        className="w-full flex justify-center items-center ">
             <div className="border-solid flex justify-center flex-col items-center  border-white p-6 rounded-lg  gap-2 max-w-sm w-full overflow-hidden">
                 <div className="text-2xl font-bold">Crear partida</div>
 
