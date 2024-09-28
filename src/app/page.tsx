@@ -7,8 +7,9 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [createGame, setCreateGame] = useState(false);
   const [joinGame, setJoinGame] = useState(false);
-  const [selected, setSelected] = useState(-1);
+  const [selectedId, setSelectedId] = useState(-1);
   const [games, setGames] = useState([]);
+  const [selectedName, setSelectedName] = useState("");
 
   useEffect(() => {
     fetch_games().then((data) => {
@@ -35,9 +36,9 @@ export default function Home() {
             {games.map(({ id, name, num_players }) => {
               return (
                 <button key={id} className={clsx("p-4", {
-                  "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selected === id,
-                  "hover:bg-gray-200 dark:hover:bg-gray-600": selected !== id
-                })} onClick={() => { setSelected(id) }}>
+                  "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === id,
+                  "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== id
+                })} onClick={() => { setSelectedId(id), setSelectedName(name)}}>
                   <div className="flex justify-between">
                     <div>{name}</div>
                     <div>{num_players}</div>
@@ -52,7 +53,7 @@ export default function Home() {
       <div className="row-span-1 p-2">
         <div className="flex gap-1 justify-center">
           <button className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize" onClick={() => setCreateGame(true)}>Crear partida</button>
-          <button className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize disabled:hover:dark:bg-inherit disabled:opacity-50" disabled={selected == -1} onClick={() => setJoinGame(true)}>unirse partida</button>
+          <button className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize disabled:hover:dark:bg-inherit disabled:opacity-50" disabled={selectedId == -1} onClick={() => setJoinGame(true)}>unirse partida</button>
         </div>
       </div>
       <div className="row-span-1">
@@ -79,7 +80,7 @@ export default function Home() {
       {joinGame &&
         <div className="absolute bg-slate-700/75 dark:bg-inherit w-full h-dvh z-10 backdrop-blur flex justify-center items-center">
           <div className="border relative w-fit h-fit bg-white dark:bg-black rounded">
-            <UserForm gameId={selected} />
+            <UserForm gameId={selectedId} gameName={selectedName} />
             <button className="absolute top-0 right-0 w-7 h-7" onClick={() => setJoinGame(false)}>x</button>
           </div>
         </div>
