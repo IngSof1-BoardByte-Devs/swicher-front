@@ -24,7 +24,7 @@ export default function Home() {
           <h1 className="text-4xl text-center uppercase font-semibold">boardbyte devs switcher</h1>
         </main>
       </div>
-      <div className="row-span-4 p-4">
+      <div className="row-span-4 p-4 md:px-52 lg:px-80">
         <div className="flex justify-between">
           <div>{"Nombre de partidas"}</div>
           <div>{"Cantidad de jugadores"}</div>
@@ -35,7 +35,8 @@ export default function Home() {
             {games.map(({ id, name, num_players }) => {
               return (
                 <button key={id} className={clsx("p-4", {
-                  "bg-gray-700 text-white": selected === id
+                  "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selected === id,
+                  "hover:bg-gray-200 dark:hover:bg-gray-600": selected !== id
                 })} onClick={() => { setSelected(id) }}>
                   <div className="flex justify-between">
                     <div>{name}</div>
@@ -50,8 +51,8 @@ export default function Home() {
       {/* buttons */}
       <div className="row-span-1 p-2">
         <div className="flex gap-1 justify-center">
-          <button className="border shadow rounded p-2 bg-slate-700 text-white capitalize" onClick={() => setCreateGame(true)}>Crear partida</button>
-          <button className="border shadow rounded p-2 bg-slate-700 text-white capitalize disabled:opacity-50" disabled={selected == -1} onClick={() => setJoinGame(true)}>unirse partida</button>
+          <button className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize" onClick={() => setCreateGame(true)}>Crear partida</button>
+          <button className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize disabled:hover:dark:bg-inherit disabled:opacity-50" disabled={selected == -1} onClick={() => setJoinGame(true)}>unirse partida</button>
         </div>
       </div>
       <div className="row-span-1">
@@ -67,9 +68,8 @@ export default function Home() {
       </div>
       { /* create game form*/}
       {createGame &&
-        <div className={clsx("absolute bg-slate-700/75 w-full h-dvh z-10 backdrop-blur flex justify-center items-center", {
-        })}>
-          <div className="border relative w-fit h-fit bg-white rounded">
+        <div className="absolute bg-slate-700/75 dark:bg-inherit w-full h-dvh z-10 backdrop-blur flex justify-center items-center">
+          <div className="border relative w-fit h-fit bg-white dark:bg-black rounded">
             <CreateGameForm />
             <button className="absolute top-0 right-0 w-7 h-7" onClick={() => setCreateGame(false)}>x</button>
           </div>
@@ -77,9 +77,8 @@ export default function Home() {
       }
       { /* join game form*/}
       {joinGame &&
-        <div className={clsx("absolute bg-slate-700/75 w-full h-dvh z-10 backdrop-blur flex justify-center items-center", {
-        })}>
-          <div className="border relative w-fit h-fit bg-white rounded">
+        <div className="absolute bg-slate-700/75 dark:bg-inherit w-full h-dvh z-10 backdrop-blur flex justify-center items-center">
+          <div className="border relative w-fit h-fit bg-white dark:bg-black rounded">
             <UserForm gameId={selected} />
             <button className="absolute top-0 right-0 w-7 h-7" onClick={() => setJoinGame(false)}>x</button>
           </div>
