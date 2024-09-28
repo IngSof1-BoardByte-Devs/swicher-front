@@ -105,8 +105,8 @@ export function CreateGameForm() {
     if (result.status === "ERROR")
       setErrorMessage(result.message);
     else
-      setCookie('player_id', 1, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', 1, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
       router.push(`/lobby/`);
   }
 
