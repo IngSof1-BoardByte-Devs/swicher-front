@@ -21,7 +21,7 @@ export async function fetch_board({ game_id }: { game_id: number }) {
         return { status: 'ERROR', message: 'An error occurred while fetching the board' };
     }
 }
-export async function EndTurn(player_id: number) {
+export async function end_turn(player_id: number) {
 
     if (!player_id) {
         console.error("Error: el player_id must be filed")

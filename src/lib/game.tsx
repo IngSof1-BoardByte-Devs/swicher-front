@@ -138,7 +138,7 @@ export async function fetch_players({player_id}: { player_id: number}) {
     };
   }
 }
-export async function LeaveGame({player_id, game_id}: {player_id: number, game_id: number}) {
+export async function leave_game({player_id, game_id}: {player_id: number, game_id: number}) {
 
   if (!player_id) {
       console.error("Error: el player_id must be filed")
