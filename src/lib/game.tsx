@@ -121,7 +121,7 @@ export async function start_game({ game_id, player_id }: { game_id: number, play
 
 export async function fetch_game({game_id}: { game_id: number}) {
   try {
-    const response = await fetch(`http://localhost:8000/player/get_game/${player_id}`);
+    const response = await fetch(`http://localhost:8000/player/get_game/${game_id}`);
 
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
