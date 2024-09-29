@@ -1,12 +1,6 @@
-export async function fetch_board({ game_id }: { game_id: number }) {
+export async function fetch_board({ player_id }: { player_id: number }) {
     try {
-        const response = await fetch(`http://localhost:8000/game/board`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ "game_id": game_id }),
-        });
+        const response = await fetch(`http://localhost:8000/game/board/${player_id}`);
 
         if (!response.ok) {
             throw new Error(`Server responded with status ${response.status}`);
