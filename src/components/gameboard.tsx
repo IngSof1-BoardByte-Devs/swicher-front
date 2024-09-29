@@ -5,21 +5,22 @@ import Piece from "./piece";
 import { fetch_board } from "@/lib/board";
 import clsx from "clsx";
 
-function Gameboard({ player_id }: { player_id: number }) {
+function Gameboard({ id_game }: { id_game: number }) {
     const [selectedPiece, setSelectedPiece] = useState<number>(-1);
     const [figures, setFigures] = useState([]);
 
     useEffect(() => {
     const fetchBoard = async () => {
         try {
-            const data = await fetch_board({ player_id: player_id });
+            const data = await fetch_board({ id_game });
             setFigures(data.board);
         } catch (err) {
             console.error("Failed to fetch board:", err);
         }
     } 
     fetchBoard();
-    }, [player_id]);
+    }, [id_game]);
+    
     return (
         <div role="grid" className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6" style={{ aspectRatio: "1 / 1" }}>
             {figures.map(({color}, index) => (

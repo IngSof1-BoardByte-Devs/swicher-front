@@ -1,6 +1,6 @@
-export async function fetch_board({ player_id }: { player_id: number }) {
+export async function fetch_board({ id_game }: { id_game: number }) {
     try {
-        const response = await fetch(`http://localhost:8000/game/board/${player_id}`);
+        const response = await fetch(`http://localhost:8000/games/${id_game}/board`);
 
         if (!response.ok) {
             throw new Error(`Server responded with status ${response.status}`);
@@ -23,12 +23,12 @@ export async function end_turn(player_id: number) {
     };
 
     try {
-        const response = await fetch("http://localhost:8000/end-turn", {
-            method: "POST",
+        const response = await fetch(`http://localhost:8000/players/${player_id}/turn`, {
+            method: 'PUT',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ "player_id": player_id }),
+            body: JSON.stringify({ player_id })
           });
           if (!response.ok) {
             throw new Error (`Server responded with ${response.status}`);         
