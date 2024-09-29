@@ -48,19 +48,19 @@ export default function LobbyPage() {
   return (
     <div className="flex flex-col items-center justify-between min-h-screen p-8 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="text-center">
-        <h1 className="text-4xl font-bold uppercase">{cookie.game_name}</h1>
         <h1 className="text-4xl font-bold uppercase">{gameName}</h1>
+        <h1 className="text-lg font-bold uppercase">{"LOBBY"}</h1>
       </div>
       <div className="w-full border overflow-auto">
         <div className="flex-col flex divide-y-2">
           {players.map(({ username }, index) => {
             return (
               <button
-                key={username}
+                key={username + index}
                 className="p-4 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-default"
               >
                 <div className="flex justify-center">
-                  <div>{username + index}</div>
+                  <div>{username}</div>
                 </div>
               </button>
             );
