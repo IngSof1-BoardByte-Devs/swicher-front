@@ -13,7 +13,7 @@ export async function create_game({
   }
 
   try {
-    const response = await fetch("http://localhost:8000/game/create-game", {
+    const response = await fetch("http://localhost:8000/games/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,12 +52,12 @@ export async function join_game({
   }
 
   try {
-    const response = await fetch("http://localhost:8000/game/join-game", {
+    const response = await fetch("http://localhost:8000/players/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "player_name": player_name, "game_id": game_id }),
+      body: JSON.stringify({ "game_id": game_id, "player_name": player_name }),
     });
 
     if (!response.ok) {
@@ -77,7 +77,7 @@ export async function join_game({
 
 export async function fetch_games() {
   try {
-    const response = await fetch('http://localhost:8000/game/get_games');
+    const response = await fetch('http://localhost:8000/games/');
 
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
@@ -93,14 +93,14 @@ export async function fetch_games() {
   }
 }
 
-export async function start_game({ game_id, player_id }: { game_id: number, player_id: number }) {
+export async function start_game({ player_id }: { player_id: number }) {
   try {
-    const response = await fetch("http://localhost:8000/game/start-game", {
-      method: "POST",
+    const response = await fetch(`http://localhost:8000/games/${player_id}`, {
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ "game_id": game_id, "player_id": player_id }),
+      body: JSON.stringify({ player_id })
     });
 
     if (!response.ok) {
@@ -119,9 +119,9 @@ export async function start_game({ game_id, player_id }: { game_id: number, play
   }
 }
 
-export async function fetch_game({game_id}: { game_id: number}) {
+export async function fetch_game({ game_id }: { game_id: number }) {
   try {
-    const response = await fetch(`http://localhost:8000/game/get_game/${game_id}`);
+    const response = await fetch(`http://localhost:8000/games/${game_id}/`);
 
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
@@ -138,35 +138,31 @@ export async function fetch_game({game_id}: { game_id: number}) {
     };
   }
 }
-export async function leave_game({player_id, game_id}: {player_id: number, game_id: number}) {
+export async function leave_game({ player_id }: { player_id: number }) {
 
   if (!player_id) {
-      console.error("Error: el player_id must be filed")
-      return {status: "ERROR", message:"invalid player id"}
-  };
-  if (!game_id) {
-      console.error("Error: el game_id must be filed")
-      return {status: "ERROR", message:"invalid game id"}
+    console.error("Error: el player_id must be filed")
+    return { status: "ERROR", message: "invalid player id" }
   };
 
   try {
-      const response = await fetch("http://localhost:8000/game/leave_game", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ "player_id": player_id, "game_id": game_id }),
-        });
-        if (!response.ok) {
-          throw new Error (`Server responded with ${response.status}`);         
-        }
-        const result = await response.json();
-        return result;
+    const response = await fetch(`http://localhost:8000/players/${player_id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with ${response.status}`);
+    }
+    const result = await response.json();
+    return result;
   } catch (error) {
-   console.error("Faild to leave the game:", error);
-   return{
+    console.error("Faild to leave the game:", error);
+    return {
       status: "ERROR",
       message: "An error occurred while living the game"
-   }
+    }
   }
 }
