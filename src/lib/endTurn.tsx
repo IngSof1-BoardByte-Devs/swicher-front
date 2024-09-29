@@ -7,7 +7,7 @@ export async function EndTurn(player_id: number) {
     };
 
     try {
-        const response = await fetch("http://localhost:8000/end-turn", {
+        const response = await fetch("http://localhost:8000/game/end-turn", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
