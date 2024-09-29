@@ -121,7 +121,7 @@ export async function start_game({ game_id, player_id }: { game_id: number, play
 
 export async function fetch_game({game_id}: { game_id: number}) {
   try {
-    const response = await fetch(`http://localhost:8000/game/get_player${player_id}`);
+    const response = await fetch(`http://localhost:8000/game/get_game/${game_id}`);
 
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
@@ -131,10 +131,10 @@ export async function fetch_game({game_id}: { game_id: number}) {
 
     return result;
   } catch (error) {
-    console.error("Failed to fetch players:", error);
+    console.error("Failed to fetch game:", error);
     return {
       status: "ERROR",
-      message: "An error occurred while fetching the players",
+      message: "An error occurred while fetching the game",
     };
   }
 }
