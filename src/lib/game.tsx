@@ -13,7 +13,7 @@ export async function create_game({
   }
 
   try {
-    const response = await fetch("http://localhost:8000/game/create-game", {
+    const response = await fetch("http://localhost:8000/games/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,12 +52,12 @@ export async function join_game({
   }
 
   try {
-    const response = await fetch("http://localhost:8000/game/join-game", {
+    const response = await fetch("http://localhost:8000/players/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "player_name": player_name, "game_id": game_id }),
+      body: JSON.stringify({ "game_id": game_id, "player_name": player_name }),
     });
 
     if (!response.ok) {
@@ -77,7 +77,7 @@ export async function join_game({
 
 export async function fetch_games() {
   try {
-    const response = await fetch('http://localhost:8000/game/get_games');
+    const response = await fetch('http://localhost:8000/games/');
 
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
