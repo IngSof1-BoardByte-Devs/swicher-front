@@ -119,7 +119,7 @@ export async function start_game({ game_id, player_id }: { game_id: number, play
   }
 }
 
-export async function fetch_players({player_id}: { player_id: number}) {
+export async function fetch_game({game_id}: { game_id: number}) {
   try {
     const response = await fetch(`http://localhost:8000/game/get_player${player_id}`);
 
