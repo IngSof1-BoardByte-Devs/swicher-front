@@ -95,7 +95,7 @@ export async function fetch_games() {
 
 export async function start_game({ game_id, player_id }: { game_id: number, player_id: number }) {
   try {
-    const response = await fetch("http://localhost:8000/game/start_game", {
+    const response = await fetch("http://localhost:8000/game/start-game", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
