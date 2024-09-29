@@ -7,6 +7,7 @@ import { useCookies } from "react-cookie";
 import { fetch_game, leave_game } from "@/lib/game";
 import { end_turn } from "@/lib/board";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 
 export function Game() {
@@ -47,10 +48,32 @@ export function Game() {
                 <Gameboard player_id={cookie.player_id} />
             </div>{players.map(({ username }, index) => {
                 return (
-                    <div key={username + index} className="col-span-12 w-full h-full p-1">
-                        <div className="grid grid-cols-7 w-full h-full items-center justify-center">
-                            <p className="text-center block font-bold">{username}</p>
-                            <div className="col-span-6 grid grid-cols-6 w-full h-full">
+                    <div key={username + index} className={clsx(
+                        "col-span-12 w-full h-full p-1",
+                        {
+                            "md:col-start-4 md:row-span-2  md:col-span-6":index === 0,
+                            "md:row-start-5 md:row-span-3  md:col-span-3":index === 1,
+                            "md:row-start-5 md:col-start-10 md:row-span-3  md:col-span-3":index === 2, 
+                            "md:row-start-10 md:col-start-4 md:row-span-2  md:col-span-6":index === 3,
+                        }
+                    )}>
+                        <div className={clsx(
+                            "grid grid-cols-7 w-full h-full items-center justify-center",
+                            {
+                                "md:grid-cols-6 md:grid-rows-2":index === 0 || index === 3,
+                                "md:grid-cols-3 md:grid-rows-3":index === 1 || index === 2,
+                            }
+
+                        )}>
+                            <div className="md:col-span-6 md:flex md:justify-center md:text-xl text-center block font-bold">{username}</div>
+                            <div className={clsx(
+                                "col-span-6 grid grid-cols-6 w-full h-full gap-1",
+                                {
+                                    "md:grid-rows-1 md:grid-cols-6 md:gap-1":index === 0 || index === 3,
+                                    "md:row-span-2 md:grid-cols-3 md:gap-1":index === 1 || index === 2,
+                                }
+
+                            )}>
                                 {Array(3).fill(null).map((_, index) => (
                                     <button key={index} className="w-full h-full">
                                         <Card link="c0" />
