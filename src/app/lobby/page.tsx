@@ -1,29 +1,47 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { List } from "@/components/list";
 import { start_game, fetch_players } from "@/lib/game";
 import { useCookies } from "react-cookie";
-import clsx from "clsx";
+import { useRouter } from "next/navigation";
 
 export default function LobbyPage() {
   const [error, setError] = useState<string>("");
   const [cookie, setCookie] = useCookies(["player_id", "game_id", "game_name"]);
   const [players, setPlayers] = useState([]);
 
+  const router = useRouter()
+
+ 
   useEffect(() => {
-    fetch_players({player_id : cookie.player_id}).then((data) => {setPlayers(data)});
-  });
+    const fetchPlayers = async () => {
+      try {
+        const data = await fetch_players({ player_id: cookie.player_id });
+        setPlayers(data);
+      } catch (err) {
+        console.error("Failed to fetch players:", err);
+        setError("Failed to fetch players");
+      }
+    };
+
+    fetchPlayers();
+  }, [cookie.player_id]);
 
   const handleStartGame = async () => {
+    if(players.length < 2){
+      setError("Deben haber 2 o mas jugadores para iniciar partida")
+      return
+    }
+
     const result = await start_game({
+      game_id: cookie.game_id,
       player_id: cookie.player_id,
-      game_id: cookie.game_id
-  });
+    });
 
     if (result.status === "ERROR") {
       setError(result.message);
     }
-    console.log(result.message);
+    
+    router.push("/game/")
   };
 
   return (
@@ -34,21 +52,26 @@ export default function LobbyPage() {
       </div>
       <div className="w-full border overflow-auto">
         <div className="flex-col flex divide-y-2">
-          {players.map((player_id) => {
+          {players.map(({ username }) => {
             return (
               <button
-                key={player_id}
+                key={username}
                 className="p-4 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-default"
               >
                 <div className="flex justify-center">
-                  <div>{player_id}</div>
+                  <div>{username}</div>
                 </div>
               </button>
             );
           })}
         </div>
       </div>
-      <div className="flex justify-center mt-12 w-full">
+      <div className="flex flex-col gap-2 justify-center mt-12">
+      {error && (
+          <p className="text-red-500 max-w-full text-sm text-center mt-2">
+            {error}
+          </p>
+        )}
         <button
           onClick={handleStartGame}
           type="button"
@@ -56,11 +79,6 @@ export default function LobbyPage() {
         >
           Comenzar Partida
         </button>
-        {error && (
-          <p className="text-red-500 max-w-full text-sm text-center mt-2">
-            {error}
-          </p>
-        )}
       </div>
     </div>
   );

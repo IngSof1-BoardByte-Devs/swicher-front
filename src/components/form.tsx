@@ -38,8 +38,8 @@ export function UserForm({ gameId, gameName }: { gameId: number, gameName: strin
     if (result.status === "ERROR")
       setError(result.message);
     else
-      setCookie('player_id', 1, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', gameId, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
       setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
     router.push(`/lobby/`);
   };
