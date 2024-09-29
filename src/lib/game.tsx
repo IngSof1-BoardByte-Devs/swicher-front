@@ -93,16 +93,16 @@ export async function fetch_games() {
   }
 }
 
-export async function start_game({ game_id, player_id }: { game_id: number, player_id: number }) {
+export async function start_game({ player_id }: { player_id: number }) {
   try {
-    const response = await fetch("http://localhost:8000/game/start-game", {
-      method: "POST",
+    const response = await fetch(`http://localhost:8000/games/${player_id}`, {
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ "game_id": game_id, "player_id": player_id }),
+      body: JSON.stringify({ player_id })
     });
-
+    
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
     }
@@ -121,7 +121,7 @@ export async function start_game({ game_id, player_id }: { game_id: number, play
 
 export async function fetch_game({game_id}: { game_id: number}) {
   try {
-    const response = await fetch(`http://localhost:8000/game/get_game/${game_id}`);
+    const response = await fetch(`http://localhost:8000/games/${game_id}/`);
 
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
