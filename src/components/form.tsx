@@ -3,11 +3,13 @@ import React, { useState } from "react";
 import { join_game, create_game } from "@/lib/game";
 import { useRouter } from "next/navigation";
 import { useCookies } from "react-cookie";
+import { useWebSocket } from "@/app/contexts/WebSocketContext";
 
 export function UserForm({ gameId, gameName }: { gameId: number, gameName: string }) {
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
+  const { socket } = useWebSocket();
 
   const router = useRouter()
 
@@ -35,13 +37,15 @@ export function UserForm({ gameId, gameName }: { gameId: number, gameName: strin
     });
 
 
-    if (result.status === "ERROR")
+    if (result.status === "ERROR") {
       setError(result.message);
-    else
+    } else {
+      socket?.send("/join " + gameId);
       setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-    setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-    setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-    router.push(`/lobby/`);
+      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      router.push(`/lobby/`);
+    }
   };
 
   return (
@@ -78,6 +82,7 @@ export function CreateGameForm() {
   const [formData, setFormData] = useState({ player_name: '', gameName: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
+  const { socket } = useWebSocket();
 
   const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
@@ -107,6 +112,7 @@ export function CreateGameForm() {
       if (res.status === "ERROR") {
         setErrorMessage(res.message);
       } else {
+        socket?.send("/join " + res.game_id);
         setCookie('player_id', res.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
         setCookie('game_id', res.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
         setCookie('game_name', game_name, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) })
