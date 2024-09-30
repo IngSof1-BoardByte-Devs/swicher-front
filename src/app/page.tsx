@@ -2,7 +2,8 @@
 import { CreateGameForm, UserForm } from "@/components/form";
 import { fetch_games } from "@/lib/game";
 import clsx from "clsx";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import { useWebSocket } from "@app/contexts/WebSocketContext";
 
 //import { useWebSocket } from '@app/providers/WebSocketContext';
 
@@ -10,9 +11,6 @@ export default function Home() {
   const [createGame, setCreateGame] = useState(false);
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
-  const [games, setGames] = useState<Game[]>([]);
-  const [selectedName, setSelectedName] = useState("");
-  const socket = useRef<WebSocket | null>(null);
 
   interface Game {
     id: number;
@@ -20,35 +18,28 @@ export default function Home() {
     num_players: number;
   }
 
+  const [games, setGames] = useState<Game[]>([]);
+  const [selectedName, setSelectedName] = useState("");
+  const { socket } = useWebSocket();
+
   useEffect(() => {
     fetch_games().then((data) => {
       setGames(data);
-    })
-    if (!socket.current) {
-      socket.current = new WebSocket("ws://localhost:8000/ws");
+    });
+  }, []);
 
-      socket.current.onerror = () => {
-        console.log("WebSocket error");
-      };
-
-      socket.current.onopen = () => {
-        console.log("WebSocket connection opened");
-      };
-
-      socket.current.onmessage = (event) => {
+  useEffect(() => {
+    if (socket) {
+      socket.onmessage = (event) => {
         console.log("Message from server ", event.data);
         const socketData = JSON.parse(event.data);
         console.log(socketData);
-        if (socketData.event === "new_game"){
+        if (socketData.event === "new_game") {
           setGames(games => [...games, socketData.data]);
-        } 
-      };
-
-      socket.current.onclose = () => {
-        console.log("WebSocket connection closed");
+        }
       };
     }
-  }, []);
+  }, [socket]);
 
   const devs = ["Ramiro cuellar", "Juan Quintero", "Juan Mazzaforte", "Daniela Courel", "Aaron Lihuel", "Franco Bustos"];
   return (
