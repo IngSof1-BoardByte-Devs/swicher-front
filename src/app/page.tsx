@@ -93,7 +93,7 @@ export default function Home() {
           </div>
         </footer>
       </div>
-      { /* create game form*/}
+      { /* create game form */}
       {createGame &&
         <div className="absolute bg-slate-700/75 dark:bg-inherit w-full h-dvh z-10 backdrop-blur flex justify-center items-center">
           <div className="border relative w-fit h-fit bg-white dark:bg-black rounded">
@@ -102,7 +102,7 @@ export default function Home() {
           </div>
         </div>
       }
-      { /* join game form*/}
+      { /* join game form */}
       {joinGame &&
         <div className="absolute bg-slate-700/75 dark:bg-inherit w-full h-dvh z-10 backdrop-blur flex justify-center items-center">
           <div className="border relative w-fit h-fit bg-white dark:bg-black rounded">
