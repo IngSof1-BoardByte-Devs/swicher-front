@@ -60,9 +60,9 @@ export default function Home() {
           <div>{"Nombre de partidas"}</div>
           <div>{"Cantidad de jugadores"}</div>
         </div>
-        <div className="w-full h-5/6 border overflow-auto shadow">
-          <div className="flex flex-col divide-y-2">
-            {games.length === 0 && <div className="text-center p-2">No hay partidas disponibles</div>}
+        <div className="w-full max-h-[650px] border overflow-auto shadow">
+          <div className="flex flex-col divide-y-2 h-full">
+            {games.length === 0 && <div className="text-center p-2 ">No hay partidas disponibles</div>}
             {games.map(({ id, name, num_players }) => {
               return (
                 <button key={id} className={clsx("p-4", {

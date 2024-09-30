@@ -22,7 +22,7 @@ function Gameboard({ id_game }: { id_game: number }) {
     }, [id_game]);
     
     return (
-        <div role="grid" className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6" style={{ aspectRatio: "1 / 1" }}>
+        <div role="grid" className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6">
             {figures.map(({color}, index) => (
                 <Piece color={clsx({
                     "red": color === 0,

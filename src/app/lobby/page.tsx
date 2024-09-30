@@ -14,7 +14,7 @@ export default function LobbyPage() {
   const router = useRouter()
 
   interface Player {
-    id : number;
+    id: number;
     username: string;
     turn: number;
   }
@@ -37,16 +37,19 @@ export default function LobbyPage() {
     if (socket) {
       socket.onmessage = (event) => {
         const socketData = JSON.parse(event.data);
+        console.log(socketData);
         if (socketData.event === "join_game") {
-          setPlayers((players) => [...players, { 
-            id: socketData.data.player_id, 
-            username: socketData.data.player_name, 
-            turn: 0  
+          setPlayers((players) => [...players, {
+            id: socketData.data.player_id,
+            username: socketData.data.player_name,
+            turn: 0
           } as Player]);
-        }
-      };
-    }
-  }, [socket]);
+        } else if (socketData.event === "start_game") {
+          router.push("/game/");
+      }
+    };
+  }
+}, [socket, router]);
 
   const handleStartGame = async () => {
     if (players.length < 2) {
@@ -54,16 +57,15 @@ export default function LobbyPage() {
       return
     }
 
-    const result = await start_game({
-      game_id: cookie.game_id,
+    await start_game({
       player_id: cookie.player_id,
+    }).then((result) => {
+      if (result.status === "ERROR") {
+        setError(result.message);
+      }
+      router.push("/game/")
     });
 
-    if (result.status === "ERROR") {
-      setError(result.message);
-    }
-
-    router.push("/game/")
   };
 
   return (
