@@ -1,4 +1,49 @@
+"use client"
+import { CreateGameForm, UserForm } from "@/components/form";
+import { fetch_games } from "@/lib/game";
+import clsx from "clsx";
+import { useEffect, useState } from "react";
+import { useWebSocket } from "@app/contexts/WebSocketContext";
+
 export default function Home() {
+  const [createGame, setCreateGame] = useState(false);
+  const [joinGame, setJoinGame] = useState(false);
+  const [selectedId, setSelectedId] = useState(-1);
+  interface Game {
+    id: number;
+    name: string;
+    num_players: number;
+  }
+
+  const [games, setGames] = useState<Game[]>([]);
+  const { socket } = useWebSocket();
+
+  useEffect(() => {
+    fetch_games().then((data) => {
+      setGames(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket.onmessage = (event) => {
+        const socketData = JSON.parse(event.data);
+        console.log(socketData);
+        if (socketData.event === "new_game") {
+          setGames(games => [...games, socketData.data]);
+        } else if (socketData.event === "new_player") {
+          setGames(games => games.map(game => {
+            if (game.id === socketData.data.game_id) {
+              return { ...game, num_players: game.num_players + 1 };
+            }
+            return game;
+          }));
+        }
+      };
+    }
+  }, [socket]);
+
+  const devs = ["Ramiro cuellar", "Juan Quintero", "Juan Mazzaforte", "Daniela Courel", "Aaron Lihuel", "Franco Bustos"];
   return (
     <div className="w-full h-dvh grid grid-rows-6 grid-flow-dense">
       <div className="row-span-1">
