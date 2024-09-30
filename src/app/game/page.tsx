@@ -118,9 +118,6 @@ export function Game() {
                     onClick={() => {
                         if (id_player !== null) {
                             leave_game({ player_id: id_player }).then(() => {
-                                socket?.send("/leave " + id_game);
-                                setIdGame(null);
-                                setIdPlayer(null);
                             });
                         }
                     }}
