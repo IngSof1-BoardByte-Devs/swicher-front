@@ -10,36 +10,42 @@ export default function Home() {
   const [createGame, setCreateGame] = useState(false);
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
-  const [games, setGames] = useState([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [selectedName, setSelectedName] = useState("");
+  const socket = useRef<WebSocket | null>(null);
+
+  interface Game {
+    id: number;
+    name: string;
+    num_players: number;
+  }
 
   useEffect(() => {
     fetch_games().then((data) => {
       setGames(data);
     })
-  }, []);
-  const socket = useRef(new WebSocket("ws://localhost:8000/ws-games/"));
-  socket.current.onerror = () => {
-    console.log("WebSocket error")
-  }
-  // Connection opened
-  socket.current.addEventListener("open", event => {
-    socket.current.send("ALO SOY EL FRONT")
-  });
-  
-  // Listen for messages
-  socket.current.addEventListener("message", event => {
-    console.log("Message from server ", event.data)
-  });
-  // useEffect(() => {
-  //   if (socket && socket.readyState === WebSocket.OPEN) {
-  //     console.log("WebSocket is ready");
-  //     socket.onmessage = (event) => { console.log(event.data) };
-  //   } else {
-  //     console.log("WebSocket is not ready");
-  //   }
-  // }, [socket]);
+    if (!socket.current) {
+      socket.current = new WebSocket("ws://localhost:8000/ws");
 
+      socket.current.onerror = () => {
+        console.log("WebSocket error");
+      };
+
+      socket.current.onopen = () => {
+        console.log("WebSocket connection opened");
+      };
+
+      socket.current.onmessage = (event) => {
+        console.log("Message from server ", event.data);
+        console.log(JSON.parse(event.data));
+        setGames(games => [...games, JSON.parse(event.data).new_game]);
+      };
+
+      socket.current.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+    }
+  }, []);
 
   const devs = ["Ramiro cuellar", "Juan Quintero", "Juan Mazzaforte", "Daniela Courel", "Aaron Lihuel", "Franco Bustos"];
   return (
