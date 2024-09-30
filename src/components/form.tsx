@@ -2,12 +2,14 @@
 import React, { useState } from "react";
 import { join_game, create_game } from "@/lib/game";
 import { useRouter } from "next/navigation";
-import { useCookies } from "react-cookie";
+import { useWebSocket } from "@/app/contexts/WebSocketContext";
+import { useGameInfo } from "@/app/contexts/GameInfoContext";
 
-export function UserForm({ gameId, gameName }: { gameId: number, gameName: string}) {
+export function UserForm({ gameId }: { gameId: number }) {
+  const { setIdGame, setIdPlayer } = useGameInfo();
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
+  const { socket } = useWebSocket();
 
   const router = useRouter()
 
@@ -35,13 +37,14 @@ export function UserForm({ gameId, gameName }: { gameId: number, gameName: strin
     });
 
 
-    if (result.status === "ERROR")
+    if (result.status === "ERROR") {
       setError(result.message);
-    else
-      setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-    router.push(`/lobby/`);
+    } else {
+      setIdPlayer(result.player_id);
+      setIdGame(gameId);
+      socket?.send("/join " + gameId);
+      router.push(`/lobby/`);
+    }
   };
 
   return (
@@ -74,10 +77,11 @@ export function UserForm({ gameId, gameName }: { gameId: number, gameName: strin
 };
 
 export function CreateGameForm() {
-  const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
+  const { setIdGame, setIdPlayer } = useGameInfo();
   const [formData, setFormData] = useState({ player_name: '', gameName: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
+  const { socket } = useWebSocket();
 
   const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
@@ -96,20 +100,23 @@ export function CreateGameForm() {
       return;
     } else {
       setErrorMessage('');
-      send({player_name: formData.player_name, game_name: formData.gameName});
+      send({ player_name: formData.player_name, game_name: formData.gameName });
     }
   }
-  const send = async ({ player_name, game_name}: {player_name: string, game_name: string}) => {
-    const result = await create_game({
+  const send = async ({ player_name, game_name }: { player_name: string, game_name: string }) => {
+    await create_game({
       player_name, game_name
-    });
-    if (result.status === "ERROR")
-      setErrorMessage(result.message);
-    else
-      setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_name', game_name, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) })
-      router.push(`/lobby/`);
+    }).then((res) => {
+      if (res.status === "ERROR") {
+        setErrorMessage(res.message);
+      } else {
+        setIdPlayer(res.player_id);
+        setIdGame(res.game_id);
+        socket?.send("/join " + res.game_id);
+        router.push(`/lobby/`);
+      }
+    }
+    );
   }
 
   return (

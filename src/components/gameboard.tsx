@@ -5,7 +5,7 @@ import Piece from "./piece";
 import { fetch_board } from "@/lib/board";
 import clsx from "clsx";
 
-function Gameboard({ id_game }: { id_game: number }) {
+export function Gameboard({ id_game }: { id_game: number }) {
     const [selectedPiece, setSelectedPiece] = useState<number>(-1);
     const [figures, setFigures] = useState([]);
 
@@ -22,7 +22,7 @@ function Gameboard({ id_game }: { id_game: number }) {
     }, [id_game]);
     
     return (
-        <div role="grid" className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6" style={{ aspectRatio: "1 / 1" }}>
+        <div role="grid" className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6">
             {figures.map(({color}, index) => (
                 <Piece color={clsx({
                     "red": color === 0,
