@@ -5,13 +5,10 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 
-//import { useWebSocket } from '@app/providers/WebSocketContext';
-
 export default function Home() {
   const [createGame, setCreateGame] = useState(false);
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
-
   interface Game {
     id: number;
     name: string;
@@ -19,7 +16,6 @@ export default function Home() {
   }
 
   const [games, setGames] = useState<Game[]>([]);
-  const [selectedName, setSelectedName] = useState("");
   const { socket } = useWebSocket();
 
   useEffect(() => {
@@ -31,8 +27,8 @@ export default function Home() {
   useEffect(() => {
     if (socket) {
       socket.onmessage = (event) => {
-        console.log("Message from server ", event.data);
         const socketData = JSON.parse(event.data);
+        console.log(socketData);
         if (socketData.event === "new_game") {
           setGames(games => [...games, socketData.data]);
         } else if (socketData.event === "new_player") {
@@ -68,7 +64,7 @@ export default function Home() {
                 <button key={id} className={clsx("p-4", {
                   "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === id,
                   "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== id
-                })} onClick={() => { setSelectedId(id), setSelectedName(name) }}>
+                })} onClick={() => { setSelectedId(id) }}>
                   <div className="flex justify-between">
                     <div>{name}</div>
                     <div>{num_players}</div>
@@ -110,7 +106,7 @@ export default function Home() {
       {joinGame &&
         <div className="absolute bg-slate-700/75 dark:bg-inherit w-full h-dvh z-10 backdrop-blur flex justify-center items-center">
           <div className="border relative w-fit h-fit bg-white dark:bg-black rounded">
-            <UserForm gameId={selectedId} gameName={selectedName} />
+            <UserForm gameId={selectedId} />
             <button className="absolute top-0 right-0 w-7 h-7" onClick={() => setJoinGame(false)}>x</button>
           </div>
         </div>

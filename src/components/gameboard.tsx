@@ -5,7 +5,7 @@ import Piece from "./piece";
 import { fetch_board } from "@/lib/board";
 import clsx from "clsx";
 
-function Gameboard({ id_game }: { id_game: number }) {
+export function Gameboard({ id_game }: { id_game: number }) {
     const [selectedPiece, setSelectedPiece] = useState<number>(-1);
     const [figures, setFigures] = useState([]);
 

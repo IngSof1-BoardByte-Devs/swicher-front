@@ -1,6 +1,5 @@
 "use client"
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-
 interface WebSocketContextType {
     socket: WebSocket | null;
 }
@@ -21,15 +20,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
             newSocket.onopen = () => {
                 console.log("WebSocket connection opened");
-            };
-
-            newSocket.onmessage = (event) => {
-                console.log("Message from server ", event.data);
-                const socketData = JSON.parse(event.data);
-                console.log(socketData);
-                if (socketData.event === "new_game") {
-                    // Handle new game event
-                }
             };
 
             newSocket.onclose = () => {

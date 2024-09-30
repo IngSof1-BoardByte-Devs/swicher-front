@@ -2,13 +2,13 @@
 import React, { useState } from "react";
 import { join_game, create_game } from "@/lib/game";
 import { useRouter } from "next/navigation";
-import { useCookies } from "react-cookie";
 import { useWebSocket } from "@/app/contexts/WebSocketContext";
+import { useGameInfo } from "@/app/contexts/GameInfoContext";
 
-export function UserForm({ gameId, gameName }: { gameId: number, gameName: string }) {
+export function UserForm({ gameId }: { gameId: number }) {
+  const { setIdGame, setIdPlayer } = useGameInfo();
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
   const { socket } = useWebSocket();
 
   const router = useRouter()
@@ -40,10 +40,9 @@ export function UserForm({ gameId, gameName }: { gameId: number, gameName: strin
     if (result.status === "ERROR") {
       setError(result.message);
     } else {
+      setIdPlayer(result.player_id);
+      setIdGame(gameId);
       socket?.send("/join " + gameId);
-      setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
       router.push(`/lobby/`);
     }
   };
@@ -78,7 +77,7 @@ export function UserForm({ gameId, gameName }: { gameId: number, gameName: strin
 };
 
 export function CreateGameForm() {
-  const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
+  const { setIdGame, setIdPlayer } = useGameInfo();
   const [formData, setFormData] = useState({ player_name: '', gameName: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
@@ -108,14 +107,12 @@ export function CreateGameForm() {
     await create_game({
       player_name, game_name
     }).then((res) => {
-
       if (res.status === "ERROR") {
         setErrorMessage(res.message);
       } else {
+        setIdPlayer(res.player_id);
+        setIdGame(res.game_id);
         socket?.send("/join " + res.game_id);
-        setCookie('player_id', res.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-        setCookie('game_id', res.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-        setCookie('game_name', game_name, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) })
         router.push(`/lobby/`);
       }
     }

@@ -1,17 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { start_game, fetch_game } from "@/lib/game";
-import { useCookies } from "react-cookie";
 import { useRouter } from "next/navigation";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
+import { useGameInfo } from "@app/contexts/GameInfoContext";
 
 export default function LobbyPage() {
   const [error, setError] = useState<string>("");
-  const [cookie, setCookie] = useCookies(["player_id", "game_id", "game_name"]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameName, setGameName] = useState("");
   const { socket } = useWebSocket();
   const router = useRouter()
+  const { id_game, id_player } = useGameInfo();
 
   interface Player {
     id: number;
@@ -22,7 +22,8 @@ export default function LobbyPage() {
   useEffect(() => {
     const fetchGame = async () => {
       try {
-        const data = await fetch_game({ game_id: cookie.game_id });
+        if (id_game == null) return;
+        const data = await fetch_game({ game_id: id_game });
         setPlayers(data.players);
         setGameName(data.name);
       } catch (err) {
@@ -31,7 +32,7 @@ export default function LobbyPage() {
     };
 
     fetchGame();
-  }, [cookie.game_id]);
+  }, [id_game]);
 
   useEffect(() => {
     if (socket) {
@@ -45,26 +46,26 @@ export default function LobbyPage() {
           } as Player]);
         } else if (socketData.event === "start_game") {
           router.push("/game/");
-      }
-    };
-  }
-}, [socket, router]);
+        }
+      };
+    }
+  }, [socket, router]);
 
   const handleStartGame = async () => {
     if (players.length < 2) {
       setError("Deben haber 2 o mas jugadores para iniciar partida")
       return
     }
-
+    if (id_player == null) return;
     await start_game({
-      player_id: cookie.player_id,
+      player_id: id_player,
     }).then((result) => {
       if (result.status === "ERROR") {
         setError(result.message);
+      } else {
+        router.push("/game/")
       }
-      router.push("/game/")
     });
-
   };
 
   return (
