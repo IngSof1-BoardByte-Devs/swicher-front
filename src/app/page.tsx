@@ -33,9 +33,15 @@ export default function Home() {
       socket.onmessage = (event) => {
         console.log("Message from server ", event.data);
         const socketData = JSON.parse(event.data);
-        console.log(socketData);
         if (socketData.event === "new_game") {
           setGames(games => [...games, socketData.data]);
+        } else if (socketData.event === "new_player") {
+          setGames(games => games.map(game => {
+            if (game.id === socketData.data.game_id) {
+              return { ...game, num_players: game.num_players + 1 };
+            }
+            return game;
+          }));
         }
       };
     }
@@ -54,7 +60,7 @@ export default function Home() {
           <div>{"Nombre de partidas"}</div>
           <div>{"Cantidad de jugadores"}</div>
         </div>
-        <div className="w-full border overflow-auto shadow">
+        <div className="w-full h-5/6 border overflow-auto shadow">
           <div className="flex flex-col divide-y-2">
             {games.length === 0 && <div className="text-center p-2">No hay partidas disponibles</div>}
             {games.map(({ id, name, num_players }) => {
@@ -74,7 +80,7 @@ export default function Home() {
         </div>
       </div>
       {/* buttons */}
-      <div className="row-span-1 p-2">
+      <div className="row-span-1 p-4">
         <div className="flex gap-1 justify-center">
           <button className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize" onClick={() => setCreateGame(true)}>Crear partida</button>
           <button className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize disabled:hover:dark:bg-inherit disabled:opacity-50" disabled={selectedId == -1} onClick={() => setJoinGame(true)}>unirse partida</button>

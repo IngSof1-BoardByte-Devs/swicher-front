@@ -3,32 +3,53 @@ import React, { useEffect, useState } from "react";
 import { start_game, fetch_game } from "@/lib/game";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/navigation";
+import { useWebSocket } from "@app/contexts/WebSocketContext";
 
 export default function LobbyPage() {
   const [error, setError] = useState<string>("");
   const [cookie, setCookie] = useCookies(["player_id", "game_id", "game_name"]);
-  const [players, setPlayers] = useState([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [gameName, setGameName] = useState("");
-
+  const { socket } = useWebSocket();
   const router = useRouter()
 
- 
+  interface Player {
+    id : number;
+    username: string;
+    turn: number;
+  }
+
   useEffect(() => {
     const fetchGame = async () => {
-        try {
-            const data = await fetch_game({ game_id: cookie.game_id });
-            setPlayers(data.players);
-            setGameName(data.name);
-        } catch (err) {
-            console.error("Failed to fetch players:", err);
-        }
+      try {
+        const data = await fetch_game({ game_id: cookie.game_id });
+        setPlayers(data.players);
+        setGameName(data.name);
+      } catch (err) {
+        console.error("Failed to fetch players:", err);
+      }
     };
 
     fetchGame();
-}, [cookie.game_id]);
+  }, [cookie.game_id]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.onmessage = (event) => {
+        const socketData = JSON.parse(event.data);
+        if (socketData.event === "join_game") {
+          setPlayers((players) => [...players, { 
+            id: socketData.data.player_id, 
+            username: socketData.data.player_name, 
+            turn: 0  
+          } as Player]);
+        }
+      };
+    }
+  }, [socket]);
 
   const handleStartGame = async () => {
-    if(players.length < 2){
+    if (players.length < 2) {
       setError("Deben haber 2 o mas jugadores para iniciar partida")
       return
     }
@@ -41,7 +62,7 @@ export default function LobbyPage() {
     if (result.status === "ERROR") {
       setError(result.message);
     }
-    
+
     router.push("/game/")
   };
 
@@ -68,7 +89,7 @@ export default function LobbyPage() {
         </div>
       </div>
       <div className="flex flex-col gap-2 justify-center mt-12">
-      {error && (
+        {error && (
           <p className="text-red-500 max-w-full text-sm text-center mt-2">
             {error}
           </p>
