@@ -37,8 +37,11 @@ export default function Home() {
 
       socket.current.onmessage = (event) => {
         console.log("Message from server ", event.data);
-        console.log(JSON.parse(event.data));
-        setGames(games => [...games, JSON.parse(event.data).new_game]);
+        const socketData = JSON.parse(event.data);
+        console.log(socketData);
+        if (socketData.event === "new_game"){
+          setGames(games => [...games, socketData.data]);
+        } 
       };
 
       socket.current.onclose = () => {

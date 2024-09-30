@@ -104,13 +104,14 @@ export function CreateGameForm() {
       player_name, game_name
     }).then((res) => {
 
-      if (res.status === "ERROR")
+      if (res.status === "ERROR") {
         setErrorMessage(res.message);
-      else
+      } else {
         setCookie('player_id', res.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', res.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_name', game_name, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) })
-      router.push(`/lobby/`);
+        setCookie('game_id', res.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+        setCookie('game_name', game_name, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) })
+        router.push(`/lobby/`);
+      }
     }
     );
   }
