@@ -115,12 +115,12 @@ export function Game() {
                                     })}>{player.username}</p>
                             </div>
                             <div className="col-span-6 grid grid-cols-6 w-full h-full">
-                                {figureCards.map((figure:FigureCard) => (
+                                {figureCards.filter(card => card.player_id === player.id).map((figure:FigureCard) => (
                                     <button key={figure.id_figure} className="w-full h-full">
                                         <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} />
                                     </button>
                                 ))}
-                                {movementCards.map((movement:MoveCard) => (
+                                {player.id === id_player && movementCards.map((movement:MoveCard) => (
                                     <button key={movement.id_movement} className="w-full h-full">
                                         <Card type={false} index={parseInt(movement.type_movement.split(" ")[1], 10)} />
                                     </button>
