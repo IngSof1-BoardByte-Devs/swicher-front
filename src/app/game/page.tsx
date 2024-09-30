@@ -9,6 +9,7 @@ import { Winner } from "@/components/winner";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import clsx from "clsx";
+import { fetch_figure_cards, fetch_movement_cards } from "@/lib/card";
 
 export function Game() {
     const [players, setPlayers] = useState<Player[]>([]);
@@ -16,12 +17,25 @@ export function Game() {
     const [color, setColor] = useState(-1);
     const [actualTurn, setActualTurn] = useState(-1);
     const { socket } = useWebSocket();
-    const { id_game, id_player, setIdGame, setIdPlayer } = useGameInfo();
+    const { id_game, id_player } = useGameInfo();
+    const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
+    const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
 
     interface Player {
         id: number;
         username: string;
         turn: number;
+    }
+    interface FigureCard {
+        player_id: number;
+        id_figure: number;
+        type_figure: string
+    }
+
+    interface MoveCard {
+        id_movement: number;
+        type_movement: string;
+        // Add other properties as needed
     }
 
     useEffect(() => {
@@ -37,8 +51,19 @@ export function Game() {
                 console.error("Failed to fetch players:", err);
             }
         };
+        if (id_game !== null) {
+            fetch_figure_cards({ id_game }).then((data: FigureCard[]) => {
+                setFigureCards(data);
+            });
+        }
+        if (id_player !== null) {
+            fetch_movement_cards({ id_player }).then((data: MoveCard[]) => { 
+                setMovementCards(data)
+            });
+        }
+
         fetchGame();
-    }, [id_game, color]);
+    }, [id_game, id_player]);
 
     useEffect(() => {
         if (socket) {
@@ -79,25 +104,25 @@ export function Game() {
             {/* Tablero de juego */}
             <div className="h-full row-span-4 col-span-12 p-1 md:row-span-6 md:col-span-6 md:row-start-4 md:col-start-4">
                 {id_game !== null && <Gameboard id_game={id_game} />}
-            </div>{players.map(({ id, username, turn }, index) => {
+            </div>{players.map((player:Player, index) => {
                 return (
-                    <div key={username + index} className="col-span-12 w-full h-full p-1">
+                    <div key={player.username + index} className="col-span-12 w-full h-full p-1">
                         <div className="grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden">
                             <div className="flex justify-center">
                                 <p className={clsx("font-bold w-fit p-1",
                                     {
-                                        "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === turn,
-                                    })}>{username}</p>
+                                        "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === player.turn,
+                                    })}>{player.username}</p>
                             </div>
                             <div className="col-span-6 grid grid-cols-6 w-full h-full">
-                                {Array(3).fill(null).map((_, index) => (
-                                    <button key={index} className="w-full h-full">
-                                        <Card link="c0" />
+                                {figureCards.map((figure:FigureCard) => (
+                                    <button key={figure.id_figure} className="w-full h-full">
+                                        <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} />
                                     </button>
                                 ))}
-                                {Array(3).fill(null).map((_, index) => (
-                                    <button key={index} className="w-full h-full">
-                                        <Card link="c1" />
+                                {movementCards.map((movement:MoveCard) => (
+                                    <button key={movement.id_movement} className="w-full h-full">
+                                        <Card type={false} index={parseInt(movement.type_movement.split(" ")[1], 10)} />
                                     </button>
                                 ))}
                             </div>
