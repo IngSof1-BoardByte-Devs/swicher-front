@@ -2,7 +2,9 @@
 import { CreateGameForm, UserForm } from "@/components/form";
 import { fetch_games } from "@/lib/game";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+
+//import { useWebSocket } from '@app/providers/WebSocketContext';
 
 export default function Home() {
   const [createGame, setCreateGame] = useState(false);
@@ -16,6 +18,28 @@ export default function Home() {
       setGames(data);
     })
   }, []);
+  const socket = useRef(new WebSocket("ws://localhost:8000/ws-games/"));
+  socket.current.onerror = () => {
+    console.log("WebSocket error")
+  }
+  // Connection opened
+  socket.current.addEventListener("open", event => {
+    socket.current.send("ALO SOY EL FRONT")
+  });
+  
+  // Listen for messages
+  socket.current.addEventListener("message", event => {
+    console.log("Message from server ", event.data)
+  });
+  // useEffect(() => {
+  //   if (socket && socket.readyState === WebSocket.OPEN) {
+  //     console.log("WebSocket is ready");
+  //     socket.onmessage = (event) => { console.log(event.data) };
+  //   } else {
+  //     console.log("WebSocket is not ready");
+  //   }
+  // }, [socket]);
+
 
   const devs = ["Ramiro cuellar", "Juan Quintero", "Juan Mazzaforte", "Daniela Courel", "Aaron Lihuel", "Franco Bustos"];
   return (
@@ -38,7 +62,7 @@ export default function Home() {
                 <button key={id} className={clsx("p-4", {
                   "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === id,
                   "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== id
-                })} onClick={() => { setSelectedId(id), setSelectedName(name)}}>
+                })} onClick={() => { setSelectedId(id), setSelectedName(name) }}>
                   <div className="flex justify-between">
                     <div>{name}</div>
                     <div>{num_players}</div>

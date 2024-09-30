@@ -4,7 +4,7 @@ import { join_game, create_game } from "@/lib/game";
 import { useRouter } from "next/navigation";
 import { useCookies } from "react-cookie";
 
-export function UserForm({ gameId, gameName }: { gameId: number, gameName: string}) {
+export function UserForm({ gameId, gameName }: { gameId: number, gameName: string }) {
   const [playerName, setPlayerName] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [cookies, setCookie] = useCookies(['player_id', 'game_id', 'game_name']);
@@ -39,8 +39,8 @@ export function UserForm({ gameId, gameName }: { gameId: number, gameName: strin
       setError(result.message);
     else
       setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+    setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+    setCookie('game_name', gameName, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
     router.push(`/lobby/`);
   };
 
@@ -96,20 +96,23 @@ export function CreateGameForm() {
       return;
     } else {
       setErrorMessage('');
-      send({player_name: formData.player_name, game_name: formData.gameName});
+      send({ player_name: formData.player_name, game_name: formData.gameName });
     }
   }
-  const send = async ({ player_name, game_name}: {player_name: string, game_name: string}) => {
-    const result = await create_game({
+  const send = async ({ player_name, game_name }: { player_name: string, game_name: string }) => {
+    await create_game({
       player_name, game_name
-    });
-    if (result.status === "ERROR")
-      setErrorMessage(result.message);
-    else
-      setCookie('player_id', result.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
-      setCookie('game_id', result.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+    }).then((res) => {
+
+      if (res.status === "ERROR")
+        setErrorMessage(res.message);
+      else
+        setCookie('player_id', res.player_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
+      setCookie('game_id', res.game_id, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) });
       setCookie('game_name', game_name, { expires: new Date(Date.now() + 1000 * 60 * 60 * 24) })
       router.push(`/lobby/`);
+    }
+    );
   }
 
   return (
