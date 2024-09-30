@@ -6,17 +6,18 @@ import { Card } from "@components/cards";
 import { useCookies } from "react-cookie";
 import { fetch_game, leave_game } from "@/lib/game";
 import { end_turn } from "@/lib/board";
-import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { Winner } from "@/components/winner";
+import { useWebSocket } from "../contexts/WebSocketContext";
 
 export function Game() {
-    const router = useRouter();
-    const [cookie, setCookie] = useCookies(["player_id", "game_id", "game_name"]);    
+    const [cookie, setCookie] = useCookies(["player_id", "game_id", "game_name"]);
     const [players, setPlayers] = useState<Player[]>([]);
     const [gameName, setGameName] = useState("");
     const [color, setColor] = useState(-1);
     const [actualTurn, setActualTurn] = useState(-1);
+    const { socket } = useWebSocket();
+
     interface Player {
         id: number;
         username: string;
@@ -35,17 +36,29 @@ export function Game() {
                 console.error("Failed to fetch players:", err);
             }
         };
-
         fetchGame();
-
     }, [cookie.game_id, color]);
+
+    useEffect(() => {
+        if (socket) {
+            socket.onmessage = (event) => {
+                const socketData = JSON.parse(event.data);
+                console.log(socketData);
+                if (socketData.event === "change_turn") {
+                    setActualTurn(socketData.data.turn);
+                } else if (socketData.event === "player_left") {
+                    setPlayers(players.filter(player => player.id !== socketData.data.player_id));
+                }
+            };
+        }
+    }, [socket, players]);
 
     return (
         <div className="w-screen h-screen grid grid-rows-10 grid-cols-12 md:grid-rows-12 items-center justify-center overflow-hidden p-4">
-            {players.length === 1 && 
-            <div className="z-50">
-            <Winner player_name={players[0].username}/>
-            </div>
+            {players.length === 1 &&
+                <div className="z-50">
+                    <Winner player_name={players[0].username} />
+                </div>
             }
             {/* Header: Turno Actual, Nombre de Partida y Color Bloqueado */}
             <div className="col-span-12 place-content-center text-center h-full grid grid-cols-2">

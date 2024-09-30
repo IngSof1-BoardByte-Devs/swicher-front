@@ -37,7 +37,6 @@ export default function LobbyPage() {
     if (socket) {
       socket.onmessage = (event) => {
         const socketData = JSON.parse(event.data);
-        console.log(socketData);
         if (socketData.event === "join_game") {
           setPlayers((players) => [...players, {
             id: socketData.data.player_id,
