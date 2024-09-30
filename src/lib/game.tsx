@@ -100,7 +100,6 @@ export async function start_game({ player_id }: { player_id: number }) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ player_id })
     });
 
     if (!response.ok) {
