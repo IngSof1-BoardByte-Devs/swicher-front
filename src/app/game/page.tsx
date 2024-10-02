@@ -104,7 +104,7 @@ export function Game() {
                 </div>
             </div>
             {/* Tablero de juego */}
-            <div className="h-full row-span-4 col-span-12 p-1 md:row-span-6 md:col-span-6 md:row-start-4 md:col-start-4">
+            <div className="h-full row-span-4 col-span-12 p-1 md:row-span-6 md:col-span-4 md:row-start-4 md:col-start-5">
                 {id_game !== null && <Gameboard id_game={id_game} />}
             </div>
             {/* current player */}
@@ -143,15 +143,15 @@ export function Game() {
                         "col-span-12 w-full h-full p-1",
                         {
                             "md:row-start-2 md:row-span-2 md:col-start-4":index === 0,
-                            "md:row-start-5 md:row-span-3  md:col-span-3":index === 1,
-                            "md:row-start-5 md:col-start-10 md:row-span-3  md:col-span-3":index === 2,
+                            "md:row-start-5 md:row-span-3  md:col-span-4":index === 1,
+                            "md:row-start-5 md:col-start-9 md:row-span-3  md:col-span-4":index === 2,
                         }
                     )}>
                         <div className={clsx(
                             "grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden",
                             {
                                 "md:grid-rows-2":index === 0,
-                                "md:grid-cols-3 md:grid-rows-3":index === 1 || index === 2,
+                                "md:grid-cols-4 md:grid-rows-3":index === 1 || index === 2,
                             }
 
                         )}>
