@@ -109,11 +109,11 @@ export function Game() {
             </div>
             {/* current player */}
             {currentPlayer && (
-                <div className="md:row-start-10 md:col-start-4 md:row-span-2 md:col-span-6 col-span-12 w-full h-full p-1">
+                <div className="md:row-start-10 md:col-start-2 md:col-end-11 md:row-span-2 col-span-12 w-full h-full p-1">
                     <div className="grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden">
                         <div className="grid grid-cols-6 md:grid-rows-2 w-full h-full items-center justify-center">
                             <div className={clsx(
-                                "font-bold w-fit p-1 md:col-span-6 md:flex md:justify-center md:text-xl md:text-center md:items-center",
+                                "font-bold w-fit p-1 md:flex md:justify-center md:text-xl md:text-center md:items-center",
                                 {
                                     "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === currentPlayer.turn,
                                 }
@@ -121,7 +121,7 @@ export function Game() {
                                 {currentPlayer.username}
                             </div>
                         </div>
-                        <div className="col-span-6 grid grid-cols-6 w-full h-full gap-1 md:grid-rows-1 md:grid-cols-6 md:gap-1">
+                        <div className="col-span-6 grid grid-cols-6 w-full h-full gap-1 md:grid-rows-1">
                             {figureCards.filter(card => card.player_id === currentPlayer.id).map((figure: FigureCard) => (
                                 <button key={figure.id_figure} className="w-full h-full">
                                     <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} />
@@ -142,7 +142,7 @@ export function Game() {
                     <div key={player.id + index} className={clsx(
                         "col-span-12 w-full h-full p-1",
                         {
-                            "md:col-start-4 md:row-span-2  md:col-span-6":index === 0,
+                            "md:row-start-2 md:row-span-2 md:col-start-4":index === 0,
                             "md:row-start-5 md:row-span-3  md:col-span-3":index === 1,
                             "md:row-start-5 md:col-start-10 md:row-span-3  md:col-span-3":index === 2,
                         }
@@ -150,20 +150,20 @@ export function Game() {
                         <div className={clsx(
                             "grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden",
                             {
-                                "md:grid-cols-6 md:grid-rows-2":index === 0,
+                                "md:grid-rows-2":index === 0,
                                 "md:grid-cols-3 md:grid-rows-3":index === 1 || index === 2,
                             }
 
                         )}>
-                            <div className={clsx("font-bold w-fit p-1 md:col-span-6 md:flex md:justify-center md:text-xl md:text-center md:items-center ",
+                            <div className={clsx("font-bold w-fit p-1  md:flex md:justify-center md:text-xl md:text-center md:items-center ",
                                 {
                                     "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === player.turn,
                                 })}>{player.username}</div>
                             <div className={clsx(
                                 "col-span-6 grid grid-cols-6 w-full h-full gap-1",
                                 {
-                                    "md:grid-rows-1 md:grid-cols-6 md:gap-1":index === 0,
-                                    "md:row-span-2 md:grid-cols-3 md:gap-1":index === 1 || index === 2,
+                                    "md:row-span-2":index === 0,
+                                    "md:row-span-2 md:grid-cols-3":index === 1 || index === 2,
                                 }
 
                             )}>
