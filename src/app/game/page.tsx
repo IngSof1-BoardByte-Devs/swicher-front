@@ -57,7 +57,7 @@ export function Game() {
             });
         }
         if (id_player !== null) {
-            fetch_movement_cards({ id_player }).then((data: MoveCard[]) => { 
+            fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
                 setMovementCards(data)
             });
         }
@@ -79,6 +79,8 @@ export function Game() {
         }
     }, [socket, players]);
 
+    const currentPlayer = players.find(player => player.id === id_player);
+    const rivales = players.filter(player => player.id !== id_player);
     return (
         <div className="w-screen h-screen grid grid-rows-10 grid-cols-12 md:grid-rows-12 items-center justify-center overflow-hidden p-4">
             {players.length === 1 &&
@@ -104,25 +106,70 @@ export function Game() {
             {/* Tablero de juego */}
             <div className="h-full row-span-4 col-span-12 p-1 md:row-span-6 md:col-span-6 md:row-start-4 md:col-start-4">
                 {id_game !== null && <Gameboard id_game={id_game} />}
-            </div>{players.map((player:Player, index) => {
-                return (
-                    <div key={player.username + index} className="col-span-12 w-full h-full p-1">
-                        <div className="grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden">
-                            <div className="flex justify-center">
-                                <p className={clsx("font-bold w-fit p-1",
-                                    {
-                                        "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === player.turn,
-                                    })}>{player.username}</p>
+            </div>
+            {/* current player */}
+            {currentPlayer && (
+                <div className="md:row-start-10 md:col-start-4 md:row-span-2 md:col-span-6 col-span-12 w-full h-full p-1">
+                    <div className="grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden">
+                        <div className="grid grid-cols-6 md:grid-rows-2 w-full h-full items-center justify-center">
+                            <div className={clsx(
+                                "font-bold w-fit p-1 md:col-span-6 md:flex md:justify-center md:text-xl md:text-center md:items-center",
+                                {
+                                    "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === currentPlayer.turn,
+                                }
+                            )}>
+                                {currentPlayer.username}
                             </div>
-                            <div className="col-span-6 grid grid-cols-6 w-full h-full">
-                                {figureCards.filter(card => card.player_id === player.id).map((figure:FigureCard) => (
+                        </div>
+                        <div className="col-span-6 grid grid-cols-6 w-full h-full gap-1 md:grid-rows-1 md:grid-cols-6 md:gap-1">
+                            {figureCards.filter(card => card.player_id === currentPlayer.id).map((figure: FigureCard) => (
+                                <button key={figure.id_figure} className="w-full h-full">
+                                    <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} />
+                                </button>
+                            ))}
+                            {movementCards.map((movement: MoveCard) => (
+                                <button key={movement.id_movement} className="w-full h-full">
+                                    <Card type={false} index={parseInt(movement.type_movement.split(" ")[1], 10)} />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* rivales */}
+            {rivales.map((player: Player, index) => {
+                return (
+                    <div key={player.id + index} className={clsx(
+                        "col-span-12 w-full h-full p-1",
+                        {
+                            "md:col-start-4 md:row-span-2  md:col-span-6":index === 0,
+                            "md:row-start-5 md:row-span-3  md:col-span-3":index === 1,
+                            "md:row-start-5 md:col-start-10 md:row-span-3  md:col-span-3":index === 2,
+                        }
+                    )}>
+                        <div className={clsx(
+                            "grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden",
+                            {
+                                "md:grid-cols-6 md:grid-rows-2":index === 0,
+                                "md:grid-cols-3 md:grid-rows-3":index === 1 || index === 2,
+                            }
+
+                        )}>
+                            <div className={clsx("font-bold w-fit p-1 md:col-span-6 md:flex md:justify-center md:text-xl md:text-center md:items-center ",
+                                {
+                                    "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === player.turn,
+                                })}>{player.username}</div>
+                            <div className={clsx(
+                                "col-span-6 grid grid-cols-6 w-full h-full gap-1",
+                                {
+                                    "md:grid-rows-1 md:grid-cols-6 md:gap-1":index === 0,
+                                    "md:row-span-2 md:grid-cols-3 md:gap-1":index === 1 || index === 2,
+                                }
+
+                            )}>
+                                {figureCards.filter(card => card.player_id === player.id).map((figure: FigureCard) => (
                                     <button key={figure.id_figure} className="w-full h-full">
                                         <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} />
-                                    </button>
-                                ))}
-                                {player.id === id_player && movementCards.map((movement:MoveCard) => (
-                                    <button key={movement.id_movement} className="w-full h-full">
-                                        <Card type={false} index={parseInt(movement.type_movement.split(" ")[1], 10)} />
                                     </button>
                                 ))}
                             </div>
@@ -148,7 +195,7 @@ export function Game() {
                     }}
                     className="md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600">abandonar partida</button>
             </div>
-        </div>
+        </div >
     );
 }
 
