@@ -12,12 +12,15 @@ import clsx from "clsx";
 import { fetch_figure_cards, fetch_movement_cards } from "@/lib/card";
 
 export function Game() {
-    const [players, setPlayers] = useState<Player[]>([]);
-    const [gameName, setGameName] = useState("");
-    const [color, setColor] = useState(-1);
-    const [actualTurn, setActualTurn] = useState(-1);
     const { socket } = useWebSocket();
     const { id_game, id_player } = useGameInfo();
+
+    const [color, setColor] = useState(-1);
+    const [selectedTurn, setSelectedTurn] = useState(-1);
+    const [playerTurn, setPlayerTurn] = useState(-1);
+    const [gameName, setGameName] = useState("");
+    
+    const [players, setPlayers] = useState<Player[]>([]);
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
 
@@ -46,7 +49,13 @@ export function Game() {
                 setPlayers(data.players);
                 setGameName(data.name);
                 setColor(data.bloqued_color);
-                setActualTurn(data.turn);
+                setSelectedTurn(data.turn);
+                for (const player of data.players) {
+                    if (player.id === id_player) {
+                        setPlayerTurn(player.turn);
+                        break;
+                    }
+                }
             } catch (err) {
                 console.error("Failed to fetch players:", err);
             }
@@ -63,14 +72,14 @@ export function Game() {
         }
 
         fetchGame();
-    }, [id_game, id_player]);
+    }, [id_game, id_player, selectedTurn]);
 
     useEffect(() => {
         if (socket) {
             socket.onmessage = (event) => {
                 const socketData = JSON.parse(event.data);
                 if (socketData.event === "change_turn") {
-                    setActualTurn(socketData.data.turn);
+                    setSelectedTurn(socketData.data.turn);
                 } else if (socketData.event === "player_left") {
                     setPlayers(players.filter(player => player.id !== socketData.data.player_id));
                 }
@@ -111,7 +120,7 @@ export function Game() {
                             <div className="flex justify-center">
                                 <p className={clsx("font-bold w-fit p-1",
                                     {
-                                        "bg-black text-white rounded dark:bg-white dark:text-black": actualTurn === player.turn,
+                                        "bg-black text-white rounded dark:bg-white dark:text-black": selectedTurn === player.turn,
                                     })}>{player.username}</p>
                             </div>
                             <div className="col-span-6 grid grid-cols-6 w-full h-full">
@@ -133,12 +142,12 @@ export function Game() {
             {/* botones */}
             <div className="md:row-start-12 col-span-12 grid grid-cols-2  md:flex md:justify-between h-full p-2 gap-2">
                 <button
+                    className={`${playerTurn !== selectedTurn ? "hidden" : "md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"}`}
                     onClick={() => {
                         if (id_player !== null) {
                             end_turn(id_player);
                         }
-                    }}
-                    className="md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600">terminar turno</button>
+                    }}>terminar turno</button>
                 <button
                     onClick={() => {
                         if (id_player !== null) {
@@ -146,7 +155,7 @@ export function Game() {
                             });
                         }
                     }}
-                    className="md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600">abandonar partida</button>
+                    className={`md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 ${playerTurn !== selectedTurn ? "col-span-2" : ""}`}>abandonar partida</button>
             </div>
         </div>
     );
