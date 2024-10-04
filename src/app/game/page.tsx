@@ -10,16 +10,19 @@ import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import clsx from "clsx";
 import { fetch_figure_cards, fetch_movement_cards } from "@/lib/card";
+import { useRouter } from "next/router";
 
 export function Game() {
     const { socket } = useWebSocket();
     const { id_game, id_player } = useGameInfo();
+    const router = useRouter()
+
 
     const [color, setColor] = useState(-1);
     const [selectedTurn, setSelectedTurn] = useState(-1);
     const [playerTurn, setPlayerTurn] = useState(-1);
     const [gameName, setGameName] = useState("");
-    
+
     const [players, setPlayers] = useState<Player[]>([]);
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
@@ -66,7 +69,7 @@ export function Game() {
             });
         }
         if (id_player !== null) {
-            fetch_movement_cards({ id_player }).then((data: MoveCard[]) => { 
+            fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
                 setMovementCards(data)
             });
         }
@@ -97,9 +100,7 @@ export function Game() {
             }
             {/* Header: Turno Actual, Nombre de Partida y Color Bloqueado */}
             <div className="col-span-12 place-content-center text-center h-full grid grid-cols-2">
-                <div>
-                    <p className="text-2xl font-bold">Partida: {gameName}</p>
-                </div>
+                <p className="text-2xl font-bold">Partida: {gameName}</p>
                 <div>
                     <p className="text-2xl font-bold">Blocked: {clsx({
                         "red ": color === 0,
@@ -113,7 +114,7 @@ export function Game() {
             {/* Tablero de juego */}
             <div className="h-full row-span-4 col-span-12 p-1 md:row-span-6 md:col-span-6 md:row-start-4 md:col-start-4">
                 {id_game !== null && <Gameboard id_game={id_game} />}
-            </div>{players.map((player:Player, index) => {
+            </div>{players.map((player: Player, index) => {
                 return (
                     <div key={player.username + index} className="col-span-12 w-full h-full p-1">
                         <div className="grid grid-cols-7 w-full h-full items-center justify-center overflow-hidden">
@@ -124,12 +125,12 @@ export function Game() {
                                     })}>{player.username}</p>
                             </div>
                             <div className="col-span-6 grid grid-cols-6 w-full h-full">
-                                {figureCards.filter(card => card.player_id === player.id).map((figure:FigureCard) => (
+                                {figureCards.filter(card => card.player_id === player.id).map((figure: FigureCard) => (
                                     <button key={figure.id_figure} className="w-full h-full">
                                         <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} />
                                     </button>
                                 ))}
-                                {player.id === id_player && movementCards.map((movement:MoveCard) => (
+                                {player.id === id_player && movementCards.map((movement: MoveCard) => (
                                     <button key={movement.id_movement} className="w-full h-full">
                                         <Card type={false} index={parseInt(movement.type_movement.split(" ")[1], 10)} />
                                     </button>
@@ -141,21 +142,32 @@ export function Game() {
             })}
             {/* botones */}
             <div className="md:row-start-12 col-span-12 grid grid-cols-2  md:flex md:justify-between h-full p-2 gap-2">
-                <button
-                    className={`${playerTurn !== selectedTurn ? "hidden" : "md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"}`}
-                    onClick={() => {
-                        if (id_player !== null) {
-                            end_turn(id_player);
-                        }
-                    }}>terminar turno</button>
-                <button
-                    onClick={() => {
-                        if (id_player !== null) {
-                            leave_game({ player_id: id_player }).then(() => {
-                            });
-                        }
-                    }}
-                    className={`md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 ${playerTurn !== selectedTurn ? "col-span-2" : ""}`}>abandonar partida</button>
+
+                {players.reduce((acc, player) =>
+                    player.id !== id_player && acc
+                    , true) ? <button
+                        className="col-span-2 md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"
+                        onClick={() => {
+                            router.push("/")
+                        }}
+                    >Salir</button> : <>
+                    <button
+                        className={`${playerTurn !== selectedTurn ? "hidden" : "md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"}`}
+                        onClick={() => {
+                            if (id_player !== null) {
+                                end_turn(id_player);
+                            }
+                        }}>terminar turno</button>
+                    <button
+                        onClick={async () => {
+                            if (id_player !== null) {
+                                await leave_game({ player_id: id_player })
+                                const new_players = players.filter(player => player.id !== id_player)
+                                setPlayers(new_players)
+                            }
+                        }}
+                        className={`md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 ${playerTurn !== selectedTurn ? "col-span-2" : ""}`}>abandonar partida</button>
+                </>}
             </div>
         </div>
     );
