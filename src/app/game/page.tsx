@@ -10,7 +10,7 @@ import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import clsx from "clsx";
 import { fetch_figure_cards, fetch_movement_cards } from "@/lib/card";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export function Game() {
     const { socket } = useWebSocket();
