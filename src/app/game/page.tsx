@@ -59,6 +59,13 @@ export function Game() {
                         break;
                     }
                 }
+                setSelectedTurn(data.turn);
+                for (const player of data.players) {
+                    if (player.id === id_player) {
+                        setPlayerTurn(player.turn);
+                        break;
+                    }
+                }
             } catch (err) {
                 console.error("Failed to fetch players:", err);
             }
