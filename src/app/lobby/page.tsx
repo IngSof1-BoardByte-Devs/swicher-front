@@ -96,13 +96,15 @@ export default function LobbyPage() {
             {error}
           </p>
         )}
-        <button
+        { id_player === players[0]?.id &&
+          <button
           onClick={handleStartGame}
           type="button"
           className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize"
-        >
+          >
           Comenzar Partida
         </button>
+        }
       </div>
     </div>
   );
