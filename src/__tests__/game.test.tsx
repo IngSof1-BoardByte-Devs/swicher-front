@@ -21,7 +21,7 @@ describe('create_game function', () => {
 
     const successResult = await create_game({ player_name: 'John', game_name: 'Test Game' });
 
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/game/create_game', {
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/games/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player_name: 'John', game_name: 'Test Game' }),
@@ -70,7 +70,7 @@ describe('fetch_games function', () => {
     expect(successResult.games[1].game_name).toEqual('Test Game 2');
     expect(successResult.games[0].num_players).toEqual(1);
     expect(successResult.games[1].num_players).toEqual(2);
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/game/get_games');
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/games/');
   });
 });
 
@@ -87,7 +87,7 @@ describe('join_game', () => {
     const result = await join_game({ player_name: 'John Doe', game_id: 1 });
     
     expect(result).toEqual(mockResponse);
-    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/game/join_game', expect.any(Object));
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/players/', expect.any(Object));
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -114,17 +114,18 @@ describe('start_game', () => {
     (fetch as jest.Mock).mockClear();
   });
   test('url should be correct', async () => {
-    const result = await start_game({ game_id: 1, player_id: 1 });
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/game/start_game', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game_id: 1, player_id: 1 }),
-    });
+    const player_id = 1;
+    const result = await start_game({player_id});
+    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${player_id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }});
   });
   test('should return success when the fetch request is successful', async () => {
     const mockResponse = { status: 'OK', message: 'Game started successfully' };
     fetchMock.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
-    const result = await start_game({ game_id: 1, player_id: 1 });
+    const result = await start_game({player_id: 1 });
     expect(result).toEqual(mockResponse);
   });
 }); 
