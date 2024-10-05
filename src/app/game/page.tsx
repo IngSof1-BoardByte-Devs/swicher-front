@@ -189,11 +189,6 @@ export function Game() {
                                         <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} />
                                     </button>
                                 ))}
-                                {player.id === id_player && movementCards.map((movement:MoveCard) => (
-                                    <button key={movement.id_movement} className="w-full h-full">
-                                        <Card type={false} index={parseInt(movement.type_movement.split(" ")[1], 10)} />
-                                    </button>
-                                ))}
                             </div>
                         </div>
                     </div>
