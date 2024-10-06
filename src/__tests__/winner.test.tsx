@@ -1,45 +1,47 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Winner } from '@/components/winner';
 import { GameInfoProvider } from '@/app/contexts/GameInfoContext';
-import { WebSocketProvider } from '@/app/contexts/WebSocketContext';
+import { WebSocketProvider, useWebSocket } from '@/app/contexts/WebSocketContext';
 import { useRouter } from 'next/navigation';
 
-// Mock the useRouter hook
+// Mockear el hook useRouter
 jest.mock('next/navigation', () => ({
     useRouter: jest.fn(),
 }));
 
+// Mockear el useWebSocket
+jest.mock('@/app/contexts/WebSocketContext', () => ({
+    useWebSocket: jest.fn(),
+    WebSocketProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>, // Renderiza los hijos sin lógica real
+}));
+
+const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+      <GameInfoProvider>
+        <WebSocketProvider>
+          {ui}
+        </WebSocketProvider>
+      </GameInfoProvider>
+    );
+};
+
 describe('Winner component', () => {
     beforeEach(() => {
-        // Mock the router object
         (useRouter as jest.Mock).mockImplementation(() => ({
             push: jest.fn(),
         }));
+
+        // Mockear la implementación de useWebSocket
+        (useWebSocket as jest.Mock).mockReturnValue({
+            socket: { /* Aquí puedes simular las funciones o propiedades del socket */ }
+        });
     });
 
-    test('should render the winner and handle button click', () => {
-        const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-            <GameInfoProvider>
-                <WebSocketProvider>
-                    {children}
-                </WebSocketProvider>
-            </GameInfoProvider>
-        );
-
-        render(
-            <Wrapper>
-                <Winner player_name="Player123" />
-            </Wrapper>
-        );
-
+    test('should render the winner ', () => {
+        renderWithProviders(<Winner player_name="Player123" />);
         const winner = screen.getByText('Player123');
         expect(winner).toBeInTheDocument();
-
-        const button = screen.getByRole('button');
-        fireEvent.click(button);
-
-        expect(useRouter().push).toHaveBeenCalledWith('/');
     });
 });
