@@ -86,7 +86,7 @@ describe('Card Component', () => {
   test('has the correct alt text', () => {
     render(<Card type={true} index={1} />);
     const cardElement = screen.getByRole('img', { name: /carta/i });
-    expect(cardElement).toHaveAttribute('src', 'fig01');
+    expect(cardElement).toHaveAttribute('alt', 'carta');
   });
 
 });
