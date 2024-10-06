@@ -14,7 +14,7 @@ jest.mock('next/navigation', () => ({
 // Mockear el useWebSocket
 jest.mock('@/app/contexts/WebSocketContext', () => ({
     useWebSocket: jest.fn(),
-    WebSocketProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>, // Renderiza los hijos sin lógica real
+    WebSocketProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>, 
 }));
 
 const renderWithProviders = (ui: React.ReactElement) => {
@@ -35,7 +35,8 @@ describe('Winner component', () => {
 
         // Mockear la implementación de useWebSocket
         (useWebSocket as jest.Mock).mockReturnValue({
-            socket: { /* Aquí puedes simular las funciones o propiedades del socket */ }
+            socket: { send: jest.fn(),
+              onmessage: jest.fn(), }
         });
     });
 
