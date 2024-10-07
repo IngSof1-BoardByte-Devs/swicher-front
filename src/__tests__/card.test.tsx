@@ -20,6 +20,7 @@ describe("fetch_figure_cards", () => {
 
     await fetch_figure_cards({ id_game });
 
+
     expect(fetch).toHaveBeenCalledWith(
       `http://localhost:8000/games/${id_game}/figure-cards`,
     );
@@ -27,9 +28,7 @@ describe("fetch_figure_cards", () => {
 
   it("should throw an error when the server response is not successful", async () => {
     fetchMock.mockResponseOnce("", { status: 500 });
-
     const result = await fetch_figure_cards({ id_game });
-
     expect(result).toEqual({
       status: "ERROR",
       message: "An error occurred while fetching the figure cards",
@@ -164,3 +163,4 @@ describe('use_movement_cards', () => {
     });
   });
 });
+
