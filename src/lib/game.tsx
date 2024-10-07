@@ -165,3 +165,22 @@ export async function leave_game({ player_id }: { player_id: number }) {
     }
   }
 }
+
+export async function revert_movements({ game_id }: { game_id: number }) {
+  try {
+      const response = await fetch(`http://localhost:8000/games/${game_id}/revert-moves`);
+      if (response.status === 200) {
+          return "Movimientos cancelados con exito!";
+      } else if (response.status === 404) {
+          return "No hay cambios para revertir"
+      } else if (response.status === 401) {
+          return "No tienes permisos para cancelar los movimientos"
+      };
+  } catch (error) {
+      return {
+          status: "ERROR",
+          message: `Error al intentar cancelar movimientos, ${error}`
+      }
+  }
+
+}
