@@ -52,8 +52,8 @@ export async function fetch_movement_cards({ id_player }: { id_player: number })
 }
 
 export async function use_movement_cards(
-    { id_player, id_card, index1, index2 }: 
-    { id_player: number, id_card: number, index1:number, index2:number }) {
+    { id_player, id_card, index1, index2 }:
+        { id_player: number, id_card: number, index1: number, index2: number }) {
     try {
         const response = await fetch(`http://localhost:8000/movement-cards/${id_card}/`, {
             method: "PATCH",
@@ -66,15 +66,17 @@ export async function use_movement_cards(
                 index2,
             })
         });
-        
         if (response.status === 200) {
-            return 
-        }
+            return "Carta usada con exito!";
+        } else if (response.status === 404) {
+            return "La carta enviada no existe o no se puede usar"
+        } else if (response.status === 401) {
+            return "No tienes permisos para usar esta carta"
+        };
     } catch (error) {
-        console.error("Failed to use movement cards:", error);
         return {
             status: "ERROR",
-            message: "An error occurred while using the movement cards"
+            message: `Error al intentar usar la carta id: ${id_card}, ${error}`
         }
     }
 
