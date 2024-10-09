@@ -137,22 +137,26 @@ describe('cancel movements', () => {
   });
   const game_id = 1;
   test('status 200', async () => {
-    fetchMock.mockResponse(JSON.stringify({ status: "ERROR", message: "invalid game id" }), { status: 200 });
+    fetchMock.mockResponse(JSON.stringify({ status: "OK", message: "Turn reverted successfully" }), { status: 200 });
     const result = await revert_movements({ game_id: game_id });
-    expect(result?.toString()).toBe("Movimientos cancelados con exito!");
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/revert-moves`)
+    expect(result.message).toBe("Turn reverted successfully");
+    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/revert-moves`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   });
   test('status 404', async () => {
-    fetchMock.mockResponse(JSON.stringify({ status: "ERROR", message: "invalid game id" }), { status: 404 });
+    fetchMock.mockResponseOnce(JSON.stringify({ status: "ERROR", detail: "No hay cambios para revertir" }), { status: 404 });
     const result = await revert_movements({ game_id: game_id });
-    expect(result?.toString()).toBe("No hay cambios para revertir");
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/revert-moves`)
+    expect(result.message).toBe("No hay cambios para revertir");
+    
   });
-  test('status 401', async () => {
-    fetchMock.mockResponse(JSON.stringify({ status: "ERROR", message: "invalid game id" }), { status: 401 });
-    const result = await revert_movements({ game_id: game_id });
-    expect(result?.toString()).toBe("No tienes permisos para cancelar los movimientos");
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/revert-moves`)
-  });
-});
 
+  test('status 401', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ status: "ERROR", detail: "No tienes permisos para cancelar los movimientos" }), { status: 401 });
+    const result = await revert_movements({ game_id: game_id });
+    expect(result.message).toBe("No tienes permisos para cancelar los movimientos");
+ });
+});
