@@ -166,3 +166,26 @@ export async function leave_game({ player_id }: { player_id: number }) {
     };
   }
 }
+
+export async function revert_movements({ game_id }: { game_id: number }) {
+  try {
+    const response = await fetch(`http://localhost:8000/games/${game_id}/revert-moves`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+    });
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.detail);
+      }
+  
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error("Failed to revert movements:", error);
+      return {
+        status: "ERROR",
+        message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
+      };
+    }
+
+}
