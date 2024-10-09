@@ -35,19 +35,19 @@ export function Gameboard({ id_game }: { id_game: number }) {
                     setTemoralBoard((prevBoard) => {
                         const newBoard = [...prevBoard];
                         [newBoard[index1], newBoard[index2]] = [newBoard[index2], newBoard[index1]];
+                        setFigures(newBoard);
                         return newBoard;
                     });
-                    setFigures(temporalBoard);
                 } else if (socketData.event === "moves.cancelled") {
                  setTemoralBoard(permanentBoard);   
                  setFigures(permanentBoard);
-                } else if (socketData.event === "figure.card.used" && socketData.payload.discarded) {
+                } else if (socketData.event === "figure.card.used" && (socketData.payload.discarded || socketData.payload.locked || socketData.payload.unlocked)) {
                  setPermanentBoard(temporalBoard);
                 }
     
             };
         }
-    }, [socket]);
+    }, [socket, permanentBoard, temporalBoard]);
     
     return (
         <div role="grid" className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6">
