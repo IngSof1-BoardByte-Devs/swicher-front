@@ -6,7 +6,7 @@ export async function fetch_figure_cards({ id_game }: { id_game: number }) {
 
     if (!response.ok) {
       const errorResponse = await response.json();
-      throw new Error(errorResponse.detail.message);
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
@@ -15,7 +15,7 @@ export async function fetch_figure_cards({ id_game }: { id_game: number }) {
     console.error("Failed to fetch figure cards:", error);
     return {
       status: "ERROR",
-      message: error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
     };
   }
 }
@@ -27,7 +27,7 @@ export async function fetch_movement_cards({
 }) {
   if (!id_player) {
     console.error("Error: el player_id must be filed");
-    return { status: "ERROR", message: "invalid player id" };
+    return { status: "ERROR", message: "id de jugador invalido" };
   }
   try {
     const response = await fetch(
@@ -35,7 +35,7 @@ export async function fetch_movement_cards({
     );
     if (!response.ok) {
       const errorResponse = await response.json();
-      throw new Error(errorResponse.detail.message);
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
@@ -44,7 +44,7 @@ export async function fetch_movement_cards({
     console.error("Failed to fetch movement cards:", error);
     return {
       status: "ERROR",
-      message: error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
     };
   }
 }

@@ -6,7 +6,7 @@ export async function fetch_board({ id_game }: { id_game: number }) {
 
     if (!response.ok) {
       const errorResponse = await response.json();
-      throw new Error(errorResponse.detail.message);
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
@@ -15,14 +15,14 @@ export async function fetch_board({ id_game }: { id_game: number }) {
     console.error("Failed to fetch board:", error);
     return {
       status: "ERROR",
-      message: error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
     };
   }
 }
 export async function end_turn(player_id: number) {
   if (!player_id) {
     console.error("Error: el player_id must be filed");
-    return { status: "ERROR", message: "invalid player id" };
+    return { status: "ERROR", message: "id de jugador invalido" };
   }
 
   try {
@@ -38,7 +38,7 @@ export async function end_turn(player_id: number) {
     );
     if (!response.ok) {
       const errorResponse = await response.json();
-      throw new Error(errorResponse.detail.message);
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
@@ -47,7 +47,7 @@ export async function end_turn(player_id: number) {
     console.error("Failed to end turn:", error);
     return {
       status: "ERROR",
-      message: error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
     };
   }
 }
