@@ -5,18 +5,17 @@ export async function fetch_figure_cards({ id_game }: { id_game: number }) {
     );
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
 
     const result = await response.json();
-
     return result;
   } catch (error) {
     console.error("Failed to fetch figure cards:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }
@@ -35,16 +34,17 @@ export async function fetch_movement_cards({
       `http://localhost:8000/games/${id_player}/move-cards`
     );
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
+
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Failed to get movement cards:", error);
+    console.error("Failed to fetch movement cards:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }

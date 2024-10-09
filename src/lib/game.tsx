@@ -7,9 +7,9 @@ export async function create_game({
 }) {
   if (!player_name || !game_name) {
     console.error(
-      "Error: player_name y game_name deben proporcionarse y no pueden estar vacíos"
+      "Error: player_name and game_name must be provided and cannot be empty"
     );
-    return { status: "ERROR", message: "player_name o game_name invalidos" };
+    return { status: "ERROR", message: "Invalid player_name or game_name" };
   }
 
   try {
@@ -22,7 +22,8 @@ export async function create_game({
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
 
     const result = await response.json();
@@ -31,8 +32,7 @@ export async function create_game({
     console.error("Failed to create game:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }
@@ -59,7 +59,8 @@ export async function join_game({
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
 
     const result = await response.json();
@@ -68,18 +69,19 @@ export async function join_game({
     console.error("Failed to join game:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }
+
 
 export async function fetch_games() {
   try {
     const response = await fetch("http://localhost:8000/games/");
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
 
     const result = await response.json();
@@ -88,8 +90,7 @@ export async function fetch_games() {
     console.error("Failed to fetch games:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }
@@ -104,7 +105,8 @@ export async function start_game({ player_id }: { player_id: number }) {
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
 
     const result = await response.json();
@@ -113,8 +115,7 @@ export async function start_game({ player_id }: { player_id: number }) {
     console.error("Failed to start game:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }
@@ -124,7 +125,8 @@ export async function fetch_game({ game_id }: { game_id: number }) {
     const response = await fetch(`http://localhost:8000/games/${game_id}/`);
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
 
     const result = await response.json();
@@ -133,8 +135,7 @@ export async function fetch_game({ game_id }: { game_id: number }) {
     console.error("Failed to fetch game:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }
@@ -154,17 +155,17 @@ export async function leave_game({ player_id }: { player_id: number }) {
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail.message);
     }
 
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Failed to leave the game:", error);
+    console.error("Failed to leave game:", error);
     return {
       status: "ERROR",
-      message:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      message: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }
