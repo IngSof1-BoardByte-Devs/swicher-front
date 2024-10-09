@@ -142,10 +142,8 @@ export async function fetch_game({ game_id }: { game_id: number }) {
 
 export async function leave_game({ player_id }: { player_id: number }) {
   if (!player_id) {
-    console.error("Error: player_id must be provided");
-    return { status: "ERROR", message: "Invalid player_id" };
-  }
-
+    return { status: "ERROR", message: "No se encontro el id del jugador" }
+  };
   try {
     const response = await fetch(`http://localhost:8000/players/${player_id}`, {
       method: "DELETE",
@@ -153,7 +151,6 @@ export async function leave_game({ player_id }: { player_id: number }) {
         "Content-Type": "application/json",
       },
     });
-
     if (!response.ok) {
       const errorResponse = await response.json();
       throw new Error(errorResponse.detail);

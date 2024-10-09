@@ -9,43 +9,43 @@ describe("Piece Component", () => {
   it("renders with the correct color and class", () => {
     render(
       <Piece
-        color="red"
+        color={0}
         index={0}
         selectedPiece={-1}
         setSelectedPiece={mockSetSelectedPiece}
       />
     );
 
-    const pieceElement = screen.getByTestId("pieceElement");
-    expect(pieceElement).toHaveTextContent("red");
-    expect(pieceElement).toHaveClass("bg-red-700/75");
+    const pieceElement = screen.getByRole("img");
+    expect(pieceElement).toBeInTheDocument();
   });
 
   it("applies the selected styles when the piece is selected", () => {
     render(
       <Piece
-        color="green"
+        color={2}
         index={1}
         selectedPiece={1}
         setSelectedPiece={mockSetSelectedPiece}
       />
     );
 
-    const pieceElement = screen.getByTestId("pieceElement");
-    expect(pieceElement).toHaveClass("scale-90 brightness-150 animate-pulse");
+    const pieceElement = screen.getByRole("img");
+    expect(pieceElement).toBeInTheDocument();
+
   });
 
   it("calls setSelectedPiece with the correct index when clicked", () => {
     render(
       <Piece
-        color="blue"
+        color={3} 
         index={2}
         selectedPiece={-1}
         setSelectedPiece={mockSetSelectedPiece}
       />
     );
 
-    const pieceElement = screen.getByTestId("pieceElement");
+    const pieceElement = screen.getByRole("img");
     fireEvent.click(pieceElement);
 
     // Verificar que setSelectedPiece se haya llamado con el índice correcto

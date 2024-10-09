@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { start_game, fetch_game } from "@/lib/game";
+import { start_game, fetch_game, leave_game } from "@/lib/game";
 import { useRouter } from "next/navigation";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from "@app/contexts/GameInfoContext";
@@ -68,6 +68,22 @@ export default function LobbyPage() {
     });
   };
 
+  const handleLeaveGame = async () => {
+    if (id_player == null) {
+      alert("El jugador no existe");
+      return
+    };
+    const response = await leave_game({player_id: id_player})
+    if (response === "Saliendo del juego") {
+      alert("Has abandonado la partida");
+      router.push("/");
+    } else if (response === "Error al salir del juego") {
+      alert("Error al salir del juego");
+    } else {
+      alert("Error inesperado");
+    }
+  }
+
   return (
     <div className="flex flex-col items-center justify-between min-h-screen p-8 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="text-center">
@@ -96,12 +112,21 @@ export default function LobbyPage() {
             {error}
           </p>
         )}
-        <button
+        { id_player === players[0]?.id &&
+          <button
           onClick={handleStartGame}
           type="button"
           className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize"
-        >
+          >
           Comenzar Partida
+        </button>
+        }
+        <button
+          onClick={handleLeaveGame}
+          type="button"
+          className="border dark:rounded-none shadow rounded p-2 dark:bg-inherit dark:hover:bg-gray-600 bg-slate-700 hover:hover:bg-gray-700/95 text-white capitalize"
+          >
+          Abandonar partida
         </button>
       </div>
     </div>
