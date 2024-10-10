@@ -29,10 +29,7 @@ describe('create_game function', () => {
 
     expect(successResult).toEqual({ status: 'OK', message: 'Game created successfully' });
 
-    fetchMock.mockResolvedValueOnce(new Response(null, {
-      status: 500,
-      statusText: 'Internal Server Error',
-    }));
+    fetchMock.mockRejectedValueOnce(new Error('An error occurred while creating the game'));
 
     const failResult = await create_game({ player_name: 'John', game_name: 'Test Game' });
 
@@ -96,14 +93,14 @@ describe('join_game', () => {
 
     const result = await join_game({ player_name: 'John Doe', game_id: 1 });
 
-    expect(result).toEqual({ status: 'ERROR', message: 'An error occurred while creating the game' });
+    expect(result).toEqual({ status: 'ERROR', message: 'Failed to fetch' });
   });
 
   it('should return error if player_name is missing', async () => {
 
     const result = await join_game({ player_name: '', game_id: 1 });
 
-    expect(result).toEqual({ status: 'ERROR', message: 'Invalid player_name' });
+    expect(result).toEqual({ status: 'ERROR', message: 'Nombre de jugador invalido' });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

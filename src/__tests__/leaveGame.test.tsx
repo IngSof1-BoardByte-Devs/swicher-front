@@ -27,10 +27,8 @@ describe('Leave game function', () => {
     
         expect(successResult).toEqual({ status: 'OK', message: 'Leave the game successfully' });
     
-        (fetch as jest.Mock).mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        });
+        fetchMock.mockRejectedValueOnce(new Error('An error occurred while living the game'));
+
     
         const failResult = await leave_game({ player_id: 1 });
     

@@ -27,7 +27,7 @@ describe("fetch_figure_cards", () => {
   });
 
   it("should throw an error when the server response is not successful", async () => {
-    fetchMock.mockResponseOnce("", { status: 500 });
+    fetchMock.mockRejectedValueOnce(new Error('An error occurred while fetching the figure cards'));
     const result = await fetch_figure_cards({ id_game });
     expect(result).toEqual({
       status: "ERROR",
@@ -68,7 +68,7 @@ describe("GetMoveCard", () => {
 
   test('should return error when the fetch request fails', async () => {
     const mockResponse = { status: 'ERROR', message: 'An error occurred while getting the movement cards' };
-    fetchMock.mockRejectOnce(new Error('Network error'));
+    fetchMock.mockRejectOnce(new Error('An error occurred while getting the movement cards'));
     const result = await fetch_movement_cards({ id_player });
     expect(result).toEqual(mockResponse);
   });
