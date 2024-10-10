@@ -46,6 +46,9 @@ export default function LobbyPage() {
           } as Player]);
         } else if (socketData.event === "start_game") {
           router.push("/game/");
+        }else if (socketData.event === "game.cancelled" && socketData.payload.game_id === id_game) {
+          alert("La partida ha sido cancelada");
+          router.push("/");
         }
       };
     }
