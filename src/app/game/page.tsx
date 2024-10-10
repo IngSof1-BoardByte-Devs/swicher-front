@@ -88,12 +88,18 @@ export function Game() {
         if (socket) {
             socket.onmessage = (event) => {
                 const socketData = JSON.parse(event.data);
-                if (socketData.event === "change_turn") {
-                    setSelectedTurn(socketData.data.turn);
-                } else if (socketData.event === "player_left") {
-                    setPlayers(players.filter(player => player.id !== socketData.data.player_id));
+                const command = socketData.event.split(".");
+                if (command[0] === "game") {
+                    if (command[1] === "turn") {
+                        setSelectedTurn(socketData.payload.turn);
+                    } else if (command[1] === "winner") {
+                        setPlayers(players => players.filter(player => player.username === socketData.payload.username));
+                    }
+                } else if (command[0] === "player") {
+                    if (command[1] === "left") {
+                        setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
+                    }
                 }
-
             };
         }
     }, [socket, players]);
