@@ -10,6 +10,12 @@ export default function Home() {
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
   interface Game {
+    game_id: number;
+    name: string;
+    players: number;
+  }
+
+  interface ApiResponse {
     id: number;
     name: string;
     num_players: number;
@@ -19,25 +25,44 @@ export default function Home() {
   const { socket } = useWebSocket();
 
   useEffect(() => {
-    fetch_games().then((data) => {
-      setGames(data);
+    fetch_games().then((response: ApiResponse[]) => {
+      setGames(response.map(game => {
+        return {
+          game_id: game.id,
+          name: game.name,
+          players: game.num_players,
+        };
+      }));
     });
   }, []);
+
+  const gameChangePlayers = (game_id: number, type:number) => {
+    setGames(games => games.map(game => {
+      if (game.game_id === game_id) {
+        return { ...game, players: game.players + type };
+      }
+      return game;
+    }));
+  }
 
   useEffect(() => {
     if (socket) {
       socket.onmessage = (event) => {
         const socketData = JSON.parse(event.data);
         console.log(socketData);
-        if (socketData.event === "new_game") {
-          setGames(games => [...games, socketData.data]);
-        } else if (socketData.event === "new_player") {
-          setGames(games => games.map(game => {
-            if (game.id === socketData.data.game_id) {
-              return { ...game, num_players: game.num_players + 1 };
-            }
-            return game;
-          }));
+        const command = socketData.event.split(".");
+        if (command[0] === "game"){           // game comands
+          if (command[1] === "new") {
+            setGames(games => [...games, socketData.payload as Game]);
+          } else if (command[1] === "canceled" || command[1] === "start") {
+            setGames(games => games.filter(game => game.game_id !== socketData.payload.game_id));
+          }
+        } else if (command[0] === "player"){  // player commands
+          if (command[1] === "new") {
+            gameChangePlayers(socketData.payload.game_id, 1);
+          } else if (command[1] === "leave") {
+            gameChangePlayers(socketData.payload.game_id, -1);
+          }
         }
       };
     }
@@ -59,15 +84,15 @@ export default function Home() {
         <div className="w-full max-h-[650px] border overflow-auto shadow">
           <div className="flex flex-col divide-y-2 h-full">
             {games.length === 0 && <div className="text-center p-2 ">No hay partidas disponibles</div>}
-            {games.map(({ id, name, num_players }) => {
+            {games.map((game, index) => {
               return (
-                <button key={id} className={clsx("p-4", {
-                  "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === id,
-                  "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== id
-                })} onClick={() => { setSelectedId(id) }}>
+                <button key={game.game_id + index} className={clsx("p-4", {
+                  "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === game.game_id,
+                  "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== game.game_id
+                })} onClick={() => { setSelectedId(game.game_id) }}>
                   <div className="flex justify-between">
-                    <div>{name}</div>
-                    <div>{num_players}</div>
+                    <div>{game.name}</div>
+                    <div>{game.players}</div>
                   </div>
                 </button>
               )
