@@ -1,14 +1,16 @@
 "use client"
 import { CreateGameForm, UserForm } from "@/components/form";
 import { fetch_games } from "@/lib/game";
-import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
+import clsx from "clsx";
+
 
 export default function Home() {
   const [createGame, setCreateGame] = useState(false);
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
+
   interface Game {
     game_id: number;
     name: string;
@@ -49,20 +51,21 @@ export default function Home() {
     if (socket) {
       socket.onmessage = (event) => {
         const socketData = JSON.parse(event.data);
-        console.log(socketData);
         const command = socketData.event.split(".");
-        if (command[0] === "game"){           // game comands
-          if (command[1] === "new") {
+        if (command[0] === "game"){                                           // game comands
+          if (command[1] === "new") {                                         // new game
             setGames(games => [...games, socketData.payload as Game]);
-          } else if (command[1] === "canceled" || command[1] === "start") {
+          } else if (command[1] === "canceled" || command[1] === "start") {   // canceled or start game
             setGames(games => games.filter(game => game.game_id !== socketData.payload.game_id));
           }
-        } else if (command[0] === "player"){  // player commands
-          if (command[1] === "new") {
+        } else if (command[0] === "player"){                                  // player commands
+          if (command[1] === "new") {                                         // new player
             gameChangePlayers(socketData.payload.game_id, 1);
-          } else if (command[1] === "leave") {
+          } else if (command[1] === "leave") {                                // leave player
             gameChangePlayers(socketData.payload.game_id, -1);
           }
+        } else {
+          throw new Error("Se recibio un comando invalido");
         }
       };
     }
