@@ -28,11 +28,8 @@ describe('end turn function', () => {
     
         expect(successResult).toEqual({ status: 'OK', message: 'End turn successfully' });
     
-        (fetch as jest.Mock).mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        });
-    
+        fetchMock.mockRejectedValueOnce(new Error('An error occurred while ending the turn'));
+        
         const failResult = await end_turn(1);
     
         expect(failResult).toEqual({ status: 'ERROR', message: 'An error occurred while ending the turn' });

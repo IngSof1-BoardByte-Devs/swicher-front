@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { start_game, fetch_game, leave_game } from "@/lib/game";
 import { useRouter } from "next/navigation";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
@@ -9,9 +9,11 @@ export default function LobbyPage() {
   const [error, setError] = useState<string>("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameName, setGameName] = useState("");
+  
   const { socket } = useWebSocket();
-  const router = useRouter()
   const { id_game, id_player } = useGameInfo();
+  
+  const router = useRouter()
 
   interface Player {
     id: number;
@@ -38,18 +40,30 @@ export default function LobbyPage() {
     if (socket) {
       socket.onmessage = (event) => {
         const socketData = JSON.parse(event.data);
-        if (socketData.event === "join_game") {
-          setPlayers((players) => [...players, {
-            id: socketData.data.player_id,
-            username: socketData.data.player_name,
-            turn: 0
-          } as Player]);
-        } else if (socketData.event === "start_game") {
-          router.push("/game/");
+        const command = socketData.event.split(".");
+        if (command[0] === "game") {                  // game commands
+          if (command[1] === "start"){                // start game
+            router.push("/game/");
+          } else if (command[1] === "cancelled") {    // canceled game
+            router.push("/");
+          }
+        } else if (command[0] === "player") {         // player commands
+          if (command[1] === "new") {                  // new player
+            const new_player : Player = {
+              id: players[players.length - 1].id + 1,
+              username: socketData.payload.username,
+              turn: 0,
+            };
+            setPlayers(players => [...players, new_player]);
+          } else if (command[1] === "left") {          // player left
+            setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
+          }
+        } else {
+          throw new Error("Se recibio un comando invalido");
         }
       };
     }
-  }, [socket, router]);
+  }, [socket, router, players]);
 
   const handleStartGame = async () => {
     if (players.length < 2) {
