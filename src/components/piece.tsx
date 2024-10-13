@@ -1,31 +1,26 @@
 "use client";
-import React from "react";
-import Image, { StaticImageData } from "next/image";
-
-// figures
-import A from "@public/figure/A.svg";
-import B from "@public/figure/B.svg";
-import C from "@public/figure/C.svg";
-import D from "@public/figure/D.svg";
 import clsx from "clsx";
 
-const pieces: { [key: number]: StaticImageData } = {
-  0: A,
-  1: B,
-  2: C,
-  3: D,
-};
-
 export function Piece(
-  { color, index, selectedPiece, setSelectedPiece }: 
-  { color: number, index: number, selectedPiece: number, setSelectedPiece: (index: number) => void }) 
-  {
-  const piecePic = pieces[color] || A;
+  { color, index, selectedPiece, setSelectedPiece }:
+    { color: number, index: number, selectedPiece: number, setSelectedPiece: (index: number) => void }) {
   return (
-    <button className={clsx("w-full", {
-      "scale-90" : selectedPiece === index,
-    })} onClick={() => { setSelectedPiece(index) }}>
-      <Image quality={50} src={piecePic} alt={"color"} className="w-full h-full" />
-    </button>
+    <div className={clsx("w-full h-full p-1 rounded", {
+      "bg-violet-500/50": color === 0,
+      "bg-red-500/50": color === 1,
+      "bg-blue-500/50": color === 2,
+      "bg-green-500/50": color === 3,
+      "animate-pulse": selectedPiece === index,
+    })} >
+      <button
+        onClick={() => { setSelectedPiece(index) }}
+        className={clsx("w-full h-full border-8 rounded", {
+          "bg-violet-500/50 border-violet-500": color === 0,
+          "bg-red-500/50 border-red-500": color === 1,
+          "bg-blue-500/50 border-blue-500": color === 2,
+          "bg-green-500/50 border-green-500": color === 3,
+        })}
+      />
+    </div>
   );
 }

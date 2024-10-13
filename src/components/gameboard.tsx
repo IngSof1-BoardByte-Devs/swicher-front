@@ -20,7 +20,7 @@ export function Gameboard({ id_game }: { id_game: number }) {
     }, [id_game]);
     
     return (
-        <div role="grid" className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6">
+        <div className="w-full grid grid-cols-6" style={{aspectRatio: "1/1"}}>
             {figures.map(({color}, index) => (
                 <Piece color={color} index={index} selectedPiece={selectedPiece} setSelectedPiece={setSelectedPiece} key={index} />
             ))}
