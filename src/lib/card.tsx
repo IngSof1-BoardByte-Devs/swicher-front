@@ -93,3 +93,39 @@ export async function use_movement_cards(
     }
 
 }
+
+export async function use_figure_cards({
+  id_player,
+  id_card,
+}: {
+  id_player: string;
+  id_card: number;
+}) {
+  try {
+    const response = await fetch(
+      `http://localhost:8000/figure-cards/${id_card}/`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_player,
+        }),
+      }
+    );
+    if (!response.ok) {
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail);
+    }
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Failed to use figure card:", error);
+    return {
+      status: "ERROR",
+      message:
+        error instanceof Error ? error.message : "Ocurrio un error desconocido",
+    };
+  }
+}
