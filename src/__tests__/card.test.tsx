@@ -1,5 +1,5 @@
 import { Card } from "@/components/cards";
-import { fetch_figure_cards, fetch_movement_cards, use_movement_cards } from "@/lib/card";
+import { fetch_figure_cards, fetch_movement_cards, use_movement_cards, use_figure_cards } from "@/lib/card";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
@@ -160,6 +160,60 @@ describe('use_movement_cards', () => {
         index1: 1,
         index2: 2,
       })
+    });
+  });
+});
+
+describe('use_figure_cards', () => {
+  it('debería retornar el resultado cuando la respuesta es exitosa', async () => {
+    const mockResponse = { status: 'OK', data: 'Resultado exitoso' };
+    fetchMock.mockResponseOnce(JSON.stringify(mockResponse));
+
+    const result = await use_figure_cards({
+      id_player: '123',
+      id_card: 1,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:8000/figure-cards/1/',
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_player: '123' }),
+      })
+    );
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('debería lanzar un error con el mensaje adecuado cuando la respuesta no es exitosa', async () => {
+    const mockErrorResponse = { detail: 'Error al usar la carta' };
+    fetchMock.mockResponseOnce(JSON.stringify(mockErrorResponse), { status: 400 });
+
+    const result = await use_figure_cards({
+      id_player: '123',
+      id_card: 1,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Error al usar la carta',
+    });
+  });
+
+  it('debería manejar un error desconocido correctamente', async () => {
+    fetchMock.mockReject(new Error('Error de red'));
+
+    const result = await use_figure_cards({
+      id_player: '123',
+      id_card: 1,
+    });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Error de red',
     });
   });
 });
