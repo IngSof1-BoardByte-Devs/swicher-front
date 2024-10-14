@@ -98,7 +98,7 @@ export async function use_figure_cards({
   id_player,
   id_card,
 }: {
-  id_player: string;
+  id_player: number;
   id_card: number;
 }) {
   try {

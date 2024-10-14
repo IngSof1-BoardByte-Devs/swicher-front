@@ -170,7 +170,7 @@ describe('use_figure_cards', () => {
     fetchMock.mockResponseOnce(JSON.stringify(mockResponse));
 
     const result = await use_figure_cards({
-      id_player: '123',
+      id_player: 123,
       id_card: 1,
     });
 
@@ -181,7 +181,7 @@ describe('use_figure_cards', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id_player: '123' }),
+        body: JSON.stringify({ id_player: 123 }),
       })
     );
     expect(result).toEqual(mockResponse);
@@ -192,7 +192,7 @@ describe('use_figure_cards', () => {
     fetchMock.mockResponseOnce(JSON.stringify(mockErrorResponse), { status: 400 });
 
     const result = await use_figure_cards({
-      id_player: '123',
+      id_player: 123,
       id_card: 1,
     });
 
@@ -207,7 +207,7 @@ describe('use_figure_cards', () => {
     fetchMock.mockReject(new Error('Error de red'));
 
     const result = await use_figure_cards({
-      id_player: '123',
+      id_player: 123,
       id_card: 1,
     });
 
