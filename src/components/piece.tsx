@@ -9,6 +9,9 @@ import B from "@public/figure/B.svg";
 import C from "@public/figure/C.svg";
 import D from "@public/figure/D.svg";
 
+
+
+
 const pieces: { [key: number]: StaticImageData } = {
   0: A,
   1: B,
@@ -16,7 +19,7 @@ const pieces: { [key: number]: StaticImageData } = {
   3: D,
 };
 
-// Variantes para la animación de piezas
+
 const variants = {
   hidden: { scale: 0, opacity: 0 },
   visible: { scale: 1, opacity: 1, transition: { duration: 0.5 } }, // Animación cuando reaparecen
@@ -24,18 +27,41 @@ const variants = {
 };
 
 export function Piece(
-  { color, index, selectedPiece, setSelectedPiece, isSwapping, handleSwap }: 
-  { color: number, index: number, selectedPiece: number | null, setSelectedPiece: (index: number) => void, isSwapping: boolean, handleSwap: (index: number) => void }) 
-  {
+  { color, index, selectedPiece, setSelectedPiece, isSwapping, handleSwap, isMoveCardSelected, cardSelected, selectedTurn, playerTurn }: 
+  { color: number, index: number, selectedPiece: number | null, setSelectedPiece: (index: number | null ) => void, 
+    isSwapping: boolean, handleSwap: (index: number) => void, isMoveCardSelected: boolean, cardSelected: string,
+    selectedTurn: number, playerTurn: number }  
+) 
+{
   const piecePic = pieces[color] || A;
 
-  // Controlar cuando se seleccionan dos piezas
+  const verifyMovement = (cardSelected: string, selectedPiece: number, index: number): boolean => {
+    console.log("Card selected: ", cardSelected);
+    console.log("primera pieza: ", selectedPiece);
+    console.log("segunda pieza: ", index);
+    return false;
+  }
+
   const handleClick = () => {
-    if (!isSwapping) { // Solo permitir clics cuando no se esté en proceso de intercambio
-      if (selectedPiece === null) {
-        setSelectedPiece(index); // Seleccionar la primera pieza
-      } else if (selectedPiece !== index) {
-        handleSwap(index); // Seleccionar la segunda pieza y realizar el intercambio
+    if (playerTurn !== selectedTurn) {
+      alert("No es tu turno.");
+      return;  
+    }
+
+    if (!isMoveCardSelected) {
+      alert("No se ha seleccionado una carta de movimiento");
+    } else {
+      if (!isSwapping) {
+        if (selectedPiece === null) {
+          setSelectedPiece(index); 
+        } else if (selectedPiece !== index) {
+          if (verifyMovement(cardSelected, selectedPiece, index)) {
+            handleSwap(index); 
+          } else {
+            alert("Las piezas no coinciden con el movimiento seleccionado");
+            setSelectedPiece(null);
+          }
+        }
       }
     }
   };
