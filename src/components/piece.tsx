@@ -11,7 +11,7 @@ export function Piece(
     }) {
 
   return (
-    <div className={clsx("w-full h-full relative cursor-pointer rounded-lg", {
+    <div role="piece" className={clsx("w-full h-full relative cursor-pointer rounded-lg", {
       "bg-violet-500/50": color === 0,
       "bg-red-500": color === 1,
       "bg-blue-500": color === 2,
@@ -19,6 +19,7 @@ export function Piece(
       "animate-pulse": selected,
     })} >
       <button
+        data-testid="piece-btn"
         onClick={() => setSelected(selected ? undefined : index)}
         className="rounded-lg bg-white/25 absolute top-1/2 left-1/2 w-2/3 h-2/3 transform -translate-x-1/2 -translate-y-1/2"
       />
