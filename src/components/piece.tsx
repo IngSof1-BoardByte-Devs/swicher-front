@@ -2,24 +2,25 @@
 import clsx from "clsx";
 
 export function Piece(
-  { color, index, selectedPiece, setSelectedPiece }:
-    { color: number, index: number, selectedPiece: number, setSelectedPiece: (index: number) => void }) {
+  { color, selected, index, setSelected }:
+    {
+      color: number,
+      selected: boolean,
+      index: number,
+      setSelected: (id: number | undefined) => void
+    }) {
+
   return (
-    <div className={clsx("w-full h-full p-1 rounded", {
+    <div className={clsx("w-full h-full relative cursor-pointer rounded-lg", {
       "bg-violet-500/50": color === 0,
-      "bg-red-500/50": color === 1,
-      "bg-blue-500/50": color === 2,
-      "bg-green-500/50": color === 3,
-      "animate-pulse": selectedPiece === index,
+      "bg-red-500": color === 1,
+      "bg-blue-500": color === 2,
+      "bg-green-500": color === 3,
+      "animate-pulse": selected,
     })} >
       <button
-        onClick={() => { setSelectedPiece(index) }}
-        className={clsx("w-full h-full border-8 rounded", {
-          "bg-violet-500/50 border-violet-500": color === 0,
-          "bg-red-500/50 border-red-500": color === 1,
-          "bg-blue-500/50 border-blue-500": color === 2,
-          "bg-green-500/50 border-green-500": color === 3,
-        })}
+        onClick={() => setSelected(selected ? undefined : index)}
+        className="rounded-lg bg-white/25 absolute top-1/2 left-1/2 w-2/3 h-2/3 transform -translate-x-1/2 -translate-y-1/2"
       />
     </div>
   );
