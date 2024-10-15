@@ -44,7 +44,7 @@ export default function LobbyPage() {
         if (command[0] === "game") {                  // game commands
           if (command[1] === "start"){                // start game
             router.push("/game/");
-          } else if (command[1] === "cancelled") {    // canceled game
+          } else if (command[1] === "cancelled" && id_game === socketData.payload.game_id) {    // canceled game
             router.push("/");
           }
         } else if (command[0] === "player") {         // player commands
