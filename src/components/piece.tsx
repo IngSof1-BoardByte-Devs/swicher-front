@@ -27,20 +27,15 @@ const variants = {
 };
 
 export function Piece(
-  { color, index, selectedPiece, setSelectedPiece, isSwapping, handleSwap, isMoveCardSelected, cardSelected, selectedTurn, playerTurn }: 
+  { color, index, selectedPiece, setSelectedPiece, isSwapping, isMoveCardSelected, cardSelected, selectedTurn, playerTurn, verifyMovement }: 
   { color: number, index: number, selectedPiece: number | null, setSelectedPiece: (index: number | null ) => void, 
-    isSwapping: boolean, handleSwap: (index: number) => void, isMoveCardSelected: boolean, cardSelected: string,
+    isSwapping: boolean, verifyMovement: (cardSelected: string, selectedPiece: number, index: number) => void, isMoveCardSelected: boolean, cardSelected: string,
     selectedTurn: number, playerTurn: number }  
 ) 
 {
   const piecePic = pieces[color] || A;
 
-  const verifyMovement = (cardSelected: string, selectedPiece: number, index: number): boolean => {
-    console.log("Card selected: ", cardSelected);
-    console.log("primera pieza: ", selectedPiece);
-    console.log("segunda pieza: ", index);
-    return false;
-  }
+  
 
   const handleClick = () => {
     if (playerTurn !== selectedTurn) {
@@ -55,12 +50,7 @@ export function Piece(
         if (selectedPiece === null) {
           setSelectedPiece(index); 
         } else if (selectedPiece !== index) {
-          if (verifyMovement(cardSelected, selectedPiece, index)) {
-            handleSwap(index); 
-          } else {
-            alert("Las piezas no coinciden con el movimiento seleccionado");
-            setSelectedPiece(null);
-          }
+          verifyMovement(cardSelected, selectedPiece, index);
         }
       }
     }
