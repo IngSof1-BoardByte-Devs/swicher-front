@@ -27,6 +27,8 @@ export function Game() {
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
     const [selectedCard, setSelectedCard] = useState<string | null>(null);
+    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
+    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
 
     interface Player {
         id: number;
@@ -146,8 +148,8 @@ export function Game() {
                                     type={true} 
                                     index={parseInt(figure.type_figure.split(" ")[1], 10)} 
                                     id = {`figure-${index_id}`} 
-                                    selectedCard={selectedCard} 
-                                    setSelectedCard={setSelectedCard}
+                                    selectedCard={selectedFigureCard} 
+                                    setSelectedCard={setSelectedFigureCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}/>
                                 </button>
                             ))}
@@ -157,8 +159,8 @@ export function Game() {
                                     type={false} 
                                     index={parseInt(movement.type_movement.split(" ")[1], 10)} 
                                     id = {`movement-${index_id}`} 
-                                    selectedCard={selectedCard} 
-                                    setSelectedCard={setSelectedCard}
+                                    selectedCard={selectedMovementCard} 
+                                    setSelectedCard={setSelectedMovementCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}/>
                                 </button>
                             ))}
@@ -203,8 +205,8 @@ export function Game() {
                                         type={true} 
                                         index={parseInt(figure.type_figure.split(" ")[1], 10)} 
                                         id = {`rival-${index}-figure-${index_id}`} 
-                                        selectedCard={selectedCard} 
-                                        setSelectedCard={setSelectedCard}
+                                        selectedCard={selectedFigureCard} 
+                                        setSelectedCard={setSelectedFigureCard}
                                         isSelectable={false}/>
                                     </button>
                                 ))}
