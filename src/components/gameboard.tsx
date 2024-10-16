@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 export function Gameboard({ id_game, id_player, selectedTurn, playerTurn }: { id_game: number, id_player: number, selectedTurn: number, playerTurn: number }) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
     const [figures, setFigures] = useState([]); // Figuras en el tablero
-    const [moveCard, setMoveCard] = useState("mov7"); // Carta de movimiento seleccionada
+    const [moveCard, setMoveCard] = useState("mov6"); // Carta de movimiento seleccionada
     const { socket } = useWebSocket();
     const [swappingPieces, setSwappingPieces] = useState<number[]>([]); // Estado para las piezas en intercambio
 
@@ -52,32 +52,10 @@ export function Gameboard({ id_game, id_player, selectedTurn, playerTurn }: { id
     };
 
     function parseIndex(i: number): { x: number, y: number } {
-        let x = 0, y = 0;
-
-        if (i>= 0 && i<=5) {
-            x = 0
-            y = i
-        }else if (i>= 6 && i<=11) {
-            x = 1
-            y = i - 6
-        }else if (i>= 12 && i<=17) {
-            x = 2
-            y = i - 12
-        }else if (i>=18 && i<=23) {
-            x = 3
-            y = i - 18
-            
-        }else if (i>=24 && i<=29) {
-            x = 4
-            y = i - 24
-        }
-        else if (i>=30 && i<=35) {
-            x = 5
-            y = i - 30
-        }
-
-        console.log("x: ", x, "y: ", y)
-        return { x, y }
+        const x = Math.floor(i / 6); 
+        const y = i % 6;             
+        console.log("x:", x, "y:", y);
+        return { x, y };
     }
 
     function fillMatrix<T>(list: T[]): T[][] {
@@ -105,8 +83,7 @@ export function Gameboard({ id_game, id_player, selectedTurn, playerTurn }: { id
                 (primera.y -2 === segunda.y && (primera.x+2 === segunda.x || primera.x-2 === segunda.x)));
                 break;
             case "mov2":
-                //roto
-                result == (primera.y === segunda.y && (primera.x+2 === segunda.x || primera.x-2 === segunda.x)) || 
+                result = (primera.y === segunda.y && (primera.x+2 === segunda.x || primera.x-2 === segunda.x)) || 
                 (primera.x === segunda.x && (primera.y+2 === segunda.y || primera.y-2 === segunda.y));
                 break;
             case "mov3":
@@ -138,14 +115,13 @@ export function Gameboard({ id_game, id_player, selectedTurn, playerTurn }: { id
                 if (primera.y-1 === segunda.y && primera.x-2 === segunda.x) {
                     result = true;
                     break;
-                    
                 }else if (primera.y+2 === segunda.y && primera.x-1 === segunda.x) {
                     result = true;
                     break;
                 }else if (primera.y+1 === segunda.y && primera.x+2 === segunda.x) {
                     result = true;
                     break;
-                }else if (primera.y+2 === segunda.y && primera.x-1 === segunda.x) {
+                }else if (primera.y-2 === segunda.y && primera.x+1 === segunda.x) {
                     result = true;
                     break;
                 }
