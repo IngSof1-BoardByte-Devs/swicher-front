@@ -26,7 +26,6 @@ export function Game() {
     const [players, setPlayers] = useState<Player[]>([]);
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
-    const [selectedCard, setSelectedCard] = useState<string | null>(null);
     const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
     const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
 
@@ -213,7 +212,7 @@ export function Game() {
                                         id = {`rival-${index}-figure-${index_id}`} 
                                         selectedCard={selectedFigureCard} 
                                         setSelectedCard={setSelectedFigureCard}
-                                        isSelectable={false}/>
+                                        isSelectable={selectedTurn === playerTurn}/>
                                     </button>
                                 ))}
                             </div>
