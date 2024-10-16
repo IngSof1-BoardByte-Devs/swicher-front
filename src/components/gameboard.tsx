@@ -61,10 +61,12 @@ export function Gameboard({ id_game }: { id_game: number }) {
     }, [selected, figures, colorFigure]);
 
     return (
-        <div role="grid" className="w-full grid grid-cols-6" style={{ aspectRatio: "1/1" }}>
-            {figures.map(({ color }, index) => (
-                <Piece color={color} key={index} selected={selectedFigures.includes(index)} index={index} setSelected={setSelected} />
-            ))}
+        <div className="flex w-full h-full item justify-center content-center p-8">
+            <div role="grid" className="w-auto h-auto grid grid-cols-6" style={{ aspectRatio: "1 / 1" }}>
+                {figures.map(({ color }, index) => (
+                    <Piece color={color} key={index} selected={selectedFigures.includes(index)} index={index} setSelected={setSelected} />
+                ))}
+            </div>
         </div>
     );
 }
