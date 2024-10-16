@@ -54,7 +54,7 @@ describe("Gameboard Component", () => {
         fetchMock.mockResponseOnce(JSON.stringify(mockBoardResponse));  
 
         render(<Gameboard id_game={id_game} />);
-        const pieces = await screen.findAllByRole("img");
+        const pieces = await screen.findAllByRole("piece");
         expect(pieces).toHaveLength(36);
     });
 });
