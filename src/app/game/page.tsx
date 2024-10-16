@@ -142,12 +142,24 @@ export function Game() {
                         <div className="col-span-6 grid grid-cols-6 w-full h-full gap-1 md:grid-rows-1">
                             {figureCards.filter(card => card.player_id === currentPlayer.id).map((figure: FigureCard, index_id) => (
                                 <button key={figure.id_figure} className="w-full h-full">
-                                    <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} id = {`figure-${index_id}`} selectedCard={selectedCard} setSelectedCard={setSelectedCard}/>
+                                    <Card 
+                                    type={true} 
+                                    index={parseInt(figure.type_figure.split(" ")[1], 10)} 
+                                    id = {`figure-${index_id}`} 
+                                    selectedCard={selectedCard} 
+                                    setSelectedCard={setSelectedCard}
+                                    isSelectable={selectedTurn === currentPlayer.turn}/>
                                 </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
                                 <button key={movement.id_movement} className="w-full h-full">
-                                    <Card type={false} index={parseInt(movement.type_movement.split(" ")[1], 10)} id = {`movement-${index_id}`} selectedCard={selectedCard} setSelectedCard={setSelectedCard}/>
+                                    <Card 
+                                    type={false} 
+                                    index={parseInt(movement.type_movement.split(" ")[1], 10)} 
+                                    id = {`movement-${index_id}`} 
+                                    selectedCard={selectedCard} 
+                                    setSelectedCard={setSelectedCard}
+                                    isSelectable={selectedTurn === currentPlayer.turn}/>
                                 </button>
                             ))}
                         </div>
@@ -187,7 +199,13 @@ export function Game() {
                             )}>
                                 {figureCards.filter(card => card.player_id === player.id).map((figure: FigureCard, index_id) => (
                                     <button key={figure.id_figure} className="w-full h-full">
-                                        <Card type={true} index={parseInt(figure.type_figure.split(" ")[1], 10)} id = {`rival-${index}-figure-${index_id}`} selectedCard={selectedCard} setSelectedCard={setSelectedCard} />
+                                        <Card 
+                                        type={true} 
+                                        index={parseInt(figure.type_figure.split(" ")[1], 10)} 
+                                        id = {`rival-${index}-figure-${index_id}`} 
+                                        selectedCard={selectedCard} 
+                                        setSelectedCard={setSelectedCard}
+                                        isSelectable={false}/>
                                     </button>
                                 ))}
                             </div>
