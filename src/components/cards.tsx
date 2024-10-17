@@ -90,7 +90,7 @@ export function Card({ type, index, id, selectedCard, setSelectedCard, isSelecta
 
   return (
     <AnimatePresence>
-      <motion.button
+      <motion.div
         className="w-full h-full bg-gray-100 rounded-[35px] shadow-lg relative"
         layout
         onClick={() => {
@@ -120,7 +120,7 @@ export function Card({ type, index, id, selectedCard, setSelectedCard, isSelecta
             className="absolute w-full h-full"
           />
         </div>
-      </motion.button>
+      </motion.div>
     </AnimatePresence>
   );
 }
