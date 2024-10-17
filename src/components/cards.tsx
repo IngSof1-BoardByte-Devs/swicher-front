@@ -76,7 +76,7 @@ const movementCards: { [key: string]: string } = {
   mov7: mov7,
 };
 
-export function Card({ type, index, id, selectedCard, setSelectedCard, isSelectable }: { type: boolean; index: number; id: string; selectedCard: string | null; setSelectedCard: (id: string | null) => void; isSelectable: boolean }) {
+export function Card({ type, index, id, selectedCard, setSelectedCard, isSelectable, setMoveCard }: { type: boolean; index: number; id: string; selectedCard: string | null; setSelectedCard: (id: string | null) => void; isSelectable: boolean; setMoveCard: (id: string) => void; }) {
   let cardPic;
   if (!type) {
     cardPic = movementCards[`mov${index}`];
@@ -98,6 +98,9 @@ export function Card({ type, index, id, selectedCard, setSelectedCard, isSelecta
             setSelectedCard(null);
           } else {
             setSelectedCard(id);
+            if (!type) { 
+              setMoveCard(`mov${index}`)
+            }
           }
         }}
         whileTap={{ scale: 0.8 }}

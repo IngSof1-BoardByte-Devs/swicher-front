@@ -1,17 +1,50 @@
-"use client";
+import React from "react";
+import { motion } from "framer-motion";
 import clsx from "clsx";
 
+
+
+const variants = {
+  hidden: { scale: 0, opacity: 0 },
+  visible: { scale: 1, opacity: 1, transition: { duration: 0.5 } }, // Animación cuando reaparecen
+  swap: { scale: [1, 0, 1], opacity: [1, 0, 1], transition: { duration: 0.5 } } // Animación de intercambio
+};
+
 export function Piece(
-  { color, selected, index, setSelected }:
-    {
-      color: number,
-      selected: boolean,
-      index: number,
-      setSelected: (id: number | undefined) => void
-    }) {
+  { color, index, selectedPiece, setSelectedPiece, isSwapping, isMoveCardSelected, cardSelected, selectedTurn, playerTurn, verifyMovement, selected, setSelected }: 
+  { color: number, index: number, selectedPiece: number | null, setSelectedPiece: (index: number | null ) => void, 
+    isSwapping: boolean, verifyMovement: (cardSelected: string , selectedPiece: number, index: number) => void, isMoveCardSelected: boolean, cardSelected: string,
+    selectedTurn: number, playerTurn: number, selected: boolean, setSelected: (id: number | undefined) => void }  
+) 
+{
+ 
+
+  
+
+  const handleClick = () => {
+    if (!isMoveCardSelected) {
+      setSelected(selected ? undefined : index)
+    }else if (isMoveCardSelected) {
+      if (playerTurn !== selectedTurn) {
+        alert("No es tu turno");
+        return;
+      }else if (!isSwapping) {
+            if (selectedPiece === null) {
+              setSelectedPiece(index); 
+            } else if (selectedPiece !== index) {
+              verifyMovement(cardSelected, selectedPiece, index);
+            }
+        }
+    }
+  };
 
   return (
-    <div role="piece" className={clsx("w-full h-full relative cursor-pointer rounded-lg", {
+    <motion.div role="piece" 
+    animate={isSwapping ? "swap" : "visible"}
+      initial="visible"
+      variants={variants}
+      whileTap={{ scale: 0.9 }}
+    className={clsx("w-full h-full relative cursor-pointer rounded-lg", {
       "bg-violet-500/50": color === 0,
       "bg-red-500": color === 1,
       "bg-blue-500": color === 2,
@@ -20,9 +53,9 @@ export function Piece(
     })} >
       <button
         data-testid="piece-btn"
-        onClick={() => setSelected(selected ? undefined : index)}
+        onClick={handleClick}
         className="rounded-lg bg-white/25 absolute top-1/2 left-1/2 w-2/3 h-2/3 transform -translate-x-1/2 -translate-y-1/2"
       />
-    </div>
+    </motion.div>
   );
 }

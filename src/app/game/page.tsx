@@ -26,8 +26,9 @@ export function Game() {
     const [players, setPlayers] = useState<Player[]>([]);
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
-    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
-    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
+    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null >(null);
+    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null >(null);
+    const [moveCard, setMoveCard] = useState<string>("");
 
     interface Player {
         id: number;
@@ -46,6 +47,7 @@ export function Game() {
         // Add other properties as needed
     }
 
+    
     useEffect(() => {
         const fetchGame = async () => {
             try {
@@ -130,12 +132,19 @@ export function Game() {
             </div>
             {/* Tablero de juego */}
             <div className="h-full row-span-4 col-span-12 md:row-span-6 md:col-span-4 md:row-start-4 md:col-start-5">
-                {id_game !== null && <Gameboard id_game={id_game} />}
+            {id_game !== null && id_player !== null && <Gameboard 
+                                                                id_game={id_game} 
+                                                                id_player={id_player}
+                                                                selectedTurn={selectedTurn} 
+                                                                playerTurn={playerTurn} 
+                                                                moveCard={moveCard}
+                                                                />}
+
             </div>
             {/* current player */}
             {currentPlayer && (
-                <div className="md:row-start-10 md:col-start-2 md:col-end-11 md:row-span-2 col-span-12 w-full h-full p-1 overflow-visible">
-                    <div className="grid grid-cols-7 w-full h-full items-center justify-center overflow-visible p-2">
+                <div className="md:row-start-10 md:col-start-2 md:col-end-11 md:row-span-2 col-span-12 w-full h-full p-1">
+                    <div className="grid grid-cols-7 w-full h-full items-center justify-center ">
                         <div className="grid grid-cols-6 md:grid-rows-2 w-full h-full items-center justify-center">
                             <div className={clsx(
                                 "font-bold w-fit p-1 md:flex md:justify-center md:text-xl md:text-center md:items-center",
@@ -155,7 +164,8 @@ export function Game() {
                                     id = {`figure-${index_id}`} 
                                     selectedCard={selectedFigureCard} 
                                     setSelectedCard={setSelectedFigureCard}
-                                    isSelectable={selectedTurn === currentPlayer.turn}/>
+                                    isSelectable={selectedTurn === currentPlayer.turn}
+                                    setMoveCard={setMoveCard}/>
                                 </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
@@ -166,7 +176,8 @@ export function Game() {
                                     id = {`movement-${index_id}`} 
                                     selectedCard={selectedMovementCard} 
                                     setSelectedCard={setSelectedMovementCard}
-                                    isSelectable={selectedTurn === currentPlayer.turn}/>
+                                    isSelectable={selectedTurn === currentPlayer.turn}
+                                    setMoveCard={setMoveCard}/>
                                 </button>
                             ))}
                         </div>
@@ -185,7 +196,7 @@ export function Game() {
                         }
                     )}>
                         <div className={clsx(
-                            "grid grid-cols-7 w-full h-full items-center justify-center overflow-visible p-2",
+                            "grid grid-cols-7 w-full h-full items-center justify-center ",
                             {
                                 "md:grid-rows-2":index === 0,
                                 "md:grid-cols-4 md:grid-rows-3":index === 1 || index === 2,
@@ -212,7 +223,8 @@ export function Game() {
                                         id = {`rival-${index}-figure-${index_id}`} 
                                         selectedCard={selectedFigureCard} 
                                         setSelectedCard={setSelectedFigureCard}
-                                        isSelectable={selectedTurn === playerTurn}/>
+                                        isSelectable={selectedTurn === playerTurn}
+                                        setMoveCard={setMoveCard}/>
                                     </button>
                                 ))}
                             </div>
