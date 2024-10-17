@@ -76,6 +76,9 @@ export function Gameboard({ id_game, selectedTurn, playerTurn, moveCard}:
                     swapPieces(index1, index2);
                     fetchBoard();
                 } else if (socketData.event === "moves.cancelled") {
+                    socketData.payload.forEach(({ card_id, position1, position2 }: { card_id: number, position1: number, position2: number }) => {
+                        swapPieces(position1, position2);
+                    });
                     fetchBoard();
                 } else if (socketData.event === "figure.card.used" && (socketData.payload.discarded || socketData.payload.locked || socketData.payload.unlocked)) {
                     
