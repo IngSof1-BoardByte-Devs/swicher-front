@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from "react";
+"use client"
+import React, { useCallback, useEffect, useState } from "react";
 import { Piece } from "@components/piece";
 import { fetch_board } from "@/lib/board";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { motion } from "framer-motion";
 
-export function Gameboard({ id_game, id_player, selectedTurn, playerTurn }: { id_game: number, id_player: number, selectedTurn: number, playerTurn: number }) {
+export function Gameboard({ id_game, selectedTurn, playerTurn, moveCard}: 
+    { id_game: number, selectedTurn: number, playerTurn: number, moveCard: string}) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
-    const [figures, setFigures] = useState([]); // Figuras en el tablero
-    const [moveCard, setMoveCard] = useState("mov6"); // Carta de movimiento seleccionada
+    const [figures, setFigures] = useState<{ color: number }[]>([]);
+    const [selected, setSelected] = useState<number | undefined>();
+    const [selectedFigures, setSelectedFigures] = useState<number[]>([]);
+    const [moveCardToSow, setMoveCardToShow] = useState(""); // Carta de movimiento seleccionada
     const { socket } = useWebSocket();
     const [swappingPieces, setSwappingPieces] = useState<number[]>([]); // Estado para las piezas en intercambio
 
@@ -23,14 +27,52 @@ export function Gameboard({ id_game, id_player, selectedTurn, playerTurn }: { id
     useEffect(() => {
         fetchBoard();
     }, [id_game]);
+    const colorFigure = useCallback(
+        (startIndex: number, targetColor: number) => {
+            const visited = new Set<number>();
+            const toVisit = [startIndex];
 
+            while (toVisit.length > 0) {
+                const index = toVisit.pop();
+
+                if (index === undefined || index < 0 || index >= figures.length || visited.has(index)) {
+                    continue;
+                }
+
+                if (figures[index].color !== targetColor) {
+                    continue;
+                }
+                visited.add(index);
+                if (index % 6 !== 0) {
+                    toVisit.push(index - 1);
+                }
+                if ((index + 1) % 6 !== 0) {
+                    toVisit.push(index + 1);
+                }
+                if (index - 6 >= 0) {
+                    toVisit.push(index - 6);
+                }
+                if (index + 6 < figures.length) {
+                    toVisit.push(index + 6);
+                }
+            }
+            setSelectedFigures(Array.from(visited));
+        }, [figures]);
+
+    useEffect(() => {
+        if (selected !== undefined) {
+            colorFigure(selected, figures[selected].color);
+        } else {
+            setSelectedFigures([]);
+        }
+    }, [selected, figures, colorFigure]);
     useEffect(() => {
         if (socket) {
             socket.onmessage = (event) => {
                 const socketData = JSON.parse(event.data);
                 if (socketData.event === "movement.card.used") {
                     const { index1, index2 } = socketData.payload;
-                    setMoveCard(socketData.payload.card_id);
+                    setMoveCardToShow(socketData.payload.card_id);
                     swapPieces(index1, index2);
                     fetchBoard();
                 } else if (socketData.event === "moves.cancelled") {
@@ -151,30 +193,32 @@ export function Gameboard({ id_game, id_player, selectedTurn, playerTurn }: { id
         }
     };
     
-
     return (
-        <motion.div
-    role="grid"
-    layout
-    className="w-full h-full grid grid-cols-6 justify-items-center grid-rows-6"
->
-    {figures.map(({ color }, index) => (
-        <Piece
-            key={index}
-            color={color}
-            index={index}
-            selectedPiece={selectedPiece}
-            setSelectedPiece={setSelectedPiece}
-            isSwapping={swappingPieces.includes(index)} 
-            verifyMovement={verifyMovement}
-            isMoveCardSelected={moveCard !== ""}
-            cardSelected={moveCard}
-            selectedTurn={selectedTurn}  // Aquí se pasa el turno actual
-            playerTurn={playerTurn}      // Aquí se pasa el turno del jugador
-        />
-    ))}
-</motion.div>
-
+        <div className="flex w-full h-full item justify-center content-center p-8">
+            <motion.div
+            role="grid"
+            layout
+            className="w-auto h-auto grid grid-cols-6" 
+            style={{ aspectRatio: "1 / 1" }}>
+                {figures.map(({ color }, index) => (
+                    <Piece 
+                        color={color}
+                        key={index}
+                        selected={selectedFigures.includes(index)}
+                        index={index}
+                        setSelected={setSelected}
+                        isSwapping={swappingPieces.includes(index)}
+                        verifyMovement={verifyMovement}
+                        isMoveCardSelected={moveCard !== ""}
+                        cardSelected={moveCard}
+                        selectedTurn={selectedTurn} // Aquí se pasa el turno actual
+                        playerTurn={playerTurn} // Aquí se pasa el turno del jugador
+                        setSelectedPiece={setSelectedPiece} 
+                        selectedPiece={selectedPiece}
+                        />
+                ))}
+            </motion.div>
+        </div>
     );
 }
 

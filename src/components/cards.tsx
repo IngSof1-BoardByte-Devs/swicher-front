@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 
 // figure cards
 import fig01 from "@public/figure-card/fig01.svg";
@@ -39,59 +40,88 @@ import mov7 from "@public/movement-card/mov7.svg";
 
 // mapping
 const figureCards: { [key: string]: string } = {
-    fig01: fig01,
-    fig02: fig02,
-    fig03: fig03,
-    fig04: fig04,
-    fig05: fig05,
-    fig06: fig06,
-    fig07: fig07,
-    fig08: fig08,
-    fig09: fig09,
-    fig10: fig10,
-    fig11: fig11,
-    fig12: fig12,
-    fig13: fig13,
-    fig14: fig14,
-    fig15: fig15,
-    fig16: fig16,
-    fig17: fig17,
-    fig18: fig18,
-    fige1: fige1,
-    fige2: fige2,
-    fige3: fige3,
-    fige4: fige4,
-    fige5: fige5,
-    fige6: fige6,
-    fige7: fige7,
+  fig01: fig01,
+  fig02: fig02,
+  fig03: fig03,
+  fig04: fig04,
+  fig05: fig05,
+  fig06: fig06,
+  fig07: fig07,
+  fig08: fig08,
+  fig09: fig09,
+  fig10: fig10,
+  fig11: fig11,
+  fig12: fig12,
+  fig13: fig13,
+  fig14: fig14,
+  fig15: fig15,
+  fig16: fig16,
+  fig17: fig17,
+  fig18: fig18,
+  fige1: fige1,
+  fige2: fige2,
+  fige3: fige3,
+  fige4: fige4,
+  fige5: fige5,
+  fige6: fige6,
+  fige7: fige7,
 };
 const movementCards: { [key: string]: string } = {
-    mov1: mov1,
-    mov2: mov2,
-    mov3: mov3,
-    mov4: mov4,
-    mov5: mov5,
-    mov6: mov6,
-    mov7: mov7,
-}
+  mov1: mov1,
+  mov2: mov2,
+  mov3: mov3,
+  mov4: mov4,
+  mov5: mov5,
+  mov6: mov6,
+  mov7: mov7,
+};
 
-export function Card({ type, index }: {type:boolean, index:number }) {
-    let cardPic;
-    if (!type) {
-        cardPic = movementCards[`mov${index}`];
-    } else if (index <= 9) {
-        cardPic = figureCards[`fig0${index}`];
-    } else if (index <= 18) {
-        cardPic = figureCards[`fig${index}`];
-    } else {
-        cardPic = figureCards[`fige${index-18}`];
-    }
-    return (
-        <div className="bg-gray-600 rounded-lg shadow-sm w-full h-full">
-            <div className="flex flex-col items-center h-full relative">
-                <Image quality={50} src={cardPic} alt={"carta"} className="absolute w-full rounded-lg h-full" />
-            </div>
+export function Card({ type, index, id, selectedCard, setSelectedCard, isSelectable, setMoveCard }: { type: boolean; index: number; id: string; selectedCard: string | null; setSelectedCard: (id: string | null) => void; isSelectable: boolean; setMoveCard: (id: string) => void; }) {
+  let cardPic;
+  if (!type) {
+    cardPic = movementCards[`mov${index}`];
+  } else if (index <= 9) {
+    cardPic = figureCards[`fig0${index}`];
+  } else if (index <= 18) {
+    cardPic = figureCards[`fig${index}`];
+  } else {
+    cardPic = figureCards[`fige${index - 18}`];
+  }
+
+  return (
+    <AnimatePresence>
+      <motion.button
+        className="w-full h-full bg-gray-100 rounded-[35px] shadow-lg relative"
+        layout
+        onClick={() => {
+          if (selectedCard === id) {
+            setSelectedCard(null);
+          } else {
+            setSelectedCard(id);
+            if (!type) { 
+              setMoveCard(`mov${index}`)
+            }
+          }
+        }}
+        whileTap={{ scale: 0.8 }}
+        animate={{
+          scale: (selectedCard === id) && isSelectable ? 1.3 : 1,
+        }}
+        style={{
+          position: type ? "static" : "relative",
+          cursor: !type ? "pointer" : "default",
+        }}
+      >
+        <div className="relative flex flex-col h-full items-center pointer-events-none">
+          <Image
+            quality={50}
+            src={cardPic}
+            alt={"carta"}
+            className="absolute w-full h-full"
+          />
         </div>
-    );
-
+      </motion.button>
+    </AnimatePresence>
+  );
 }
+
