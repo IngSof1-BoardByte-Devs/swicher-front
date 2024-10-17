@@ -75,6 +75,7 @@ export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCar
                     const { index1, index2 } = socketData.payload;
                     setMoveCardToShow(socketData.payload.card_id);
                     swapPieces(index1, index2);
+                    setSelectedPiece(null); 
                     fetchBoard();
                 } else if (socketData.event === "moves.cancelled") {
                     socketData.payload.forEach(({ card_id, position1, position2 }: { card_id: number, position1: number, position2: number }) => {
@@ -177,14 +178,6 @@ export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCar
             setSelectedPiece(null);
         }
       }
-
-    // Controlar el intercambio de piezas al hacer clic en dos diferentes
-    const handleSwap = (index: number) => {
-        if (selectedPiece !== null && selectedPiece !== index) {
-            swapPieces(selectedPiece, index); 
-            setSelectedPiece(null); 
-        }
-    };
     
     return (
         <div className="flex w-full h-full item justify-center content-center p-8">
