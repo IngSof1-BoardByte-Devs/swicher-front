@@ -4,9 +4,10 @@ import { Piece } from "@components/piece";
 import { fetch_board } from "@/lib/board";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { motion } from "framer-motion";
+import { use_movement_cards } from "@/lib/card";
 
-export function Gameboard({ id_game, selectedTurn, playerTurn, moveCard}: 
-    { id_game: number, selectedTurn: number, playerTurn: number, moveCard: string}) {
+export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCard}: 
+    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, moveCard: string}) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
     const [figures, setFigures] = useState<{ color: number }[]>([]);
     const [selected, setSelected] = useState<number | undefined>();
@@ -103,21 +104,9 @@ export function Gameboard({ id_game, selectedTurn, playerTurn, moveCard}:
         return { x, y };
     }
 
-    function fillMatrix<T>(list: T[]): T[][] {
-        const matrix: T[][] = [];
-        
-        for (let i = 0; i < 36; i += 6) {
-          // Agrupa elementos en subarrays de tamaño 'columns'
-          const row = list.slice(i, i + 6);
-          matrix.push(row);
-        }
-      
-        return matrix;
-      }
 
     const verifyMovement = (cardSelected: string, selectedPiece: number, index: number) => {
         let result = false;
-        const matriz = fillMatrix(figures);
         const primera = parseIndex(selectedPiece);
         const segunda = parseIndex(index);
         console.log(cardSelected)
@@ -181,7 +170,8 @@ export function Gameboard({ id_game, selectedTurn, playerTurn, moveCard}:
         }
 
         if (result) {
-            handleSwap(index);           
+           const result = use_movement_cards({ id_player, id_card: 1, index1: selectedPiece, index2: index });
+            setSelectedPiece(null);
         }else{
             alert("Las piezas no coinciden con el movimiento seleccionado");
             setSelectedPiece(null);

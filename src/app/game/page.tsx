@@ -134,6 +134,7 @@ export function Game() {
             <div className="h-full row-span-4 col-span-12 md:row-span-6 md:col-span-4 md:row-start-4 md:col-start-5">
             {id_game !== null && id_player !== null && <Gameboard 
                                                                 id_game={id_game} 
+                                                                id_player={id_player}
                                                                 selectedTurn={selectedTurn} 
                                                                 playerTurn={playerTurn} 
                                                                 moveCard={moveCard}
