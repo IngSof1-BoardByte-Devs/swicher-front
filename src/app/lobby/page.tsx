@@ -88,10 +88,10 @@ export default function LobbyPage() {
       return
     };
     const response = await leave_game({player_id: id_player})
-    if (response === "Saliendo del juego") {
+    if (response.status === "OK") {
       alert("Has abandonado la partida");
       router.push("/");
-    } else if (response === "Error al salir del juego") {
+    } else if (response.message === "Error al salir del juego") {
       alert("Error al salir del juego");
     } else {
       alert("Error inesperado");
