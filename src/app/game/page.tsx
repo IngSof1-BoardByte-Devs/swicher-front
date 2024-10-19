@@ -29,6 +29,7 @@ export function Game() {
     const [selectedMovementCard, setSelectedMovementCard] = useState<string | null >(null);
     const [selectedFigureCard, setSelectedFigureCard] = useState<string | null >(null);
     const [moveCard, setMoveCard] = useState<string>("");
+    const [usedCards, setUsedCards] = useState<number[]>([]);
 
     interface Player {
         id: number;
@@ -106,12 +107,14 @@ export function Game() {
                 }else if (socketData.event === "figure.card.used") {
                     if (socketData.payload.discarded) {
                         setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
+                        setUsedCards([]);
                     }
                     else if (socketData.payload.locked) {
                     }
                     else if (socketData.payload.unlocked) {
-                    }
-                    
+                    }   
+                }else if (socketData.event === "movement.card.used") {
+                    setUsedCards([...usedCards, socketData.payload.id_movement]);
                 }
             };
         }
@@ -174,7 +177,8 @@ export function Game() {
                                     selectedCard={selectedFigureCard} 
                                     setSelectedCard={setSelectedFigureCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
-                                    setMoveCard={setMoveCard}/>
+                                    setMoveCard={setMoveCard}
+                                    usedCard = {false}/>
                                 </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
@@ -186,7 +190,8 @@ export function Game() {
                                     selectedCard={selectedMovementCard} 
                                     setSelectedCard={setSelectedMovementCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
-                                    setMoveCard={setMoveCard}/>
+                                    setMoveCard={setMoveCard}
+                                    usedCard={usedCards.includes(movement.id_movement)}/>
                                 </button>
                             ))}
                         </div>
@@ -233,7 +238,8 @@ export function Game() {
                                         selectedCard={selectedFigureCard} 
                                         setSelectedCard={setSelectedFigureCard}
                                         isSelectable={selectedTurn === playerTurn}
-                                        setMoveCard={setMoveCard}/>
+                                        setMoveCard={setMoveCard}
+                                        usedCard={false}/>
                                     </button>
                                 ))}
                             </div>
