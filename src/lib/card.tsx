@@ -67,13 +67,14 @@ export async function use_movement_cards(
     { id_player, id_card, index1, index2 }:
         { id_player: number, id_card: number, index1: number, index2: number }) {
     try {
+        const playerId = id_player;
         const response = await fetch(`http://localhost:8000/movement-cards/${id_card}/`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                id_player,
+                playerId,
                 index1,
                 index2,
             })

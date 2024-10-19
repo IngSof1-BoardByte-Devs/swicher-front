@@ -4,10 +4,9 @@ import { Piece } from "@components/piece";
 import { fetch_board } from "@/lib/board";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { motion } from "framer-motion";
-import { use_movement_cards } from "@/lib/card";
 
-export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCard}: 
-    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, moveCard: string}) {
+export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCard, callUseMoveCard }: 
+    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, moveCard: string, callUseMoveCard: (id_player: number, index1: number, index2: number ) => void }) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
     const [figures, setFigures] = useState<{ color: number }[]>([]);
     const [selected, setSelected] = useState<number | undefined>();
@@ -171,7 +170,7 @@ export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCar
         }
 
         if (result) {
-           const result = use_movement_cards({ id_player, id_card: 1, index1: selectedPiece, index2: index });
+            callUseMoveCard(id_player, selectedPiece, index );
             setSelectedPiece(null);
         }else{
             alert("Las piezas no coinciden con el movimiento seleccionado");

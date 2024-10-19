@@ -96,6 +96,7 @@ export function Card({ type, index, id, selectedCard, setSelectedCard, isSelecta
         onClick={() => {
           if (selectedCard === id) {
             setSelectedCard(null);
+            setMoveCard("");
           } else {
             setSelectedCard(id);
             if (!type) { 
