@@ -82,9 +82,7 @@ export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCar
                         swapPieces(position1, position2);
                     });
                     fetchBoard();
-                } else if (socketData.event === "figure.card.used" && (socketData.payload.discarded || socketData.payload.locked || socketData.payload.unlocked)) {
-                    
-                }
+                } 
             };
         }
     }, [socket, figures]);

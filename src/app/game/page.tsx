@@ -103,6 +103,15 @@ export function Game() {
                     if (command[1] === "left") {
                         setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
                     }
+                }else if (socketData.event === "figure.card.used") {
+                    if (socketData.payload.discarded) {
+                        setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
+                    }
+                    else if (socketData.payload.locked) {
+                    }
+                    else if (socketData.payload.unlocked) {
+                    }
+                    
                 }
             };
         }
