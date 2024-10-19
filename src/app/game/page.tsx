@@ -107,6 +107,7 @@ export function Game() {
                 }else if (socketData.event === "figure.card.used") {
                     if (socketData.payload.discarded) {
                         setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
+                        setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
                         setUsedCards([]);
                     }
                     else if (socketData.payload.locked) {
