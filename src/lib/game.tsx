@@ -175,19 +175,18 @@ export async function revert_movements({ game_id, player_id }: { game_id: number
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player_id }),
     });
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.detail);
-      }
-  
-      const result = await response.json();
-      return result;
+    if (response.status === 200) {
+      return "Movimientos revertidos";
+    } else if (response.status === 404) {
+      return "Jugador no encontrado";
+    } else if (response.status === 401) {
+      return "No es tu turno";
+    } else {
+      return "Ocurrio un error desconocido";
+    }
     } catch (error) {
       console.error("Failed to revert movements:", error);
-      return {
-        status: "ERROR",
-        message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
-      };
+      return "Ocurrio un error desconocido"
     }
 
 }

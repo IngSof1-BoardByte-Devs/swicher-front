@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Gameboard } from "@/components/gameboard";
 import { Card } from "@components/cards";
 import { end_turn } from "@/lib/board";
@@ -285,15 +285,18 @@ export function Game() {
                                 const resp = await end_turn(id_player);
                                 if (resp === 'Turno finalizado') {
                                     setHasMovement(false);
+                                } else {
+                                    alert(resp);
                                 }
                             }
                         }}>terminar turno</button>
                     {(hasMovement && (playerTurn === selectedTurn)) &&
                         <button
                             className="md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"
-                            onClick={() => {
+                            onClick={async () => {
                                 if (id_game !== null && id_player !== null) {
-                                    revert_movements({ game_id: id_game, player_id: id_player });
+                                    const resp = await revert_movements({ game_id: id_game, player_id: id_player });
+                                    if (resp === "Movimientos revertidos") setHasMovement(false);
                                 }
                             }}>Revertir movimeintos</button>}
                     <button
