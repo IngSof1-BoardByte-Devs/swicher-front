@@ -1,10 +1,10 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Gameboard } from "@/components/gameboard";
 import { Card } from "@components/cards";
 import { end_turn } from "@/lib/board";
-import { fetch_game, leave_game } from "@/lib/game";
+import { fetch_game, leave_game, revert_movements } from "@/lib/game";
 import { Winner } from "@/components/winner";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
@@ -22,12 +22,13 @@ export function Game() {
     const [selectedTurn, setSelectedTurn] = useState(-1);
     const [playerTurn, setPlayerTurn] = useState(-1);
     const [gameName, setGameName] = useState("");
+    const [hasMovement, setHasMovement] = useState(false);
 
     const [players, setPlayers] = useState<Player[]>([]);
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
-    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null >(null);
-    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null >(null);
+    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
+    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
     const [moveCard, setMoveCard] = useState<string>("");
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
@@ -51,7 +52,7 @@ export function Game() {
         // Add other properties as needed
     }
 
-    
+
     useEffect(() => {
         const fetchGame = async () => {
             try {
@@ -110,11 +111,11 @@ export function Game() {
                     if (command[1] === "left") {
                         setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
                     }
-                }else if (command[0] === "movement") {
+                } else if (command[0] === "movement") {
                     if (command[1] === "card") {
                         setSocketDataMove(socketData.payload);
                     }
-                }else if (command[0] === "moves") {
+                } else if (command[0] === "moves") {
                     if (command[1] === "cancelled") {
                         setSocketDataCancel(socketData.payload);
                     }
@@ -123,17 +124,22 @@ export function Game() {
         }
     }, [socket, players]);
 
-    function callUseMoveCard(id_player:number, index1:number, index2:number) {
+    async function callUseMoveCard(id_player: number, index1: number, index2: number) {
         if (id_player !== null) {
-            const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type ") );
+            const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type "));
             if (card) {
-                use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
+                const resp = await use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
+                if (resp === 'Carta usada con exito!') {
+                    setHasMovement(true);
+                } else {
+                    alert(resp);
+                }
             }
         }
     }
     const currentPlayer = players.find(player => player.id === id_player);
     const rivales = players.filter(player => player.id !== id_player);
-    
+
     return (
         <div className="w-screen h-screen grid grid-rows-10 grid-cols-12 md:grid-rows-12 items-center justify-center overflow-hidden p-4">
             {winnerPlayer && (
@@ -156,18 +162,18 @@ export function Game() {
             </div>
             {/* Tablero de juego */}
             <div className="h-full row-span-4 col-span-12 md:row-span-6 md:col-span-4 md:row-start-4 md:col-start-5">
-            {id_game !== null && id_player !== null && <Gameboard 
-                                                                id_game={id_game} 
-                                                                id_player={id_player}
-                                                                selectedTurn={selectedTurn} 
-                                                                playerTurn={playerTurn} 
-                                                                moveCard={moveCard}
-                                                                callUseMoveCard={callUseMoveCard}
-                                                                socketDataMove={socketDataMove}
-                                                                setSocketDataMove={setSocketDataMove}
-                                                                socketDataCancel={socketDataCancel}
-                                                                setSocketDataCancel={setSocketDataCancel}
-                                                                />}
+                {id_game !== null && id_player !== null && <Gameboard
+                    id_game={id_game}
+                    id_player={id_player}
+                    selectedTurn={selectedTurn}
+                    playerTurn={playerTurn}
+                    moveCard={moveCard}
+                    callUseMoveCard={callUseMoveCard}
+                    socketDataMove={socketDataMove}
+                    setSocketDataMove={setSocketDataMove}
+                    socketDataCancel={socketDataCancel}
+                    setSocketDataCancel={setSocketDataCancel}
+                />}
 
             </div>
             {/* current player */}
@@ -187,26 +193,26 @@ export function Game() {
                         <div className="col-span-6 grid grid-cols-6 w-full h-full gap-1 md:grid-rows-1">
                             {figureCards.filter(card => card.player_id === currentPlayer.id).map((figure: FigureCard, index_id) => (
                                 <button key={figure.id_figure} className="w-full h-full">
-                                    <Card 
-                                    type={true} 
-                                    index={parseInt(figure.type_figure.split(" ")[1], 10)} 
-                                    id = {`figure-${index_id}`} 
-                                    selectedCard={selectedFigureCard} 
-                                    setSelectedCard={setSelectedFigureCard}
-                                    isSelectable={selectedTurn === currentPlayer.turn}
-                                    setMoveCard={setMoveCard}/>
+                                    <Card
+                                        type={true}
+                                        index={parseInt(figure.type_figure.split(" ")[1], 10)}
+                                        id={`figure-${index_id}`}
+                                        selectedCard={selectedFigureCard}
+                                        setSelectedCard={setSelectedFigureCard}
+                                        isSelectable={selectedTurn === currentPlayer.turn}
+                                        setMoveCard={setMoveCard} />
                                 </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
                                 <button key={movement.id_movement} className="w-full h-full">
-                                    <Card 
-                                    type={false} 
-                                    index={parseInt(movement.type_movement.split(" ")[1], 10)} 
-                                    id = {`movement-${index_id}`} 
-                                    selectedCard={selectedMovementCard} 
-                                    setSelectedCard={setSelectedMovementCard}
-                                    isSelectable={selectedTurn === currentPlayer.turn}
-                                    setMoveCard={setMoveCard}/>
+                                    <Card
+                                        type={false}
+                                        index={parseInt(movement.type_movement.split(" ")[1], 10)}
+                                        id={`movement-${index_id}`}
+                                        selectedCard={selectedMovementCard}
+                                        setSelectedCard={setSelectedMovementCard}
+                                        isSelectable={selectedTurn === currentPlayer.turn}
+                                        setMoveCard={setMoveCard} />
                                 </button>
                             ))}
                         </div>
@@ -219,16 +225,16 @@ export function Game() {
                     <div key={player.id + index} className={clsx(
                         "col-span-12 w-full h-full p-1",
                         {
-                            "md:row-start-2 md:row-span-2 md:col-start-4":index === 0,
-                            "md:row-start-5 md:row-span-3  md:col-span-4":index === 1,
-                            "md:row-start-5 md:col-start-9 md:row-span-3  md:col-span-4":index === 2,
+                            "md:row-start-2 md:row-span-2 md:col-start-4": index === 0,
+                            "md:row-start-5 md:row-span-3  md:col-span-4": index === 1,
+                            "md:row-start-5 md:col-start-9 md:row-span-3  md:col-span-4": index === 2,
                         }
                     )}>
                         <div className={clsx(
                             "grid grid-cols-7 w-full h-full items-center justify-center ",
                             {
-                                "md:grid-rows-2":index === 0,
-                                "md:grid-cols-4 md:grid-rows-3":index === 1 || index === 2,
+                                "md:grid-rows-2": index === 0,
+                                "md:grid-cols-4 md:grid-rows-3": index === 1 || index === 2,
                             }
 
                         )}>
@@ -239,21 +245,21 @@ export function Game() {
                             <div className={clsx(
                                 "col-span-6 grid grid-cols-6 w-full h-full gap-1",
                                 {
-                                    "md:row-span-2":index === 0,
-                                    "md:row-span-2 md:grid-cols-3":index === 1 || index === 2,
+                                    "md:row-span-2": index === 0,
+                                    "md:row-span-2 md:grid-cols-3": index === 1 || index === 2,
                                 }
 
                             )}>
                                 {figureCards.filter(card => card.player_id === player.id).map((figure: FigureCard, index_id) => (
                                     <button key={figure.id_figure} className="w-full h-full">
-                                        <Card 
-                                        type={true} 
-                                        index={parseInt(figure.type_figure.split(" ")[1], 10)} 
-                                        id = {`rival-${index}-figure-${index_id}`} 
-                                        selectedCard={selectedFigureCard} 
-                                        setSelectedCard={setSelectedFigureCard}
-                                        isSelectable={selectedTurn === playerTurn}
-                                        setMoveCard={setMoveCard}/>
+                                        <Card
+                                            type={true}
+                                            index={parseInt(figure.type_figure.split(" ")[1], 10)}
+                                            id={`rival-${index}-figure-${index_id}`}
+                                            selectedCard={selectedFigureCard}
+                                            setSelectedCard={setSelectedFigureCard}
+                                            isSelectable={selectedTurn === playerTurn}
+                                            setMoveCard={setMoveCard} />
                                     </button>
                                 ))}
                             </div>
@@ -274,11 +280,25 @@ export function Game() {
                     >Salir</button> : <>
                     <button
                         className={`${playerTurn !== selectedTurn ? "hidden" : "md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"}`}
-                        onClick={() => {
+                        onClick={async () => {
                             if (id_player !== null) {
-                                end_turn(id_player);
+                                const resp = await end_turn(id_player);
+                                if (resp === 'Turno finalizado') {
+                                    setHasMovement(false);
+                                } else {
+                                    alert(resp);
+                                }
                             }
                         }}>terminar turno</button>
+                    {(hasMovement && (playerTurn === selectedTurn)) &&
+                        <button
+                            className="md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"
+                            onClick={async () => {
+                                if (id_game !== null && id_player !== null) {
+                                    const resp = await revert_movements({ game_id: id_game, player_id: id_player });
+                                    if (resp === "Movimientos revertidos") setHasMovement(false);
+                                }
+                            }}>Revertir movimeintos</button>}
                     <button
                         onClick={async () => {
                             if (id_player !== null) {
