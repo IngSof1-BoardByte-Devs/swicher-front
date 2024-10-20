@@ -11,6 +11,7 @@ export default function Home() {
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
   const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
+  const [searchNumber, setSearchNumber] = useState(0); // Estado para el número de búsqueda
   const controls = useAnimation();
 
   interface Game {
@@ -40,7 +41,7 @@ export default function Home() {
     });
   }, []);
 
-  const gameChangePlayers = (game_id: number, type:number) => {
+  const gameChangePlayers = (game_id: number, type: number) => {
     setGames(games => games.map(game => {
       if (game.game_id === game_id) {
         return { ...game, players: game.players + type };
@@ -54,13 +55,13 @@ export default function Home() {
       socket.onmessage = (event) => {
         const socketData = JSON.parse(event.data);
         const command = socketData.event.split(".");
-        if (command[0] === "game"){                                           // game comands
+        if (command[0] === "game") {                                           // game comands
           if (command[1] === "new") {                                         // new game
             setGames(games => [...games, socketData.payload as Game]);
           } else if (command[1] === "canceled" || command[1] === "start") {   // canceled or start game
             setGames(games => games.filter(game => game.game_id !== socketData.payload.game_id));
           }
-        } else if (command[0] === "player"){                                  // player commands
+        } else if (command[0] === "player") {                                  // player commands
           if (command[1] === "new") {                                         // new player
             gameChangePlayers(socketData.payload.game_id, 1);
           } else if (command[1] === "leave") {                                // leave player
@@ -73,7 +74,9 @@ export default function Home() {
     }
   }, [socket]);
 
-  const filteredGames = games.filter(game => game.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  let filteredGames = games;
+  filteredGames = games.filter(game => game.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  filteredGames = searchNumber === 0 ? filteredGames : filteredGames.filter(game => game.players === searchNumber);
 
   useEffect(() => {
     controls.start({
@@ -112,6 +115,15 @@ export default function Home() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        <select className="w-full p-2 my-2 border rounded text-black"
+          value={searchNumber}
+          onChange={(e) => setSearchNumber(Number(e.target.value))}
+          style={{ color: "#8c8c8c" }}>
+          <option value={0}>Bucar por cantidad de jugadores</option>
+          <option value={1}>1 jugador</option>
+          <option value={2}>2 jugadores</option>
+          <option value={3}>3 jugadores</option>
+        </select>
         <div className="w-full max-h-[650px] border overflow-auto shadow">
           <div className="flex flex-col divide-y-2 h-full">
             {filteredGames.length === 0 && <div className="text-center p-2">No hay partidas disponibles</div>}
