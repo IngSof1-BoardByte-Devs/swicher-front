@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Gameboard } from "@/components/gameboard";
 import { Card } from "@components/cards";
 import { end_turn } from "@/lib/board";
@@ -9,7 +9,7 @@ import { Winner } from "@/components/winner";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import clsx from "clsx";
-import { fetch_figure_cards, fetch_movement_cards } from "@/lib/card";
+import { fetch_figure_cards, fetch_movement_cards, use_movement_cards } from "@/lib/card";
 import { useRouter } from "next/navigation";
 
 export function Game() {
@@ -30,6 +30,9 @@ export function Game() {
     const [selectedFigureCard, setSelectedFigureCard] = useState<string | null >(null);
     const [moveCard, setMoveCard] = useState<string>("");
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
+
+    const [socketDataMove, setSocketDataMove] = useState<any>(null);
+    const [socketDataCancel, setSocketDataCancel] = useState<any>(null);
 
     interface Player {
         id: number;
@@ -107,11 +110,27 @@ export function Game() {
                     if (command[1] === "left") {
                         setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
                     }
+                }else if (command[0] === "movement") {
+                    if (command[1] === "card") {
+                        setSocketDataMove(socketData.payload);
+                    }
+                }else if (command[0] === "moves") {
+                    if (command[1] === "cancelled") {
+                        setSocketDataCancel(socketData.payload);
+                    }
                 }
             };
         }
     }, [socket, players]);
 
+    function callUseMoveCard(id_player:number, index1:number, index2:number) {
+        if (id_player !== null) {
+            const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type ") );
+            if (card) {
+                use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
+            }
+        }
+    }
     const currentPlayer = players.find(player => player.id === id_player);
     const rivales = players.filter(player => player.id !== id_player);
     
@@ -143,6 +162,11 @@ export function Game() {
                                                                 selectedTurn={selectedTurn} 
                                                                 playerTurn={playerTurn} 
                                                                 moveCard={moveCard}
+                                                                callUseMoveCard={callUseMoveCard}
+                                                                socketDataMove={socketDataMove}
+                                                                setSocketDataMove={setSocketDataMove}
+                                                                socketDataCancel={socketDataCancel}
+                                                                setSocketDataCancel={setSocketDataCancel}
                                                                 />}
 
             </div>
