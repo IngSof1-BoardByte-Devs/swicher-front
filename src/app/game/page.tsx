@@ -29,6 +29,7 @@ export function Game() {
     const [selectedMovementCard, setSelectedMovementCard] = useState<string | null >(null);
     const [selectedFigureCard, setSelectedFigureCard] = useState<string | null >(null);
     const [moveCard, setMoveCard] = useState<string>("");
+    const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
     interface Player {
         id: number;
@@ -97,7 +98,10 @@ export function Game() {
                     if (command[1] === "turn") {
                         setSelectedTurn(socketData.payload.turn);
                     } else if (command[1] === "winner") {
-                        setPlayers(players => players.filter(player => player.username === socketData.payload.username));
+                        const winner = players.find(player => player.id === socketData.payload.player_id);
+                        if (winner) {
+                            setWinnerPlayer(winner);
+                        }
                     }
                 } else if (command[0] === "player") {
                     if (command[1] === "left") {
@@ -110,13 +114,14 @@ export function Game() {
 
     const currentPlayer = players.find(player => player.id === id_player);
     const rivales = players.filter(player => player.id !== id_player);
+    
     return (
         <div className="w-screen h-screen grid grid-rows-10 grid-cols-12 md:grid-rows-12 items-center justify-center overflow-hidden p-4">
-            {players.length === 1 &&
+            {winnerPlayer && (
                 <div className="z-50">
-                    <Winner player_name={players[0].username} />
+                    <Winner player_name={winnerPlayer.username} />
                 </div>
-            }
+            )}
             {/* Header: Turno Actual, Nombre de Partida y Color Bloqueado */}
             <div className="col-span-12 place-content-center text-center h-full grid grid-cols-2">
                 <p className="text-2xl font-bold">Partida: {gameName}</p>
