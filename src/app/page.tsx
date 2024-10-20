@@ -4,12 +4,14 @@ import { fetch_games } from "@/lib/game";
 import { useEffect, useState } from "react";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import clsx from "clsx";
-
+import { motion, useAnimation } from "framer-motion";
 
 export default function Home() {
   const [createGame, setCreateGame] = useState(false);
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
+  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
+  const controls = useAnimation();
 
   interface Game {
     game_id: number;
@@ -71,34 +73,63 @@ export default function Home() {
     }
   }, [socket]);
 
+  const filteredGames = games.filter(game => game.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  useEffect(() => {
+    controls.start({
+      color: ["#00FF00", "#FF0000", "#800080", "#00FFFF"],
+      transition: { repeat: Infinity, duration: 6, ease: "easeInOut" },
+    });
+  }, [controls]);
+
   const devs = ["Ramiro cuellar", "Juan Quintero", "Juan Mazzaforte", "Daniela Courel", "Aaron Lihuel", "Franco Bustos"];
   return (
     <div className="w-full h-dvh grid grid-rows-6 grid-flow-dense">
-      <div className="row-span-1">
+      {/* Title */}
+      <motion.div
+        className="row-span-1"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      >
         <main className="flex items-center justify-center w-full h-full">
-          <h1 className="text-4xl text-center uppercase font-semibold">boardbyte devs switcher</h1>
+          <h1 className="text-4xl text-center uppercase font-semibold">
+            boardbyte devs{" "}
+            <motion.span animate={controls}>SWITCHER</motion.span>
+          </h1>
         </main>
-      </div>
+      </motion.div>
       <div className="row-span-4 p-4 md:px-52 lg:px-80">
         <div className="flex justify-between">
           <div>{"Nombre de partidas"}</div>
           <div>{"Cantidad de jugadores"}</div>
         </div>
+        {/* Search bar */}
+        <input
+          type="text"
+          placeholder="Buscar partidas..."
+          className="w-full p-2 my-2 border rounded text-black"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <div className="w-full max-h-[650px] border overflow-auto shadow">
           <div className="flex flex-col divide-y-2 h-full">
-            {games.length === 0 && <div className="text-center p-2 ">No hay partidas disponibles</div>}
-            {games.map((game, index) => {
+            {filteredGames.length === 0 && <div className="text-center p-2">No hay partidas disponibles</div>}
+            {filteredGames.map((game, index) => {
               return (
-                <button key={game.game_id + index} className={clsx("p-4", {
-                  "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === game.game_id,
-                  "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== game.game_id
-                })} onClick={() => { setSelectedId(game.game_id) }}>
+                <button
+                  key={game.game_id + index}
+                  className={clsx("p-4", {
+                    "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === game.game_id,
+                    "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== game.game_id,
+                  })}
+                  onClick={() => { setSelectedId(game.game_id) }}>
                   <div className="flex justify-between">
                     <div>{game.name}</div>
                     <div>{game.players}</div>
                   </div>
                 </button>
-              )
+              );
             })}
           </div>
         </div>
