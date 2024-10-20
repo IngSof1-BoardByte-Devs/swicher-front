@@ -29,6 +29,8 @@ export function Game() {
     const [selectedMovementCard, setSelectedMovementCard] = useState<string | null >(null);
     const [selectedFigureCard, setSelectedFigureCard] = useState<string | null >(null);
     const [moveCard, setMoveCard] = useState<string>("");
+    const [socketDataMove, setSocketDataMove] = useState<any>(null);
+    const [socketDataCancel, setSocketDataCancel] = useState<any>(null);
 
     interface Player {
         id: number;
@@ -103,6 +105,14 @@ export function Game() {
                     if (command[1] === "left") {
                         setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
                     }
+                }else if (command[0] === "movement") {
+                    if (command[1] === "card") {
+                        setSocketDataMove(socketData.payload);
+                    }
+                }else if (command[0] === "moves") {
+                    if (command[1] === "cancelled") {
+                        setSocketDataCancel(socketData.payload);
+                    }
                 }
             };
         }
@@ -147,6 +157,10 @@ export function Game() {
                                                                 playerTurn={playerTurn} 
                                                                 moveCard={moveCard}
                                                                 callUseMoveCard={callUseMoveCard}
+                                                                socketDataMove={socketDataMove}
+                                                                setSocketDataMove={setSocketDataMove}
+                                                                socketDataCancel={socketDataCancel}
+                                                                setSocketDataCancel={setSocketDataCancel}
                                                                 />}
 
             </div>
