@@ -129,7 +129,7 @@ export function Game() {
             const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type "));
             if (card) {
                 const resp = await use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
-                if (resp === 'Carta usada con exito!'){
+                if (resp === 'Carta usada con exito!') {
                     setHasMovement(true);
                 } else {
                     alert(resp);
@@ -139,7 +139,7 @@ export function Game() {
     }
     const currentPlayer = players.find(player => player.id === id_player);
     const rivales = players.filter(player => player.id !== id_player);
-    
+
     return (
         <div className="w-screen h-screen grid grid-rows-10 grid-cols-12 md:grid-rows-12 items-center justify-center overflow-hidden p-4">
             {winnerPlayer && (
@@ -288,14 +288,14 @@ export function Game() {
                                 }
                             }
                         }}>terminar turno</button>
-                    {(hasMovement && (playerTurn === selectedTurn)) && 
+                    {(hasMovement && (playerTurn === selectedTurn)) &&
                         <button
-                        className="md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"
-                        onClick={() => {
-                            if (id_game !== null) {
-                                revert_movements({game_id:id_game});
-                            }
-                        }}>Revertir movimeintos</button>}
+                            className="md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"
+                            onClick={() => {
+                                if (id_game !== null && id_player !== null) {
+                                    revert_movements({ game_id: id_game, player_id: id_player });
+                                }
+                            }}>Revertir movimeintos</button>}
                     <button
                         onClick={async () => {
                             if (id_player !== null) {

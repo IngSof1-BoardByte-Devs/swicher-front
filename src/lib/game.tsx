@@ -167,11 +167,13 @@ export async function leave_game({ player_id }: { player_id: number }) {
   }
 }
 
-export async function revert_movements({ game_id }: { game_id: number }) {
+export async function revert_movements({ game_id, player_id }: { game_id: number, player_id: number }) {
+  if (!game_id || !player_id) return "Id de jugador o partida invalidos";
   try {
     const response = await fetch(`http://localhost:8000/games/${game_id}/revert-moves`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id }),
     });
       if (!response.ok) {
         const errorResponse = await response.json();
