@@ -11,6 +11,7 @@ import { useGameInfo } from '@app/contexts/GameInfoContext';
 import clsx from "clsx";
 import { fetch_figure_cards, fetch_movement_cards, use_figure_cards, use_movement_cards } from "@/lib/card";
 import { useRouter } from "next/navigation";
+import { a } from "framer-motion/client";
 
 export function Game() {
     const { socket } = useWebSocket();
@@ -361,6 +362,9 @@ export function Game() {
                     <button
                         onClick={async () => {
                             if (id_player !== null) {
+                                if (playerTurn === selectedTurn) {
+                                    await end_turn(id_player);
+                                }
                                 await leave_game({ player_id: id_player })
                                 const new_players = players.filter(player => player.id !== id_player)
                                 setPlayers(new_players)
