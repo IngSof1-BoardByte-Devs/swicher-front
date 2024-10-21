@@ -76,9 +76,9 @@ const movementCards: { [key: string]: string } = {
   mov7: mov7,
 };
 
-export function Card({ type, index, id, selectedCard, setSelectedCard, isSelectable, setMoveCard, usedCard }:
- { type: boolean; index: number; id: string; selectedCard: string | null; setSelectedCard: (id: string | null) => void;
-   isSelectable: boolean; setMoveCard: (id: string) => void; usedCard: boolean; }) {
+export function Card({ type, index, id, idCard, selectedCard, setSelectedCard, isSelectable, setMoveCard, setFigCard, setFigCardId, usedCard }:
+ { type: boolean; index: number; id: string; idCard: number; selectedCard: string | null; setSelectedCard: (id: string | null) => void;
+   isSelectable: boolean; setMoveCard: (id: string) => void; usedCard: boolean; setFigCard: (id: string) => void; setFigCardId: (id: number | null) => void; }) {
   let cardPic;
   if (!type) {
     cardPic = movementCards[`mov${index}`];
@@ -99,10 +99,15 @@ export function Card({ type, index, id, selectedCard, setSelectedCard, isSelecta
           if (selectedCard === id) {
             setSelectedCard(null);
             setMoveCard("");
+            setFigCard("");
+            setFigCardId(null);
           } else {
             setSelectedCard(id);
             if (!type) { 
               setMoveCard(`mov${index}`)
+            }else{
+              setFigCard(`fig${index}`);
+              setFigCardId(idCard);
             }
           }
         }}

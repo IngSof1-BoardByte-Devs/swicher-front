@@ -9,7 +9,7 @@ import { Winner } from "@/components/winner";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import clsx from "clsx";
-import { fetch_figure_cards, fetch_movement_cards, use_movement_cards } from "@/lib/card";
+import { fetch_figure_cards, fetch_movement_cards, use_figure_cards, use_movement_cards } from "@/lib/card";
 import { useRouter } from "next/navigation";
 
 export function Game() {
@@ -30,6 +30,8 @@ export function Game() {
     const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
     const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
     const [moveCard, setMoveCard] = useState<string>("");
+    const [figCard, setFigCard] = useState<string>("");
+    const [figCatdId, setFigCardId] = useState<number | null>(null);
     const [usedCards, setUsedCards] = useState<number[]>([]);
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
@@ -84,11 +86,13 @@ export function Game() {
         if (id_game !== null) {
             fetch_figure_cards({ id_game }).then((data: FigureCard[]) => {
                 setFigureCards(data);
+                console.log(data);
             });
         }
         if (id_player !== null) {
             fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
                 setMovementCards(data)
+                console.log(data);
             });
         }
 
@@ -152,6 +156,17 @@ export function Game() {
             }
         }
     }
+
+    async function callUseFigCard(id_player: number, id_card: number) {
+        if (id_player !== null && id_card !== null) {
+             const resp = await use_figure_cards({ id_player, id_card: id_card });
+             if (resp.status === 200) {
+                 setHasMovement(false);
+             } else {
+                 alert(resp);
+             }
+        }
+    }
     const currentPlayer = players.find(player => player.id === id_player);
     const rivales = players.filter(player => player.id !== id_player);
 
@@ -184,6 +199,9 @@ export function Game() {
                                                                 playerTurn={playerTurn} 
                                                                 moveCard={moveCard}
                                                                 callUseMoveCard={callUseMoveCard}
+                                                                figCard={figCard}
+                                                                figCardId={figCatdId}
+                                                                callUseFigCard={callUseFigCard}
                                                                 socketDataMove={socketDataMove}
                                                                 setSocketDataMove={setSocketDataMove}
                                                                 socketDataCancel={socketDataCancel}
@@ -213,10 +231,13 @@ export function Game() {
                                     type={true} 
                                     index={parseInt(figure.type_figure.split(" ")[1], 10)} 
                                     id = {`figure-${index_id}`} 
+                                    idCard={figure.id_figure}
                                     selectedCard={selectedFigureCard} 
                                     setSelectedCard={setSelectedFigureCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
-                                    setMoveCard={setMoveCard}
+                                    setMoveCard={()=>{}}
+                                    setFigCard={setFigCard}
+                                    setFigCardId={setFigCardId}
                                     usedCard = {false}/>
                                 </button>
                             ))}
@@ -226,10 +247,13 @@ export function Game() {
                                     type={false} 
                                     index={parseInt(movement.type_movement.split(" ")[1], 10)} 
                                     id = {`movement-${index_id}`} 
+                                    idCard={movement.id_movement}
                                     selectedCard={selectedMovementCard} 
                                     setSelectedCard={setSelectedMovementCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
                                     setMoveCard={setMoveCard}
+                                    setFigCard={()=>{}}
+                                    setFigCardId={()=>{}}
                                     usedCard={usedCards.includes(movement.id_movement)}/>                                    
                                 </button>
                             ))}
@@ -274,10 +298,13 @@ export function Game() {
                                         type={true} 
                                         index={parseInt(figure.type_figure.split(" ")[1], 10)} 
                                         id = {`rival-${index}-figure-${index_id}`} 
+                                        idCard={figure.id_figure}
                                         selectedCard={selectedFigureCard} 
                                         setSelectedCard={setSelectedFigureCard}
                                         isSelectable={selectedTurn === playerTurn}
-                                        setMoveCard={setMoveCard}
+                                        setMoveCard={()=>{}}
+                                        setFigCard={setFigCard}
+                                        setFigCardId={()=>{}}
                                         usedCard={false}/>
                                     </button>
                                 ))}
