@@ -119,7 +119,7 @@ export function Game() {
                 }else if (command[0] === "figure") {
                     if (command[1] === "card") {
                       if(command[2] === "used"){
-                        setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
+                        setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.card_id && card.player_id !== socketData.payload.player_id)); 
                         setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
                         setUsedCards([]); 
                       }else if (command[2] === "added") {
@@ -128,7 +128,7 @@ export function Game() {
                     }
                 } else if (command[0] === "movement") {
                     if (command[1] === "card") {
-                    setUsedCards([...usedCards, socketData.payload.id_movement]);
+                        setUsedCards([...usedCards, socketData.payload.card_id]);
                         setSocketDataMove(socketData.payload);
                     }
                 } else if (command[0] === "moves") {
@@ -139,7 +139,7 @@ export function Game() {
                 } 
             };
         }
-    }, [socket, players]);
+    }, [socket, players, usedCards, figureCards, movementCards]);
 
     async function callUseMoveCard(id_player: number, index1: number, index2: number) {
         if (id_player !== null) {
@@ -320,7 +320,7 @@ export function Game() {
                             onClick={async () => {
                                 if (id_game !== null && id_player !== null) {
                                     const resp = await revert_movements({ game_id: id_game, player_id: id_player });
-                                    if (resp === "Movimientos revertidos") setHasMovement(false);
+                                    if (resp === "Movimientos revertidos") setHasMovement(false), setUsedCards([]);
                                 }
                             }}>Revertir movimeintos</button>}
                     <button
