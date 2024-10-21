@@ -35,6 +35,9 @@ export function Game() {
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
     const [socketDataCancel, setSocketDataCancel] = useState<any>(null);
 
+    const [moveCardSow, setMoveCardSow] = useState<number>(0); // Carta a mostrar
+    const [isCardVisible, setIsCardVisible] = useState(false);
+
     interface Player {
         id: number;
         username: string;
@@ -87,6 +90,7 @@ export function Game() {
         if (id_player !== null) {
             fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
                 setMovementCards(data)
+                console.log(data)
             });
         }
 
@@ -114,6 +118,19 @@ export function Game() {
                 } else if (command[0] === "movement") {
                     if (command[1] === "card") {
                         setSocketDataMove(socketData.payload);
+
+                        const type: string = socketData.payload.type.replace("Type ", "");
+                        console.log(type != "")
+
+                        if (type != "") {
+                            setMoveCardSow(Number(type));
+                            setIsCardVisible(true); // Mostrar la carta
+                            console.log(isCardVisible)
+
+                            // Después de 3 segundos, ocultar la carta
+                            setTimeout(() => {
+                            }, 3000);
+                        }
                     }
                 } else if (command[0] === "moves") {
                     if (command[1] === "cancelled") {
@@ -122,7 +139,7 @@ export function Game() {
                 }
             };
         }
-    }, [socket, players]);
+    }, [socket, players, isCardVisible, moveCardSow]);
 
     async function callUseMoveCard(id_player: number, index1: number, index2: number) {
         if (id_player !== null) {
@@ -147,6 +164,22 @@ export function Game() {
                     <Winner player_name={winnerPlayer.username} />
                 </div>
             )}
+            {/* Mostrar la Card temporalmente con animación */}
+            
+                {isCardVisible && selectedTurn !== playerTurn && moveCardSow && (
+                    <div className="absolute top-10 left-1/2 transform -translate-x-1/2 z-50">
+                        <Card
+                            type={false}
+                            index={moveCardSow}
+                            id={`movement-card-0`}
+                            selectedCard={null}
+                            setSelectedCard={() => { }} // No necesario 
+                            isSelectable={false}
+                            setMoveCard={() => { }} // No necesario 
+                        />
+                    </div>
+                )}
+        
             {/* Header: Turno Actual, Nombre de Partida y Color Bloqueado */}
             <div className="col-span-12 place-content-center text-center h-full grid grid-cols-2">
                 <p className="text-2xl font-bold">Partida: {gameName}</p>

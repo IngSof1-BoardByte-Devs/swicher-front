@@ -2,10 +2,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Piece } from "@components/piece";
 import { fetch_board } from "@/lib/board";
-import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import { motion } from "framer-motion";
-import { u } from "framer-motion/client";
 
 export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel }: 
     { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, socketDataMove:any, setSocketDataMove:(data:any)=>void, setSocketDataCancel:(data:any)=>void, socketDataCancel:any , moveCard: string, callUseMoveCard: (id_player: number, index1: number, index2: number ) => void }) {
@@ -13,7 +11,6 @@ export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard,
     const [figures, setFigures] = useState<{ color: number }[]>([]);
     const [selected, setSelected] = useState<number | undefined>();
     const [selectedFigures, setSelectedFigures] = useState<number[]>([]);
-    const [moveCardToSow, setMoveCardToShow] = useState(""); // Carta de movimiento seleccionada
     const { id_game, id_player } = useGameInfo();
     const [swappingPieces, setSwappingPieces] = useState<number[]>([]); // Estado para las piezas en intercambio
 
