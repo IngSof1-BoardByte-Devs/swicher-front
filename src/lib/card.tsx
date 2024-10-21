@@ -98,12 +98,15 @@ export async function use_figure_cards({ id_player, id_card }: { id_player: numb
   console.log("playerId", playerId);
   try {
     const response = await fetch(
-      `http://localhost:8000/figure-cards/${card_id}/?playerId=${playerId}`,
+      `http://localhost:8000/figure-cards/${card_id}/`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          playerId,
+        }),
       }
     );
     if (response.status === 200) {
@@ -116,4 +119,5 @@ export async function use_figure_cards({ id_player, id_card }: { id_player: numb
   } catch (error) {
     return "Ocurrio un error desconocido";
   }
+
 }
