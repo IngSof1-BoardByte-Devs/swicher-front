@@ -148,6 +148,7 @@ export function Game() {
             const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type "));
             if (card) {
                 const resp = await use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
+                console.log(resp);
                 if (resp === 'Carta usada con exito!') {
                     setHasMovement(true);
                 } else {
@@ -160,7 +161,8 @@ export function Game() {
     async function callUseFigCard(id_player: number, id_card: number) {
         if (id_player !== null && id_card !== null) {
              const resp = await use_figure_cards({ id_player, id_card: id_card });
-             if (resp.status === 200) {
+             console.log(resp);
+             if (resp === "Carta usada con exito!") {
                  setHasMovement(false);
              } else {
                  alert(resp);
