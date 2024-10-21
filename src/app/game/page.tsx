@@ -113,8 +113,8 @@ export function Game() {
                         setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
                     }
                 }else if (command[0] === "figure") {
-                    if (command[1]) === "card" {
-                      fi(command[3] === "used"){
+                    if (command[1] === "card") {
+                      if(command[3] === "used"){
                         setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
                         setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
                         setUsedCards([]); 
@@ -213,6 +213,7 @@ export function Game() {
                                     isSelectable={selectedTurn === currentPlayer.turn}
                                     setMoveCard={setMoveCard}
                                     usedCard = {false}/>
+                                </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
                                 <button key={movement.id_movement} className="w-full h-full">
@@ -323,7 +324,7 @@ export function Game() {
                         className={`md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 ${playerTurn !== selectedTurn ? "col-span-2" : ""}`}>abandonar partida</button>
                 </>}
             </div>
-        </div >
+        </div>
     );
 }
 
