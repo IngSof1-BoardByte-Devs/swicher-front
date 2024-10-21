@@ -3,29 +3,34 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Piece } from "@components/piece";
 import { fetch_board } from "@/lib/board";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
+import { useGameInfo } from '@app/contexts/GameInfoContext';
 import { motion } from "framer-motion";
-import { use_movement_cards } from "@/lib/card";
+import { u } from "framer-motion/client";
 
-export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCard}: 
-    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, moveCard: string}) {
+export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel }: 
+    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, socketDataMove:any, setSocketDataMove:(data:any)=>void, setSocketDataCancel:(data:any)=>void, socketDataCancel:any , moveCard: string, callUseMoveCard: (id_player: number, index1: number, index2: number ) => void }) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
     const [figures, setFigures] = useState<{ color: number }[]>([]);
     const [selected, setSelected] = useState<number | undefined>();
     const [selectedFigures, setSelectedFigures] = useState<number[]>([]);
     const [moveCardToSow, setMoveCardToShow] = useState(""); // Carta de movimiento seleccionada
-    const { socket } = useWebSocket();
+    const { id_game, id_player } = useGameInfo();
     const [swappingPieces, setSwappingPieces] = useState<number[]>([]); // Estado para las piezas en intercambio
 
-    const fetchBoard = async () => {
-        try {
-            const data = await fetch_board({ id_game });
-            setFigures(data.board);
-        } catch (err) {
-            console.error("Failed to fetch board:", err);
-        }
-    };
+    
 
     useEffect(() => {
+        const fetchBoard = async () => {
+            try {
+                if (id_game) {
+                    
+                    const data = await fetch_board({ id_game });
+                    setFigures(data.board);
+                }
+            } catch (err) {
+                console.error("Failed to fetch board:", err);
+            }
+        };
         fetchBoard();
     }, [id_game]);
     const colorFigure = useCallback(
@@ -68,33 +73,34 @@ export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCar
         }
     }, [selected, figures, colorFigure]);
     useEffect(() => {
-        if (socket) {
-            socket.onmessage = (event) => {
-                const socketData = JSON.parse(event.data);
-                if (socketData.event === "movement.card.used") {
-                    const { index1, index2 } = socketData.payload;
-                    setMoveCardToShow(socketData.payload.card_id);
-                    swapPieces(index1, index2);
-                    setSelectedPiece(null); 
-                    fetchBoard();
-                } else if (socketData.event === "moves.cancelled") {
-                    socketData.payload.forEach(({ card_id, position1, position2 }: { card_id: number, position1: number, position2: number }) => {
-                        swapPieces(position1, position2);
-                    });
-                    fetchBoard();
-                } 
-            };
+        if (socketDataMove) {
+            const { position1, position2 } = socketDataMove;
+            swapPieces(position1, position2);
+            setSelectedPiece(null);
+            setSocketDataMove(null);
+        }else if (socketDataCancel) {
+            socketDataCancel.forEach(({ card_id, position1, position2 }: { card_id: number, position1: number, position2: number }) => {
+                swapPieces(position1, position2);
+            });
+            setSocketDataCancel(null);
         }
-    }, [socket, figures]);
+    }, [socketDataCancel, socketDataMove]);
 
     const swapPieces = (index1: number, index2: number) => {
         setSwappingPieces([index1, index2]); 
-
+        // Actualiza el estado del tablero con el intercambio
+        setFigures((prevFigures) => {
+            const newFigures = [...prevFigures];
+            [newFigures[index1], newFigures[index2]] = [newFigures[index2], newFigures[index1]];
+            return newFigures;
+        });
+    
         // Esperar a que la animación de desaparición ocurra
         setTimeout(() => {
             setSwappingPieces([]);
         }, 500); // Duración de la animación de desaparición (0.5s)
     };
+    
 
     function parseIndex(i: number): { x: number, y: number } {
         const x = Math.floor(i / 6); 
@@ -169,8 +175,10 @@ export function Gameboard({ id_game,id_player, selectedTurn, playerTurn, moveCar
         }
 
         if (result) {
-           const result = use_movement_cards({ id_player, id_card: 1, index1: selectedPiece, index2: index });
-            setSelectedPiece(null);
+            if (id_player) {
+                callUseMoveCard(id_player, selectedPiece, index );
+                setSelectedPiece(null);
+            }
         }else{
             alert("Las piezas no coinciden con el movimiento seleccionado");
             setSelectedPiece(null);

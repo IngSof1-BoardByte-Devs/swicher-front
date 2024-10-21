@@ -44,7 +44,7 @@ export default function LobbyPage() {
         if (command[0] === "game") {                  // game commands
           if (command[1] === "start"){                // start game
             router.push("/game/");
-          } else if (command[1] === "cancelled") {    // canceled game
+          } else if (command[1] === "cancelled" && id_game === socketData.payload.game_id) {    // canceled game
             router.push("/");
           }
         } else if (command[0] === "player") {         // player commands
@@ -88,10 +88,10 @@ export default function LobbyPage() {
       return
     };
     const response = await leave_game({player_id: id_player})
-    if (response === "Saliendo del juego") {
+    if (response.status === "OK") {
       alert("Has abandonado la partida");
       router.push("/");
-    } else if (response === "Error al salir del juego") {
+    } else if (response.message === "Error al salir del juego") {
       alert("Error al salir del juego");
     } else {
       alert("Error inesperado");

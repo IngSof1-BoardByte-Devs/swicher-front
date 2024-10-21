@@ -20,34 +20,27 @@ export async function fetch_board({ id_game }: { id_game: number }) {
   }
 }
 export async function end_turn(player_id: number) {
-  if (!player_id) {
-    console.error("Error: el player_id must be filed");
-    return { status: "ERROR", message: "id de jugador invalido" };
-  }
-
+  if (!player_id) return "No se proporciono el id del jugador";
   try {
     const response = await fetch(
       `http://localhost:8000/players/${player_id}/turn`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ player_id }),
       }
     );
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      throw new Error(errorResponse.detail);
+    if (response.status === 200) {
+      return "Turno finalizado";
+    } else if (response.status === 404) {
+      return "Jugador no encontrado";
+    } else if (response.status === 401) {
+      return "No es tu turno";
+    } else {
+      return "Ocurrio un error desconocido";
     }
-
-    const result = await response.json();
-    return result;
   } catch (error) {
     console.error("Failed to end turn:", error);
-    return {
-      status: "ERROR",
-      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
-    };
+    return "Ocurrio un error desconocido";
   }
 }
