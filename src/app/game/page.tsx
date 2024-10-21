@@ -109,6 +109,11 @@ export function Game() {
                 if (command[0] === "game") {
                     if (command[1] === "turn") {
                         setSelectedTurn(socketData.payload.turn);
+                        if (id_player) {
+                            fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
+                                setMovementCards(data)
+                            });
+                        }
                     } else if (command[1] === "winner") {
                         const winner = players.find(player => player.id === socketData.payload.player_id);
                         if (winner) {
@@ -338,9 +343,7 @@ export function Game() {
                                 const resp = await end_turn(id_player);
                                 if (resp === 'Turno finalizado') {
                                     setHasMovement(false);
-                                    fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
-                                        setMovementCards(data)
-                                    });
+                                    setUsedCards([]);
                                 } else {
                                     alert(resp);
                                 }
