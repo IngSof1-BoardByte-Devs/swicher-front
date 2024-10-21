@@ -30,6 +30,7 @@ export function Game() {
     const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
     const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
     const [moveCard, setMoveCard] = useState<string>("");
+    const [usedCards, setUsedCards] = useState<number[]>([]);
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
@@ -111,14 +112,24 @@ export function Game() {
                     if (command[1] === "left") {
                         setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
                     }
+                }else if (command[0] === "figure") {
+                    if (command[1] === "card") {
+                      if(command[2] === "used"){
+                        setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
+                        setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
+                        setUsedCards([]); 
+                      }
+                    }
                 } else if (command[0] === "movement") {
                     if (command[1] === "card") {
+                    setUsedCards([...usedCards, socketData.payload.id_movement]);
                         setSocketDataMove(socketData.payload);
                     }
                 } else if (command[0] === "moves") {
                     if (command[1] === "cancelled") {
                         setSocketDataCancel(socketData.payload);
                     }
+
                 }
             };
         }
@@ -193,26 +204,28 @@ export function Game() {
                         <div className="col-span-6 grid grid-cols-6 w-full h-full gap-1 md:grid-rows-1">
                             {figureCards.filter(card => card.player_id === currentPlayer.id).map((figure: FigureCard, index_id) => (
                                 <button key={figure.id_figure} className="w-full h-full">
-                                    <Card
-                                        type={true}
-                                        index={parseInt(figure.type_figure.split(" ")[1], 10)}
-                                        id={`figure-${index_id}`}
-                                        selectedCard={selectedFigureCard}
-                                        setSelectedCard={setSelectedFigureCard}
-                                        isSelectable={selectedTurn === currentPlayer.turn}
-                                        setMoveCard={setMoveCard} />
+                                    <Card 
+                                    type={true} 
+                                    index={parseInt(figure.type_figure.split(" ")[1], 10)} 
+                                    id = {`figure-${index_id}`} 
+                                    selectedCard={selectedFigureCard} 
+                                    setSelectedCard={setSelectedFigureCard}
+                                    isSelectable={selectedTurn === currentPlayer.turn}
+                                    setMoveCard={setMoveCard}
+                                    usedCard = {false}/>
                                 </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
                                 <button key={movement.id_movement} className="w-full h-full">
-                                    <Card
-                                        type={false}
-                                        index={parseInt(movement.type_movement.split(" ")[1], 10)}
-                                        id={`movement-${index_id}`}
-                                        selectedCard={selectedMovementCard}
-                                        setSelectedCard={setSelectedMovementCard}
-                                        isSelectable={selectedTurn === currentPlayer.turn}
-                                        setMoveCard={setMoveCard} />
+                                    <Card 
+                                    type={false} 
+                                    index={parseInt(movement.type_movement.split(" ")[1], 10)} 
+                                    id = {`movement-${index_id}`} 
+                                    selectedCard={selectedMovementCard} 
+                                    setSelectedCard={setSelectedMovementCard}
+                                    isSelectable={selectedTurn === currentPlayer.turn}
+                                    setMoveCard={setMoveCard}
+                                    usedCard={usedCards.includes(movement.id_movement)}/>                                    
                                 </button>
                             ))}
                         </div>
@@ -252,14 +265,15 @@ export function Game() {
                             )}>
                                 {figureCards.filter(card => card.player_id === player.id).map((figure: FigureCard, index_id) => (
                                     <button key={figure.id_figure} className="w-full h-full">
-                                        <Card
-                                            type={true}
-                                            index={parseInt(figure.type_figure.split(" ")[1], 10)}
-                                            id={`rival-${index}-figure-${index_id}`}
-                                            selectedCard={selectedFigureCard}
-                                            setSelectedCard={setSelectedFigureCard}
-                                            isSelectable={selectedTurn === playerTurn}
-                                            setMoveCard={setMoveCard} />
+                                        <Card 
+                                        type={true} 
+                                        index={parseInt(figure.type_figure.split(" ")[1], 10)} 
+                                        id = {`rival-${index}-figure-${index_id}`} 
+                                        selectedCard={selectedFigureCard} 
+                                        setSelectedCard={setSelectedFigureCard}
+                                        isSelectable={selectedTurn === playerTurn}
+                                        setMoveCard={setMoveCard}
+                                        usedCard={false}/>
                                     </button>
                                 ))}
                             </div>
@@ -310,7 +324,7 @@ export function Game() {
                         className={`md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 ${playerTurn !== selectedTurn ? "col-span-2" : ""}`}>abandonar partida</button>
                 </>}
             </div>
-        </div >
+        </div>
     );
 }
 

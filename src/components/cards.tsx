@@ -76,7 +76,9 @@ const movementCards: { [key: string]: string } = {
   mov7: mov7,
 };
 
-export function Card({ type, index, id, selectedCard, setSelectedCard, isSelectable, setMoveCard }: { type: boolean; index: number; id: string; selectedCard: string | null; setSelectedCard: (id: string | null) => void; isSelectable: boolean; setMoveCard: (id: string) => void; }) {
+export function Card({ type, index, id, selectedCard, setSelectedCard, isSelectable, setMoveCard, usedCard }:
+ { type: boolean; index: number; id: string; selectedCard: string | null; setSelectedCard: (id: string | null) => void;
+   isSelectable: boolean; setMoveCard: (id: string) => void; usedCard: boolean; }) {
   let cardPic;
   if (!type) {
     cardPic = movementCards[`mov${index}`];
@@ -107,6 +109,7 @@ export function Card({ type, index, id, selectedCard, setSelectedCard, isSelecta
         whileTap={{ scale: 0.8 }}
         animate={{
           scale: (selectedCard === id) && isSelectable ? 1.3 : 1,
+          opacity: usedCard ? 0.3 : 1,
         }}
         style={{
           position: type ? "static" : "relative",
