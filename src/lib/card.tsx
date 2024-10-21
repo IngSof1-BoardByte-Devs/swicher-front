@@ -92,24 +92,18 @@ export async function use_movement_cards(
 
 }
 
-export async function use_figure_cards({
-  id_player,
-  id_card,
-}: {
-  id_player: number;
-  id_card: number;
-}) {
+export async function use_figure_cards({id_player, id_card}: { id_player: number; id_card: number}) {
+  const playerId = id_player;
+  const card_id = id_card;
+  console.log("playerId", playerId);
   try {
     const response = await fetch(
-      `http://localhost:8000/figure-cards/${id_card}/`,
+      `http://localhost:8000/figure-cards/${card_id}/?playerId=${playerId}`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id_player,
-        }),
       }
     );
     if (!response.ok) {
