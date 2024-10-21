@@ -122,6 +122,8 @@ export function Game() {
                         setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
                         setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
                         setUsedCards([]); 
+                      }else if (command[2] === "added") {
+                        setFigureCards([...figureCards, socketData.payload.cards]);
                       }
                     }
                 } else if (command[0] === "movement") {
@@ -134,7 +136,7 @@ export function Game() {
                         setSocketDataCancel(socketData.payload);
                     }
 
-                }
+                } 
             };
         }
     }, [socket, players]);
@@ -304,6 +306,9 @@ export function Game() {
                                 const resp = await end_turn(id_player);
                                 if (resp === 'Turno finalizado') {
                                     setHasMovement(false);
+                                    fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
+                                        setMovementCards(data)
+                                    });
                                 } else {
                                     alert(resp);
                                 }
