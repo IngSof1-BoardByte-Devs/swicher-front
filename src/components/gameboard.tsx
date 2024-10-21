@@ -61,7 +61,7 @@ export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard,
         }));
 
         setFiguresInBoard(newFigures); // Actualiza el estado con las nuevas figuras
-        setHighlightedPieces(newFigures.flatMap(figure => figure.indexes)); // Actualiza las piezas resaltadas
+        setHighlightedPieces(newFigures.flatMap((figure: { indexes: number }) => figure.indexes)); // Actualiza las piezas resaltadas
         setSocketDataFigure(null);
         }
 
