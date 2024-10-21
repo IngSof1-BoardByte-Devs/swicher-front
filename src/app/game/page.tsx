@@ -33,6 +33,7 @@ export function Game() {
 
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
     const [socketDataCancel, setSocketDataCancel] = useState<any>(null);
+    const [socketDataFigure, setSocketDataFigure] = useState<any>(null);
 
     interface Player {
         id: number;
@@ -97,6 +98,7 @@ export function Game() {
             socket.onmessage = (event) => {
                 const socketData = JSON.parse(event.data);
                 const command = socketData.event.split(".");
+                console.log(command);
                 if (command[0] === "game") {
                     if (command[1] === "turn") {
                         setSelectedTurn(socketData.payload.turn);
@@ -105,6 +107,8 @@ export function Game() {
                         if (winner) {
                             setWinnerPlayer(winner);
                         }
+                    } else if (command[1] === "figures") {
+                        setSocketDataFigure(socketData.payload);
                     }
                 } else if (command[0] === "player") {
                     if (command[1] === "left") {
@@ -167,6 +171,8 @@ export function Game() {
                                                                 setSocketDataMove={setSocketDataMove}
                                                                 socketDataCancel={socketDataCancel}
                                                                 setSocketDataCancel={setSocketDataCancel}
+                                                                socketDataFigure={socketDataFigure}
+                                                                setSocketDataFigure={setSocketDataFigure}
                                                                 />}
 
             </div>
