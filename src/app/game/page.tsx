@@ -114,7 +114,7 @@ export function Game() {
                     }
                 }else if (command[0] === "figure") {
                     if (command[1] === "card") {
-                      if(command[3] === "used"){
+                      if(command[2] === "used"){
                         setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
                         setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
                         setUsedCards([]); 
