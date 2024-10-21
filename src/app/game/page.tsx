@@ -362,7 +362,7 @@ export function Game() {
                     <button
                         onClick={async () => {
                             if (id_player !== null) {
-                                if (playerTurn === selectedTurn) {
+                                if (playerTurn === selectedTurn && players.length > 2) {
                                     await end_turn(id_player);
                                 }
                                 await leave_game({ player_id: id_player })
