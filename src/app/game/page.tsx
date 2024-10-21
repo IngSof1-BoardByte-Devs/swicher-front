@@ -32,6 +32,7 @@ export function Game() {
     const [moveCard, setMoveCard] = useState<string>("");
     const [figCard, setFigCard] = useState<string>("");
     const [figCatdId, setFigCardId] = useState<number | null>(null);
+    const [movCardId, setMovCardId] = useState<number | null>(null);
     const [usedCards, setUsedCards] = useState<number[]>([]);
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
@@ -143,11 +144,11 @@ export function Game() {
         }
     }, [socket, players, usedCards, figureCards, movementCards]);
 
-    async function callUseMoveCard(id_player: number, index1: number, index2: number) {
+    async function callUseMoveCard(id_player: number, index1: number, index2: number, id_card: number ) {
         if (id_player !== null) {
-            const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type "));
-            if (card) {
-                const resp = await use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
+
+            if (id_card) {
+                const resp = await use_movement_cards({ id_player, id_card: id_card, index1, index2 });
                 console.log(resp);
                 if (resp === 'Carta usada con exito!') {
                     setHasMovement(true);
@@ -200,6 +201,7 @@ export function Game() {
                                                                 selectedTurn={selectedTurn} 
                                                                 playerTurn={playerTurn} 
                                                                 moveCard={moveCard}
+                                                                movCardId={movCardId}
                                                                 callUseMoveCard={callUseMoveCard}
                                                                 figCard={figCard}
                                                                 figCardId={figCatdId}
@@ -240,6 +242,7 @@ export function Game() {
                                     setMoveCard={()=>{}}
                                     setFigCard={setFigCard}
                                     setFigCardId={setFigCardId}
+                                    setMovCardId={()=>{}}
                                     usedCard = {false}/>
                                 </button>
                             ))}
@@ -256,6 +259,7 @@ export function Game() {
                                     setMoveCard={setMoveCard}
                                     setFigCard={()=>{}}
                                     setFigCardId={()=>{}}
+                                    setMovCardId={setMovCardId}
                                     usedCard={usedCards.includes(movement.id_movement)}/>                                    
                                 </button>
                             ))}
@@ -307,6 +311,7 @@ export function Game() {
                                         setMoveCard={()=>{}}
                                         setFigCard={setFigCard}
                                         setFigCardId={()=>{}}
+                                        setMovCardId={()=>{}}
                                         usedCard={false}/>
                                     </button>
                                 ))}

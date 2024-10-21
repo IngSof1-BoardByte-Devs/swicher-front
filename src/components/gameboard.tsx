@@ -5,11 +5,11 @@ import { fetch_board } from "@/lib/board";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import { motion } from "framer-motion";
 
-export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, figCard, figCardId, callUseFigCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel, socketDataFigure, setSocketDataFigure }:
+export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, figCard, figCardId, movCardId, callUseFigCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel, socketDataFigure, setSocketDataFigure }:
     { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, socketDataMove: any,
      setSocketDataMove: (data: any) => void, setSocketDataCancel: (data: any) => void, socketDataCancel: any, moveCard: string,
-     callUseMoveCard: (id_player: number, index1: number, index2: number) => void, socketDataFigure: any, setSocketDataFigure: (data: any) => void,
-     figCard: string, figCardId: number | null, callUseFigCard: (id_player: number, id_card: number) => void }) {
+     callUseMoveCard: (id_player: number, index1: number, index2: number, card_id: number)=>void, socketDataFigure: any, setSocketDataFigure: (data: any) => void,
+     figCard: string, figCardId: number | null, movCardId: number | null, callUseFigCard: (id_player: number, id_card: number) => void }) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
     const [figures, setFigures] = useState<{ color: number }[]>([]);
     const [selected, setSelected] = useState<number | undefined>();
@@ -157,8 +157,8 @@ export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard,
                 break;
         }
         if (result) {
-            if (id_player) {
-                callUseMoveCard(id_player, selectedPiece, index);
+            if (id_player && movCardId) {
+                callUseMoveCard(id_player, selectedPiece, index, movCardId);
                 setSelectedPiece(null);
             }
         } else {
