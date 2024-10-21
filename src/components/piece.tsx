@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
+import { verify } from "crypto";
 
 
 
@@ -11,10 +12,11 @@ const variants = {
 };
 
 export function Piece(
-  { color, index, selectedPiece, setSelectedPiece, isSwapping, isMoveCardSelected, cardSelected, selectedTurn, playerTurn, verifyMovement, selected, setSelected }: 
+  { color, index, selectedPiece, setSelectedPiece, isSwapping, isMoveCardSelected, isFigCardSelected, cardSelected, selectedTurn, playerTurn, verifyMovement, verifyFigure, selected, setSelected }: 
   { color: number, index: number, selectedPiece: number | null, setSelectedPiece: (index: number | null ) => void, 
     isSwapping: boolean, verifyMovement: (cardSelected: string , selectedPiece: number, index: number) => void, isMoveCardSelected: boolean, cardSelected: string,
-    selectedTurn: number, playerTurn: number, selected: boolean, setSelected: (id: number | undefined) => void }  
+    selectedTurn: number, playerTurn: number, selected: boolean, setSelected: (id: number | undefined) => void, isFigCardSelected: boolean,
+    verifyFigure: (index: number, card: string) => void }  
 ) 
 {
  
@@ -24,6 +26,10 @@ export function Piece(
   const handleClick = () => {
     if (!isMoveCardSelected) {
       setSelected(selected ? undefined : index)
+      if (isFigCardSelected) {
+        console.log("figCardSelected", cardSelected);
+        verifyFigure(index, cardSelected);
+      }
     }else if (isMoveCardSelected) {
       if (playerTurn !== selectedTurn) {
         alert("No es tu turno");
