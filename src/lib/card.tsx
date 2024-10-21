@@ -87,10 +87,7 @@ export async function use_movement_cards(
             return "No tienes permisos para usar esta carta"
         };
     } catch (error) {
-        return {
-            status: "ERROR",
-            message: `Error al intentar usar la carta id: ${id_card}, ${error}`
-        }
+        return "Ocurrio un error desconocido";
     }
 
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Gameboard } from "@/components/gameboard";
 import { Card } from "@components/cards";
 import { end_turn } from "@/lib/board";
-import { fetch_game, leave_game } from "@/lib/game";
+import { fetch_game, leave_game, revert_movements } from "@/lib/game";
 import { Winner } from "@/components/winner";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
@@ -22,13 +22,15 @@ export function Game() {
     const [selectedTurn, setSelectedTurn] = useState(-1);
     const [playerTurn, setPlayerTurn] = useState(-1);
     const [gameName, setGameName] = useState("");
+    const [hasMovement, setHasMovement] = useState(false);
 
     const [players, setPlayers] = useState<Player[]>([]);
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
-    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null >(null);
-    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null >(null);
+    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
+    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
     const [moveCard, setMoveCard] = useState<string>("");
+    const [usedCards, setUsedCards] = useState<number[]>([]);
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
@@ -52,7 +54,7 @@ export function Game() {
         // Add other properties as needed
     }
 
-    
+
     useEffect(() => {
         const fetchGame = async () => {
             try {
@@ -114,30 +116,45 @@ export function Game() {
                     if (command[1] === "left") {
                         setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
                     }
-                }else if (command[0] === "movement") {
+                }else if (command[0] === "figure") {
                     if (command[1] === "card") {
+                      if(command[2] === "used"){
+                        setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.id && card.player_id !== socketData.payload.player_id)); 
+                        setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
+                        setUsedCards([]); 
+                      }
+                    }
+                } else if (command[0] === "movement") {
+                    if (command[1] === "card") {
+                    setUsedCards([...usedCards, socketData.payload.id_movement]);
                         setSocketDataMove(socketData.payload);
                     }
-                }else if (command[0] === "moves") {
+                } else if (command[0] === "moves") {
                     if (command[1] === "cancelled") {
                         setSocketDataCancel(socketData.payload);
                     }
+
                 }
             };
         }
     }, [socket, players]);
 
-    function callUseMoveCard(id_player:number, index1:number, index2:number) {
+    async function callUseMoveCard(id_player: number, index1: number, index2: number) {
         if (id_player !== null) {
-            const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type ") );
+            const card = movementCards.find(card => card.type_movement === moveCard?.replace("mov", "Type "));
             if (card) {
-                use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
+                const resp = await use_movement_cards({ id_player, id_card: card.id_movement, index1, index2 });
+                if (resp === 'Carta usada con exito!') {
+                    setHasMovement(true);
+                } else {
+                    alert(resp);
+                }
             }
         }
     }
     const currentPlayer = players.find(player => player.id === id_player);
     const rivales = players.filter(player => player.id !== id_player);
-    
+
     return (
         <div className="w-screen h-screen grid grid-rows-10 grid-cols-12 md:grid-rows-12 items-center justify-center overflow-hidden p-4">
             {winnerPlayer && (
@@ -174,7 +191,6 @@ export function Game() {
                                                                 socketDataFigure={socketDataFigure}
                                                                 setSocketDataFigure={setSocketDataFigure}
                                                                 />}
-
             </div>
             {/* current player */}
             {currentPlayer && (
@@ -200,7 +216,8 @@ export function Game() {
                                     selectedCard={selectedFigureCard} 
                                     setSelectedCard={setSelectedFigureCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
-                                    setMoveCard={setMoveCard}/>
+                                    setMoveCard={setMoveCard}
+                                    usedCard = {false}/>
                                 </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
@@ -212,7 +229,8 @@ export function Game() {
                                     selectedCard={selectedMovementCard} 
                                     setSelectedCard={setSelectedMovementCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
-                                    setMoveCard={setMoveCard}/>
+                                    setMoveCard={setMoveCard}
+                                    usedCard={usedCards.includes(movement.id_movement)}/>                                    
                                 </button>
                             ))}
                         </div>
@@ -225,16 +243,16 @@ export function Game() {
                     <div key={player.id + index} className={clsx(
                         "col-span-12 w-full h-full p-1",
                         {
-                            "md:row-start-2 md:row-span-2 md:col-start-4":index === 0,
-                            "md:row-start-5 md:row-span-3  md:col-span-4":index === 1,
-                            "md:row-start-5 md:col-start-9 md:row-span-3  md:col-span-4":index === 2,
+                            "md:row-start-2 md:row-span-2 md:col-start-4": index === 0,
+                            "md:row-start-5 md:row-span-3  md:col-span-4": index === 1,
+                            "md:row-start-5 md:col-start-9 md:row-span-3  md:col-span-4": index === 2,
                         }
                     )}>
                         <div className={clsx(
                             "grid grid-cols-7 w-full h-full items-center justify-center ",
                             {
-                                "md:grid-rows-2":index === 0,
-                                "md:grid-cols-4 md:grid-rows-3":index === 1 || index === 2,
+                                "md:grid-rows-2": index === 0,
+                                "md:grid-cols-4 md:grid-rows-3": index === 1 || index === 2,
                             }
 
                         )}>
@@ -245,8 +263,8 @@ export function Game() {
                             <div className={clsx(
                                 "col-span-6 grid grid-cols-6 w-full h-full gap-1",
                                 {
-                                    "md:row-span-2":index === 0,
-                                    "md:row-span-2 md:grid-cols-3":index === 1 || index === 2,
+                                    "md:row-span-2": index === 0,
+                                    "md:row-span-2 md:grid-cols-3": index === 1 || index === 2,
                                 }
 
                             )}>
@@ -259,7 +277,8 @@ export function Game() {
                                         selectedCard={selectedFigureCard} 
                                         setSelectedCard={setSelectedFigureCard}
                                         isSelectable={selectedTurn === playerTurn}
-                                        setMoveCard={setMoveCard}/>
+                                        setMoveCard={setMoveCard}
+                                        usedCard={false}/>
                                     </button>
                                 ))}
                             </div>
@@ -280,11 +299,25 @@ export function Game() {
                     >Salir</button> : <>
                     <button
                         className={`${playerTurn !== selectedTurn ? "hidden" : "md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"}`}
-                        onClick={() => {
+                        onClick={async () => {
                             if (id_player !== null) {
-                                end_turn(id_player);
+                                const resp = await end_turn(id_player);
+                                if (resp === 'Turno finalizado') {
+                                    setHasMovement(false);
+                                } else {
+                                    alert(resp);
+                                }
                             }
                         }}>terminar turno</button>
+                    {(hasMovement && (playerTurn === selectedTurn)) &&
+                        <button
+                            className="md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"
+                            onClick={async () => {
+                                if (id_game !== null && id_player !== null) {
+                                    const resp = await revert_movements({ game_id: id_game, player_id: id_player });
+                                    if (resp === "Movimientos revertidos") setHasMovement(false);
+                                }
+                            }}>Revertir movimeintos</button>}
                     <button
                         onClick={async () => {
                             if (id_player !== null) {
@@ -296,7 +329,7 @@ export function Game() {
                         className={`md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 ${playerTurn !== selectedTurn ? "col-span-2" : ""}`}>abandonar partida</button>
                 </>}
             </div>
-        </div >
+        </div>
     );
 }
 
