@@ -35,6 +35,7 @@ export function Game() {
 
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
     const [socketDataCancel, setSocketDataCancel] = useState<any>(null);
+    const [socketDataFigure, setSocketDataFigure] = useState<any>(null);
 
     interface Player {
         id: number;
@@ -99,6 +100,7 @@ export function Game() {
             socket.onmessage = (event) => {
                 const socketData = JSON.parse(event.data);
                 const command = socketData.event.split(".");
+                console.log(command);
                 if (command[0] === "game") {
                     if (command[1] === "turn") {
                         setSelectedTurn(socketData.payload.turn);
@@ -107,6 +109,8 @@ export function Game() {
                         if (winner) {
                             setWinnerPlayer(winner);
                         }
+                    } else if (command[1] === "figures") {
+                        setSocketDataFigure(socketData.payload);
                     }
                 } else if (command[0] === "player") {
                     if (command[1] === "left") {
@@ -173,19 +177,20 @@ export function Game() {
             </div>
             {/* Tablero de juego */}
             <div className="h-full row-span-4 col-span-12 md:row-span-6 md:col-span-4 md:row-start-4 md:col-start-5">
-                {id_game !== null && id_player !== null && <Gameboard
-                    id_game={id_game}
-                    id_player={id_player}
-                    selectedTurn={selectedTurn}
-                    playerTurn={playerTurn}
-                    moveCard={moveCard}
-                    callUseMoveCard={callUseMoveCard}
-                    socketDataMove={socketDataMove}
-                    setSocketDataMove={setSocketDataMove}
-                    socketDataCancel={socketDataCancel}
-                    setSocketDataCancel={setSocketDataCancel}
-                />}
-
+            {id_game !== null && id_player !== null && <Gameboard 
+                                                                id_game={id_game} 
+                                                                id_player={id_player}
+                                                                selectedTurn={selectedTurn} 
+                                                                playerTurn={playerTurn} 
+                                                                moveCard={moveCard}
+                                                                callUseMoveCard={callUseMoveCard}
+                                                                socketDataMove={socketDataMove}
+                                                                setSocketDataMove={setSocketDataMove}
+                                                                socketDataCancel={socketDataCancel}
+                                                                setSocketDataCancel={setSocketDataCancel}
+                                                                socketDataFigure={socketDataFigure}
+                                                                setSocketDataFigure={setSocketDataFigure}
+                                                                />}
             </div>
             {/* current player */}
             {currentPlayer && (

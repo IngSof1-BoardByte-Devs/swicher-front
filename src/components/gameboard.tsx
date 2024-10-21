@@ -1,90 +1,72 @@
 "use client"
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Piece } from "@components/piece";
 import { fetch_board } from "@/lib/board";
-import { useWebSocket } from "@app/contexts/WebSocketContext";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
 import { motion } from "framer-motion";
-import { u } from "framer-motion/client";
 
-export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel }: 
-    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, socketDataMove:any, setSocketDataMove:(data:any)=>void, setSocketDataCancel:(data:any)=>void, socketDataCancel:any , moveCard: string, callUseMoveCard: (id_player: number, index1: number, index2: number ) => void }) {
+export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel, socketDataFigure, setSocketDataFigure}: 
+    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, socketDataMove:any, setSocketDataMove:(data:any)=>void, setSocketDataCancel:(data:any)=>void, socketDataCancel:any , moveCard: string, callUseMoveCard: (id_player: number, index1: number, index2: number ) => void, socketDataFigure: any, setSocketDataFigure:(data:any)=>void }) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
     const [figures, setFigures] = useState<{ color: number }[]>([]);
     const [selected, setSelected] = useState<number | undefined>();
-    const [selectedFigures, setSelectedFigures] = useState<number[]>([]);
-    const [moveCardToSow, setMoveCardToShow] = useState(""); // Carta de movimiento seleccionada
     const { id_game, id_player } = useGameInfo();
     const [swappingPieces, setSwappingPieces] = useState<number[]>([]); // Estado para las piezas en intercambio
+    const [figuresInBoard, setFiguresInBoard] = useState<Figure []>([]);
+    const [highlightedPieces, setHighlightedPieces] = useState<number[]>([]);
 
+    interface Figure {
+        type: string;
+        indexes: number[];
+      }
     
+      const fetchBoard = async () => {
+        try {
+            if (id_game) {
+                
+                const data = await fetch_board({ id_game });
+                setFigures(data.board);
+            }
+        } catch (err) {
+            console.error("Failed to fetch board:", err);
+        }
+    }
 
     useEffect(() => {
-        const fetchBoard = async () => {
-            try {
-                if (id_game) {
-                    
-                    const data = await fetch_board({ id_game });
-                    setFigures(data.board);
-                }
-            } catch (err) {
-                console.error("Failed to fetch board:", err);
-            }
-        };
+        
         fetchBoard();
     }, [id_game]);
-    const colorFigure = useCallback(
-        (startIndex: number, targetColor: number) => {
-            const visited = new Set<number>();
-            const toVisit = [startIndex];
 
-            while (toVisit.length > 0) {
-                const index = toVisit.pop();
-
-                if (index === undefined || index < 0 || index >= figures.length || visited.has(index)) {
-                    continue;
-                }
-
-                if (figures[index].color !== targetColor) {
-                    continue;
-                }
-                visited.add(index);
-                if (index % 6 !== 0) {
-                    toVisit.push(index - 1);
-                }
-                if ((index + 1) % 6 !== 0) {
-                    toVisit.push(index + 1);
-                }
-                if (index - 6 >= 0) {
-                    toVisit.push(index - 6);
-                }
-                if (index + 6 < figures.length) {
-                    toVisit.push(index + 6);
-                }
-            }
-            setSelectedFigures(Array.from(visited));
-        }, [figures]);
-
-    useEffect(() => {
-        if (selected !== undefined) {
-            colorFigure(selected, figures[selected].color);
-        } else {
-            setSelectedFigures([]);
-        }
-    }, [selected, figures, colorFigure]);
     useEffect(() => {
         if (socketDataMove) {
             const { position1, position2 } = socketDataMove;
             swapPieces(position1, position2);
             setSelectedPiece(null);
             setSocketDataMove(null);
+            setFiguresInBoard([]);
+            fetchBoard();
         }else if (socketDataCancel) {
             socketDataCancel.forEach(({ card_id, position1, position2 }: { card_id: number, position1: number, position2: number }) => {
                 swapPieces(position1, position2);
             });
             setSocketDataCancel(null);
+            setFiguresInBoard([]);
+            fetchBoard();
+        }else if (socketDataFigure) {
+            console.log("Recibido socketDataFigure:", socketDataFigure);
+
+        const newFigures = socketDataFigure.map((figure: { type: string, indexes: number[] }) => ({
+            type: figure.type,
+            indexes: figure.indexes
+        }));
+
+        setFiguresInBoard(newFigures); // Actualiza el estado con las nuevas figuras
+        setHighlightedPieces(newFigures.flatMap((figure: { indexes: number }) => figure.indexes)); // Actualiza las piezas resaltadas
+        setSocketDataFigure(null);
         }
-    }, [socketDataCancel, socketDataMove]);
+
+
+    }, [socketDataCancel, socketDataMove, socketDataFigure]);
 
     const swapPieces = (index1: number, index2: number) => {
         setSwappingPieces([index1, index2]); 
@@ -108,7 +90,6 @@ export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard,
         console.log("x:", x, "y:", y);
         return { x, y };
     }
-
 
     const verifyMovement = (cardSelected: string, selectedPiece: number, index: number) => {
         let result = false;
@@ -196,7 +177,7 @@ export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard,
                     <Piece 
                         color={color}
                         key={index}
-                        selected={selectedFigures.includes(index)}
+                        selected={highlightedPieces.includes(index)}
                         index={index}
                         setSelected={setSelected}
                         isSwapping={swappingPieces.includes(index)}
