@@ -190,12 +190,12 @@ export function Game() {
             <div className="col-span-12 place-content-center text-center h-full grid grid-cols-2">
                 <p className="text-2xl font-bold">Partida: {gameName}</p>
                 <div>
-                    <p className="text-2xl font-bold">Blocked: {clsx({
+                    <p className="text-2xl font-bold">Bloqueado: {clsx({
                         "red ": color === 0,
                         "green": color === 1,
                         "blue": color === 2,
                         "violet": color === 3,
-                        "None": color === null,
+                        "-": color === null,
                     })}</p>
                 </div>
             </div>
@@ -362,7 +362,7 @@ export function Game() {
                     <button
                         onClick={async () => {
                             if (id_player !== null) {
-                                if (playerTurn === selectedTurn) {
+                                if (playerTurn === selectedTurn && players.length > 2) {
                                     await end_turn(id_player);
                                 }
                                 await leave_game({ player_id: id_player })
