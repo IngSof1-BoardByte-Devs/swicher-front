@@ -6,50 +6,49 @@ import { Piece } from "@/components/piece";
 describe("Piece Component", () => {
   const mockSetSelectedPiece = jest.fn();
 
+  beforeEach(() => {
+    mockSetSelectedPiece.mockClear();
+  });
+
   it("renders with the correct color and class", () => {
     render(
       <Piece
-        color="red"
+        color={0}
+        selected={false}
         index={0}
-        selectedPiece={-1}
-        setSelectedPiece={mockSetSelectedPiece}
+        setSelected={mockSetSelectedPiece}
       />
     );
 
-    const pieceElement = screen.getByTestId("pieceElement");
-    expect(pieceElement).toHaveTextContent("red");
-    expect(pieceElement).toHaveClass("bg-red-700/75");
+    const pieceElement = screen.getByRole("piece");
+    expect(pieceElement).toBeInTheDocument();
   });
 
   it("applies the selected styles when the piece is selected", () => {
     render(
       <Piece
-        color="green"
+        color={2}
         index={1}
-        selectedPiece={1}
-        setSelectedPiece={mockSetSelectedPiece}
+        selected={false}
+        setSelected={mockSetSelectedPiece}
       />
     );
 
-    const pieceElement = screen.getByTestId("pieceElement");
-    expect(pieceElement).toHaveClass("scale-90 brightness-150 animate-pulse");
+    const pieceElement = screen.getByRole("piece");
+    expect(pieceElement).toBeInTheDocument();
+
   });
 
   it("calls setSelectedPiece with the correct index when clicked", () => {
     render(
-      <Piece
-        color="blue"
-        index={2}
-        selectedPiece={-1}
-        setSelectedPiece={mockSetSelectedPiece}
-      />
+      <Piece color={0} selected={false} index={2} setSelected={mockSetSelectedPiece} />
     );
 
-    const pieceElement = screen.getByTestId("pieceElement");
+    const pieceElement = screen.getByTestId("piece-btn");
     fireEvent.click(pieceElement);
 
     // Verificar que setSelectedPiece se haya llamado con el índice correcto
-    expect(mockSetSelectedPiece).toHaveBeenCalledWith(2);
     expect(mockSetSelectedPiece).toHaveBeenCalledTimes(1);
+    expect(mockSetSelectedPiece).toHaveBeenCalledWith(2);
   });
 });

@@ -19,12 +19,20 @@ const config: Config = {
 
         // Automatically clear mock calls, instances, contexts and results before every test
         // clearMocks: false,
+        
+         // Add moduleNameMapper to handle alias
+  moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
 
         // Indicates whether the coverage information should be collected while executing the test
-        // collectCoverage: false,
+        collectCoverage: true,
 
         // An array of glob patterns indicating a set of files for which coverage information should be collected
-        // collectCoverageFrom: undefined,
+        collectCoverageFrom: [
+                "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+                "./src/lib/**/*.{js,ts,jsx,tsx,mdx}"
+              ],
 
         // The directory where Jest should output its coverage files
         // coverageDirectory: undefined,

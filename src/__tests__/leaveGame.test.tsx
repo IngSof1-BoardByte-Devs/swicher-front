@@ -1,4 +1,4 @@
-import { LeaveGame } from '@/lib/quit';
+import { leave_game } from '@/lib/game';
 
 import fetchMock from 'jest-fetch-mock';
 
@@ -15,23 +15,22 @@ describe('Leave game function', () => {
           ok: true,
           json: async () => ({ status: 'OK', message: 'Leave the game successfully' }),
         });
+        const player_id = 1;
+        const successResult = await leave_game({ player_id});
     
-        const successResult = await LeaveGame({ player_id: 1, game_id: 1 });
-    
-        expect(fetch).toHaveBeenCalledWith('http://localhost:8000/leave-game', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ player_id : 1 , game_id: 1 }),
+        expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/players/${player_id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
     
         expect(successResult).toEqual({ status: 'OK', message: 'Leave the game successfully' });
     
-        (fetch as jest.Mock).mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        });
+        fetchMock.mockRejectedValueOnce(new Error('An error occurred while living the game'));
+
     
-        const failResult = await LeaveGame({ player_id: 1, game_id: 1 });
+        const failResult = await leave_game({ player_id: 1 });
     
         expect(failResult).toEqual({ status: 'ERROR', message: 'An error occurred while living the game' });
       });

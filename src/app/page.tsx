@@ -1,15 +1,26 @@
 "use client"
 import { CreateGameForm, UserForm } from "@/components/form";
 import { fetch_games } from "@/lib/game";
-import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useWebSocket } from "@app/contexts/WebSocketContext";
+import clsx from "clsx";
+import { motion, useAnimation } from "framer-motion";
 
 export default function Home() {
   const [createGame, setCreateGame] = useState(false);
   const [joinGame, setJoinGame] = useState(false);
   const [selectedId, setSelectedId] = useState(-1);
+  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
+  const [searchNumber, setSearchNumber] = useState(0); // Estado para el número de búsqueda
+  const controls = useAnimation();
+
   interface Game {
+    game_id: number;
+    name: string;
+    players: number;
+  }
+
+  interface ApiResponse {
     id: number;
     name: string;
     num_players: number;
@@ -19,58 +30,118 @@ export default function Home() {
   const { socket } = useWebSocket();
 
   useEffect(() => {
-    fetch_games().then((data) => {
-      setGames(data);
+    fetch_games().then((response: ApiResponse[]) => {
+      setGames(response.map(game => {
+        return {
+          game_id: game.id,
+          name: game.name,
+          players: game.num_players,
+        };
+      }));
     });
   }, []);
+
+  const gameChangePlayers = (game_id: number, type: number) => {
+    setGames(games => games.map(game => {
+      if (game.game_id === game_id) {
+        return { ...game, players: game.players + type };
+      }
+      return game;
+    }));
+  }
 
   useEffect(() => {
     if (socket) {
       socket.onmessage = (event) => {
         const socketData = JSON.parse(event.data);
-        console.log(socketData);
-        if (socketData.event === "new_game") {
-          setGames(games => [...games, socketData.data]);
-        } else if (socketData.event === "new_player") {
-          setGames(games => games.map(game => {
-            if (game.id === socketData.data.game_id) {
-              return { ...game, num_players: game.num_players + 1 };
-            }
-            return game;
-          }));
+        const command = socketData.event.split(".");
+        if (command[0] === "game") {                                           // game comands
+          if (command[1] === "new") {                                         // new game
+            setGames(games => [...games, socketData.payload as Game]);
+          } else if (command[1] === "canceled" || command[1] === "start") {   // canceled or start game
+            setGames(games => games.filter(game => game.game_id !== socketData.payload.game_id));
+          }
+        } else if (command[0] === "player") {                                  // player commands
+          if (command[1] === "new") {                                         // new player
+            gameChangePlayers(socketData.payload.game_id, 1);
+          } else if (command[1] === "leave") {                                // leave player
+            gameChangePlayers(socketData.payload.game_id, -1);
+          }
+        } else {
+          throw new Error("Se recibio un comando invalido");
         }
       };
     }
   }, [socket]);
 
+  let filteredGames = games;
+  filteredGames = games.filter(game => game.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  filteredGames = searchNumber === 0 ? filteredGames : filteredGames.filter(game => game.players === searchNumber);
+
+  useEffect(() => {
+    controls.start({
+      color: ["#00FF00", "#FF0000", "#800080", "#00FFFF"],
+      transition: { repeat: Infinity, duration: 6, ease: "easeInOut" },
+    });
+  }, [controls]);
+
   const devs = ["Ramiro cuellar", "Juan Quintero", "Juan Mazzaforte", "Daniela Courel", "Aaron Lihuel", "Franco Bustos"];
   return (
     <div className="w-full h-dvh grid grid-rows-6 grid-flow-dense">
-      <div className="row-span-1">
+      {/* Title */}
+      <motion.div
+        className="row-span-1"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      >
         <main className="flex items-center justify-center w-full h-full">
-          <h1 className="text-4xl text-center uppercase font-semibold">boardbyte devs switcher</h1>
+          <h1 className="text-4xl text-center uppercase font-semibold">
+            boardbyte devs{" "}
+            <motion.span animate={controls}>SWITCHER</motion.span>
+          </h1>
         </main>
-      </div>
+      </motion.div>
       <div className="row-span-4 p-4 md:px-52 lg:px-80">
         <div className="flex justify-between">
           <div>{"Nombre de partidas"}</div>
           <div>{"Cantidad de jugadores"}</div>
         </div>
+        {/* Search bar */}
+        <input
+          type="text"
+          placeholder="Buscar partidas..."
+          className="w-full p-2 my-2 border rounded text-black"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <select className="w-full p-2 my-2 border rounded text-black"
+          value={searchNumber}
+          onChange={(e) => setSearchNumber(Number(e.target.value))}
+          style={{ color: "#8c8c8c" }}>
+          <option value={0}>Bucar por cantidad de jugadores</option>
+          <option value={1}>1 jugador</option>
+          <option value={2}>2 jugadores</option>
+          <option value={3}>3 jugadores</option>
+        </select>
         <div className="w-full max-h-[650px] border overflow-auto shadow">
           <div className="flex flex-col divide-y-2 h-full">
-            {games.length === 0 && <div className="text-center p-2 ">No hay partidas disponibles</div>}
-            {games.map(({ id, name, num_players }) => {
+            {filteredGames.length === 0 && <div className="text-center p-2">No hay partidas disponibles</div>}
+            {filteredGames.map((game, index) => {
               return (
-                <button key={id} className={clsx("p-4", {
-                  "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === id,
-                  "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== id
-                })} onClick={() => { setSelectedId(id) }}>
+                <button
+                  key={game.game_id + index}
+                  className={clsx("p-4", {
+                    "bg-gray-700 text-white dark:bg-gray-200 dark:text-black": selectedId === game.game_id,
+                    "hover:bg-gray-200 dark:hover:bg-gray-600": selectedId !== game.game_id,
+                  })}
+                  onClick={() => { setSelectedId(game.game_id) }}>
                   <div className="flex justify-between">
-                    <div>{name}</div>
-                    <div>{num_players}</div>
+                    <div>{game.name}</div>
+                    <div>{game.players}</div>
                   </div>
                 </button>
-              )
+              );
             })}
           </div>
         </div>

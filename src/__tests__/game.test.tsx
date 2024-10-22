@@ -1,4 +1,4 @@
-import { create_game, fetch_games, join_game, start_game } from '@/lib/game';
+import { create_game, fetch_games, join_game, revert_movements, start_game } from '@/lib/game';
 import fetchMock from 'jest-fetch-mock';
 
 
@@ -21,7 +21,7 @@ describe('create_game function', () => {
 
     const successResult = await create_game({ player_name: 'John', game_name: 'Test Game' });
 
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/game/create_game', {
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/games/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player_name: 'John', game_name: 'Test Game' }),
@@ -29,10 +29,7 @@ describe('create_game function', () => {
 
     expect(successResult).toEqual({ status: 'OK', message: 'Game created successfully' });
 
-    fetchMock.mockResolvedValueOnce(new Response(null, {
-      status: 500,
-      statusText: 'Internal Server Error',
-    }));
+    fetchMock.mockRejectedValueOnce(new Error('An error occurred while creating the game'));
 
     const failResult = await create_game({ player_name: 'John', game_name: 'Test Game' });
 
@@ -70,7 +67,7 @@ describe('fetch_games function', () => {
     expect(successResult.games[1].game_name).toEqual('Test Game 2');
     expect(successResult.games[0].num_players).toEqual(1);
     expect(successResult.games[1].num_players).toEqual(2);
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/game/get_games');
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/games/');
   });
 });
 
@@ -81,13 +78,13 @@ describe('join_game', () => {
 
   it('should return success when the fetch request is successful', async () => {
     const mockResponse = { status: 'SUCCESS', message: 'Joined the game successfully' };
-    
+
     fetchMock.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
-    
+
     const result = await join_game({ player_name: 'John Doe', game_id: 1 });
-    
+
     expect(result).toEqual(mockResponse);
-    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/game/join_game', expect.any(Object));
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/players/', expect.any(Object));
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -96,14 +93,14 @@ describe('join_game', () => {
 
     const result = await join_game({ player_name: 'John Doe', game_id: 1 });
 
-    expect(result).toEqual({ status: 'ERROR', message: 'An error occurred while creating the game' });
+    expect(result).toEqual({ status: 'ERROR', message: 'Failed to fetch' });
   });
 
   it('should return error if player_name is missing', async () => {
 
     const result = await join_game({ player_name: '', game_id: 1 });
-    
-    expect(result).toEqual({ status: 'ERROR', message: 'Invalid player_name' });
+
+    expect(result).toEqual({ status: 'ERROR', message: 'Nombre de jugador invalido' });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
@@ -114,17 +111,49 @@ describe('start_game', () => {
     (fetch as jest.Mock).mockClear();
   });
   test('url should be correct', async () => {
-    const result = await start_game({ game_id: 1, player_id: 1 });
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/game/start_game', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game_id: 1, player_id: 1 }),
+    const player_id = 1;
+    const result = await start_game({ player_id });
+    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${player_id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
   });
   test('should return success when the fetch request is successful', async () => {
     const mockResponse = { status: 'OK', message: 'Game started successfully' };
     fetchMock.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
-    const result = await start_game({ game_id: 1, player_id: 1 });
+    const result = await start_game({ player_id: 1 });
     expect(result).toEqual(mockResponse);
   });
-}); 
+});
+
+describe('cancel movements', () => {
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+  const game_id = 1;
+  test('status 200', async () => {
+    fetchMock.mockResponse(JSON.stringify({ status: "OK", message: "Turn reverted successfully" }), { status: 200 });
+    const result = await revert_movements({ game_id: game_id });
+    expect(result.message).toBe("Turn reverted successfully");
+    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/revert-moves`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  });
+  test('status 404', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ status: "ERROR", detail: "No hay cambios para revertir" }), { status: 404 });
+    const result = await revert_movements({ game_id: game_id });
+    expect(result.message).toBe("No hay cambios para revertir");
+    
+  });
+
+  test('status 401', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ status: "ERROR", detail: "No tienes permisos para cancelar los movimientos" }), { status: 401 });
+    const result = await revert_movements({ game_id: game_id });
+    expect(result.message).toBe("No tienes permisos para cancelar los movimientos");
+ });
+});

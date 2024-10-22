@@ -1,4 +1,4 @@
-import { EndTurn } from "@/lib/endTurn";
+import { end_turn } from '@/lib/board';
 
 import fetchMock from 'jest-fetch-mock';
 
@@ -15,23 +15,22 @@ describe('end turn function', () => {
           ok: true,
           json: async () => ({ status: 'OK', message: 'End turn successfully' }),
         });
+        const player_id = 1;
+        const successResult = await end_turn(player_id);
     
-        const successResult = await EndTurn(1);
-    
-        expect(fetch).toHaveBeenCalledWith('http://localhost:8000/end-turn', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ player_id : 1 }),
+        expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/players/${player_id}/turn`, {
+          method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ player_id })
         });
     
         expect(successResult).toEqual({ status: 'OK', message: 'End turn successfully' });
     
-        (fetch as jest.Mock).mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        });
-    
-        const failResult = await EndTurn(1);
+        fetchMock.mockRejectedValueOnce(new Error('An error occurred while ending the turn'));
+        
+        const failResult = await end_turn(1);
     
         expect(failResult).toEqual({ status: 'ERROR', message: 'An error occurred while ending the turn' });
       });

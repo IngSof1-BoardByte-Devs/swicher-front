@@ -9,7 +9,7 @@ export async function create_game({
     console.error(
       "Error: player_name and game_name must be provided and cannot be empty"
     );
-    return { status: "ERROR", message: "Invalid player_name or game_name" };
+    return { status: "ERROR", message: "Nombre de jugador o partida invalidos" };
   }
 
   try {
@@ -18,21 +18,21 @@ export async function create_game({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "player_name": player_name, "game_name": game_name }),
+      body: JSON.stringify({ player_name, game_name }),
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
-
     return result;
   } catch (error) {
     console.error("Failed to create game:", error);
     return {
       status: "ERROR",
-      message: "An error occurred while creating the game",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
     };
   }
 }
@@ -45,10 +45,8 @@ export async function join_game({
   game_id: number;
 }) {
   if (!player_name) {
-    console.error(
-      "Error: player_name and game_id must be provided and cannot be empty"
-    );
-    return { status: "ERROR", message: "Invalid player_name" };
+    console.error("Error: player_name must be provided and cannot be empty");
+    return { status: "ERROR", message: "Nombre de jugador invalido" };
   }
 
   try {
@@ -57,63 +55,67 @@ export async function join_game({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ "game_id": game_id, "player_name": player_name }),
+      body: JSON.stringify({ game_id, player_name }),
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
-
-
     return result;
-
   } catch (error) {
-    console.error('Failed to create game:', error);
-    return { status: 'ERROR', message: 'An error occurred while creating the game' };
+    console.error("Failed to join game:", error);
+    return {
+      status: "ERROR",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
+    };
   }
 }
 
+
 export async function fetch_games() {
   try {
-    const response = await fetch('http://localhost:8000/games/');
+    const response = await fetch("http://localhost:8000/games/");
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
-
     return result;
-
   } catch (error) {
-    console.error('Failed to fetch games:', error);
-    return { status: 'ERROR', message: 'An error occurred while fetching the games' };
+    console.error("Failed to fetch games:", error);
+    return {
+      status: "ERROR",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
+    };
   }
 }
 
 export async function start_game({ player_id }: { player_id: number }) {
   try {
     const response = await fetch(`http://localhost:8000/games/${player_id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
-
     return result;
   } catch (error) {
     console.error("Failed to start game:", error);
     return {
       status: "ERROR",
-      message: "An error occurred while starting the game",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
     };
   }
 }
@@ -123,27 +125,25 @@ export async function fetch_game({ game_id }: { game_id: number }) {
     const response = await fetch(`http://localhost:8000/games/${game_id}/`);
 
     if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail);
     }
 
     const result = await response.json();
-
     return result;
   } catch (error) {
     console.error("Failed to fetch game:", error);
     return {
       status: "ERROR",
-      message: "An error occurred while fetching the game",
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
     };
   }
 }
+
 export async function leave_game({ player_id }: { player_id: number }) {
-
   if (!player_id) {
-    console.error("Error: el player_id must be filed")
-    return { status: "ERROR", message: "invalid player id" }
+    return { status: "ERROR", message: "No se encontro el id del jugador" }
   };
-
   try {
     const response = await fetch(`http://localhost:8000/players/${player_id}`, {
       method: "DELETE",
@@ -151,17 +151,42 @@ export async function leave_game({ player_id }: { player_id: number }) {
         "Content-Type": "application/json",
       },
     });
-
     if (!response.ok) {
-      throw new Error(`Server responded with ${response.status}`);
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail);
     }
+
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Faild to leave the game:", error);
+    console.error("Failed to leave game:", error);
     return {
       status: "ERROR",
-      message: "An error occurred while living the game"
-    }
+      message: error instanceof Error ? error.message : "Ocurrio un error desconocido",
+    };
   }
+}
+
+export async function revert_movements({ game_id, player_id }: { game_id: number, player_id: number }) {
+  if (!game_id || !player_id) return "Id de jugador o partida invalidos";
+  try {
+    const response = await fetch(`http://localhost:8000/games/${game_id}/revert-moves`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id }),
+    });
+    if (response.status === 200) {
+      return "Movimientos revertidos";
+    } else if (response.status === 404) {
+      return "Jugador no encontrado";
+    } else if (response.status === 401) {
+      return "No es tu turno";
+    } else {
+      return "Ocurrio un error desconocido";
+    }
+    } catch (error) {
+      console.error("Failed to revert movements:", error);
+      return "Ocurrio un error desconocido"
+    }
+
 }
