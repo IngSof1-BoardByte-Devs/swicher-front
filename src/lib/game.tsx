@@ -1,3 +1,4 @@
+//si
 export async function create_game({
   player_name,
   game_name,
@@ -36,7 +37,7 @@ export async function create_game({
     };
   }
 }
-
+//no
 export async function join_game({
   player_name,
   game_id,
@@ -74,7 +75,7 @@ export async function join_game({
   }
 }
 
-
+//no
 export async function fetch_games() {
   try {
     const response = await fetch("http://localhost:8000/games/");
@@ -94,14 +95,15 @@ export async function fetch_games() {
     };
   }
 }
-
-export async function start_game({ player_id }: { player_id: number }) {
+//si
+export async function start_game({ game_id, player_id }: { game_id: number, player_id: number }) {
   try {
-    const response = await fetch(`http://localhost:8000/games/${player_id}`, {
+    const response = await fetch(`http://localhost:8000/games/${game_id}/started`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({ player_id}),
     });
 
     if (!response.ok) {
@@ -119,7 +121,7 @@ export async function start_game({ player_id }: { player_id: number }) {
     };
   }
 }
-
+//no
 export async function fetch_game({ game_id }: { game_id: number }) {
   try {
     const response = await fetch(`http://localhost:8000/games/${game_id}/`);
@@ -139,17 +141,18 @@ export async function fetch_game({ game_id }: { game_id: number }) {
     };
   }
 }
-
-export async function leave_game({ player_id }: { player_id: number }) {
-  if (!player_id) {
-    return { status: "ERROR", message: "No se encontro el id del jugador" }
+//si
+export async function leave_game({ game_id, player_id }: { game_id: number, player_id: number }) {
+  if (!player_id || !game_id) {
+    return { status: "ERROR", message: "No se encontro el id del jugador o del game" }
   };
   try {
-    const response = await fetch(`http://localhost:8000/players/${player_id}`, {
+    const response = await fetch(`http://localhost:8000/players/${game_id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({ player_id }),
     });
     if (!response.ok) {
       const errorResponse = await response.json();
@@ -166,12 +169,12 @@ export async function leave_game({ player_id }: { player_id: number }) {
     };
   }
 }
-
+//si
 export async function revert_movements({ game_id, player_id }: { game_id: number, player_id: number }) {
   if (!game_id || !player_id) return "Id de jugador o partida invalidos";
   try {
-    const response = await fetch(`http://localhost:8000/games/${game_id}/revert-moves`, {
-      method: 'PATCH',
+    const response = await fetch(`http://localhost:8000/games/${game_id}/revert-movements`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ player_id }),
     });

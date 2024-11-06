@@ -1,3 +1,4 @@
+//no
 export async function fetch_board({ id_game }: { id_game: number }) {
   try {
     const response = await fetch(
@@ -19,6 +20,7 @@ export async function fetch_board({ id_game }: { id_game: number }) {
     };
   }
 }
+//si
 export async function end_turn(player_id: number) {
   if (!player_id) return "No se proporciono el id del jugador";
   try {

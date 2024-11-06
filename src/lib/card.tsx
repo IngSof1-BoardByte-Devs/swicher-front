@@ -11,7 +11,7 @@ export interface figure_card {
   discarded: boolean;
   blocked: boolean;
 }
-
+//no
 export async function fetch_figure_cards({ id_game }: { id_game: number }) {
   try {
     const response = await fetch(
@@ -33,7 +33,7 @@ export async function fetch_figure_cards({ id_game }: { id_game: number }) {
     };
   }
 }
-
+//no
 export async function fetch_movement_cards({
   id_player,
 }: {
@@ -62,19 +62,19 @@ export async function fetch_movement_cards({
     };
   }
 }
-
+//si
 export async function use_movement_cards(
   { id_player, id_card, index1, index2 }:
     { id_player: number, id_card: number, index1: number, index2: number }) {
   try {
-    const playerId = id_player;
-    const response = await fetch(`http://localhost:8000/movement-cards/${id_card}/`, {
-      method: "PATCH",
+    const player_id = id_player;
+    const response = await fetch(`http://localhost:8000/movement-cards/${id_card}/status`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        playerId,
+        player_id,
         index1,
         index2,
       })
@@ -91,21 +91,19 @@ export async function use_movement_cards(
   }
 
 }
-
+//si
 export async function use_figure_cards({ id_player, id_card }: { id_player: number; id_card: number }) {
-  const playerId = id_player;
-  const card_id = id_card;
-  console.log("playerId", playerId);
+  const player_id = id_player;
   try {
     const response = await fetch(
-      `http://localhost:8000/figure-cards/${card_id}/`,
+      `http://localhost:8000/figure-cards/${id_card}/status`,
       {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          playerId,
+          player_id,
         }),
       }
     );
