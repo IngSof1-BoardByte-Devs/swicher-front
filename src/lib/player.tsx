@@ -1,30 +1,24 @@
-export async function create_game({
+export async function create_player({
     player_name,
-    game_name,
+    game_id,
 }: {
     player_name: string;
-    game_name: string;
+    game_id: number;
 }) {
-    if (!player_name || !game_name) {
+    if (!player_name) {
         console.error(
-            'Error: player_name and game_name must be provided and cannot be empty',
+            'Error: player_name must be provided and cannot be empty',
         );
-        return {
-            status: 'ERROR',
-            message: 'Nombre de jugador o partida invalidos',
-        };
+        return { status: 'ERROR', message: 'Nombre de jugador invalido' };
     }
 
     try {
-        const response = await fetch('http://localhost:8000/games/', {
+        const response = await fetch('http://localhost:8000/players/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                player_name: player_name,
-                game_name: game_name,
-            }),
+            body: JSON.stringify({ game_id, player_name }),
         });
 
         if (!response.ok) {
@@ -35,7 +29,7 @@ export async function create_game({
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error('Failed to create game:', error);
+        console.error('Failed to join game:', error);
         return {
             status: 'ERROR',
             message:
@@ -46,25 +40,20 @@ export async function create_game({
     }
 }
 
-export async function start_game({
-    player_id,
-    game_id,
-}: {
-    player_id: number;
-    game_id: number;
-}) {
+export async function delete_player({ player_id }: { player_id: number }) {
+    if (!player_id) {
+        return { status: 'ERROR', message: 'No se encontro el id del jugador' };
+    }
     try {
         const response = await fetch(
-            `http://localhost:8000/games/${game_id}/started`,
+            `http://localhost:8000/players/${player_id}`,
             {
-                method: 'PUT',
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ player_id: player_id }),
             },
         );
-
         if (!response.ok) {
             const errorResponse = await response.json();
             throw new Error(errorResponse.detail);
@@ -73,7 +62,7 @@ export async function start_game({
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error('Failed to start game:', error);
+        console.error('Failed to leave game:', error);
         return {
             status: 'ERROR',
             message:
@@ -84,25 +73,18 @@ export async function start_game({
     }
 }
 
-export async function revert_movements({
-    game_id,
-    player_id,
-}: {
-    game_id: number;
-    player_id: number;
-}) {
-    if (!game_id || !player_id) return 'Id de jugador o partida invalidos';
+export async function end_turn_player(player_id: number) {
+    if (!player_id) return 'No se proporciono el id del jugador';
     try {
         const response = await fetch(
-            `http://localhost:8000/games/${game_id}/revert-movements`,
+            `http://localhost:8000/players/${player_id}/turn`,
             {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ player_id: player_id }),
             },
         );
         if (response.status === 200) {
-            return 'Movimientos revertidos';
+            return 'Turno finalizado';
         } else if (response.status === 404) {
             return 'Jugador no encontrado';
         } else if (response.status === 401) {
@@ -111,7 +93,7 @@ export async function revert_movements({
             return 'Ocurrio un error desconocido';
         }
     } catch (error) {
-        console.error('Failed to revert movements:', error);
+        console.error('Failed to end turn:', error);
         return 'Ocurrio un error desconocido';
     }
 }

@@ -1,219 +1,203 @@
-"use client"
-import React, { useEffect, useState } from "react";
-import { Piece } from "@components/piece";
-import { fetch_board } from "@/lib/board";
-import { useGameInfo } from '@app/contexts/GameInfoContext';
-import { motion } from "framer-motion";
+'use client';
+import { useCallback, useEffect, useState } from 'react';
+// type
+import { Piece } from '@/types/piece';
+import { FigureCard, MovementCard } from '@/types/card';
+// components
+import { PieceComponent } from '@components/piece';
+import { MovementCardComponent, FigureCardComponent } from '@components/cards';
+import { Player_with_turn } from '@/types/player';
 
-export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, figCard, figCardId, movCardId, callUseFigCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel, socketDataFigure, setSocketDataFigure }:
-    { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, socketDataMove: any,
-     setSocketDataMove: (data: any) => void, setSocketDataCancel: (data: any) => void, socketDataCancel: any, moveCard: string,
-     callUseMoveCard: (id_player: number, index1: number, index2: number, card_id: number)=>void, socketDataFigure: any, setSocketDataFigure: (data: any) => void,
-     figCard: string, figCardId: number | null, movCardId: number | null, callUseFigCard: (id_player: number, id_card: number) => void }) {
-    const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
-    const [figures, setFigures] = useState<{ color: number }[]>([]);
-    const [selected, setSelected] = useState<number | undefined>();
-    const { id_game, id_player } = useGameInfo();
-    const [swappingPieces, setSwappingPieces] = useState<number[]>([]); // Estado para las piezas en intercambio
-    const [figuresInBoard, setFiguresInBoard] = useState<Figure[]>([]);
-    const [highlightedPieces, setHighlightedPieces] = useState<number[]>([]);
+export function Gameboard() {
+    const [players, setPlayers] = useState<Player_with_turn[]>([
+        { player_id: 0, player_name: 'Player 1', turn: 0 },
+        { player_id: 1, player_name: 'Player 2', turn: 1 },
+        { player_id: 2, player_name: 'Player 3', turn: 2 },
+        { player_id: 3, player_name: 'Player 4', turn: 3 },
+    ]);
+    const [pieces, setpieces] = useState<Piece[]>([
+        { color: 0, selected: false },
+        { color: 0, selected: false },
+        { color: 0, selected: false },
+        { color: 0, selected: false },
+        { color: 1, selected: false },
+        { color: 2, selected: false },
+        { color: 0, selected: false },
+        { color: 3, selected: false },
+    ]);
+    const [figureCards, setFigureCards] = useState<FigureCard[]>([
+        { player_id: 0, id_figure: 0, type_figure: 1 },
+        { player_id: 0, id_figure: 1, type_figure: 2 },
+        { player_id: 0, id_figure: 2, type_figure: 3 },
+        { player_id: 1, id_figure: 3, type_figure: 4 },
+        { player_id: 2, id_figure: 4, type_figure: 5 },
+        { player_id: 3, id_figure: 5, type_figure: 6 },
+        { player_id: 2, id_figure: 6, type_figure: 7 },
+        { player_id: 1, id_figure: 7, type_figure: 8 },
+    ]);
+    const [movementCards, setMovementCards] = useState<MovementCard[]>([
+        { id_movement: 0, type_movement: 1, selected: false },
+        { id_movement: 1, type_movement: 2, selected: false },
+        { id_movement: 2, type_movement: 3, selected: false },
+    ]);
+    const [mode, setMode] = useState<boolean>(false);
 
-    interface Figure {
-        type: string;
-        indexes: number[];
+    function unselectpieces() {
+        setpieces(pieces.map((figure) => ({ ...figure, selected: false })));
     }
 
-    const fetchBoard = async () => {
-        try {
-            if (id_game) {
-
-                const data = await fetch_board({ id_game });
-                setFigures(data.board);
-            }
-        } catch (err) {
-            console.error("Failed to fetch board:", err);
-        }
+    function countSelected() {
+        return pieces.filter((figure) => figure.selected).length;
     }
 
-    useEffect(() => {
-
-        fetchBoard();
-    }, [id_game]);
-
-    useEffect(() => {
-        if (socketDataMove) {
-            const { position1, position2 } = socketDataMove;
-            swapPieces(position1, position2);
-            setSelectedPiece(null);
-            setSocketDataMove(null);
-            setFiguresInBoard([]);
-            fetchBoard();
-        } else if (socketDataCancel) {
-            socketDataCancel.forEach(({ card_id, position1, position2 }: { card_id: number, position1: number, position2: number }) => {
-                swapPieces(position1, position2);
-            });
-            setSocketDataCancel(null);
-            setFiguresInBoard([]);
-            fetchBoard();
-        } else if (socketDataFigure) {
-            console.log("Recibido socketDataFigure:", socketDataFigure);
-
-            const newFigures = socketDataFigure.map((figure: { type: string, indexes: number[] }) => ({
-                type: figure.type,
-                indexes: figure.indexes
-            }));
-            setFiguresInBoard(newFigures); // Actualiza el estado con las nuevas figuras
-            setHighlightedPieces(newFigures.flatMap((figure: { indexes: number }) => figure.indexes)); // Actualiza las piezas resaltadas
-            setSocketDataFigure(null);
-        }
-
-
-    }, [socketDataCancel, socketDataMove, socketDataFigure]);
-
-    const swapPieces = (index1: number, index2: number) => {
-        setSwappingPieces([index1, index2]);
-        // Actualiza el estado del tablero con el intercambio
-        setFigures((prevFigures) => {
-            const newFigures = [...prevFigures];
-            [newFigures[index1], newFigures[index2]] = [newFigures[index2], newFigures[index1]];
-            return newFigures;
-        });
-
-        // Esperar a que la animación de desaparición ocurra
-        setTimeout(() => {
-            setSwappingPieces([]);
-        }, 500); // Duración de la animación de desaparición (0.5s)
-    };
-
-
-    function parseIndex(i: number): { x: number, y: number } {
-        const x = Math.floor(i / 6);
-        const y = i % 6;
-        console.log("x:", x, "y:", y);
-        return { x, y };
-    }
-
-    const verifyMovement = (cardSelected: string, selectedPiece: number, index: number) => {
-        let result = false;
-        const primera = parseIndex(selectedPiece);
-        const segunda = parseIndex(index);
-        console.log(cardSelected)
-
-        switch (cardSelected) {
-            case "mov1":
-                result = ((primera.y + 2 === segunda.y && (primera.x + 2 === segunda.x || primera.x - 2 === segunda.x)) ||
-                    (primera.y - 2 === segunda.y && (primera.x + 2 === segunda.x || primera.x - 2 === segunda.x)));
-                break;
-            case "mov2":
-                result = (primera.y === segunda.y && (primera.x + 2 === segunda.x || primera.x - 2 === segunda.x)) ||
-                    (primera.x === segunda.x && (primera.y + 2 === segunda.y || primera.y - 2 === segunda.y));
-                break;
-            case "mov3":
-                result = (primera.y === segunda.y && (primera.x + 1 === segunda.x || primera.x - 1 === segunda.x)) ||
-                    (primera.x === segunda.x && (primera.y + 1 === segunda.y || primera.y - 1 === segunda.y));
-                break;
-            case "mov4":
-                result = ((primera.y + 1 === segunda.y && (primera.x + 1 === segunda.x || primera.x - 1 === segunda.x)) ||
-                    (primera.y - 1 === segunda.y && (primera.x + 1 === segunda.x || primera.x - 1 === segunda.x)));
-                break;
-            case "mov5":
-                if (primera.y + 1 === segunda.y && primera.x - 2 === segunda.x) {
-                    result = true;
-                    break;
-
-                } else if (primera.y + 2 === segunda.y && primera.x + 1 === segunda.x) {
-                    result = true;
-                    break;
-                } else if (primera.y - 1 === segunda.y && primera.x + 2 === segunda.x) {
-                    result = true;
-                    break;
-                } else if (primera.y - 2 === segunda.y && primera.x - 1 === segunda.x) {
-                    result = true;
-                    break;
-                }
-                break;
-            case "mov6":
-                //roto horizontal para abajo
-                if (primera.y - 1 === segunda.y && primera.x - 2 === segunda.x) {
-                    result = true;
-                    break;
-                } else if (primera.y + 2 === segunda.y && primera.x - 1 === segunda.x) {
-                    result = true;
-                    break;
-                } else if (primera.y + 1 === segunda.y && primera.x + 2 === segunda.x) {
-                    result = true;
-                    break;
-                } else if (primera.y - 2 === segunda.y && primera.x + 1 === segunda.x) {
-                    result = true;
-                    break;
-                }
-                break;
-            case "mov7":
-                result = (primera.y === segunda.y && (primera.x + 4 === segunda.x || primera.x - 4 === segunda.x)) ||
-                    (primera.x === segunda.x && (primera.y + 4 === segunda.y || primera.y - 4 === segunda.y));
-                break;
-
-            default:
-                break;
-        }
-        if (result) {
-            if (id_player && movCardId) {
-                callUseMoveCard(id_player, selectedPiece, index, movCardId);
-                setSelectedPiece(null);
+    function selectpieces(index: number, color: number) {
+        if (mode) {
+            setpieces(
+                pieces.map((figure, i) =>
+                    i === index ? { ...figure, selected: true } : figure,
+                ),
+            );
+            if (countSelected() === 1) {
+                unselectpieces();
             }
         } else {
-            alert("Las piezas no coinciden con el movimiento seleccionado");
-            setSelectedPiece(null);
+            unselectpieces();
+            const selected = SelectMultiplePieces(index, color);
+            setpieces(
+                pieces.map((figure, index) => ({
+                    ...figure,
+                    selected: selected.includes(index),
+                })),
+            );
         }
     }
 
-    const verifyFigure = (index: number, card:string) => {
-        let result = false;
-        const figure = figuresInBoard.find((fig: Figure) => fig.indexes.includes(index));
-        if (figure) {
-            if (figure.type === card) {
-                result = true;
-            }else{
-                alert("La figura seleccionada no coincide con la carta seleccionada");
+    function SelectMultiplePieces(startIndex: number, targetColor: number) {
+        const visited = new Set<number>();
+        const toVisit = [startIndex];
+
+        while (toVisit.length > 0) {
+            const index = toVisit.pop();
+
+            if (
+                index === undefined ||
+                index < 0 ||
+                index >= pieces.length ||
+                visited.has(index)
+            ) {
+                continue;
             }
-        }else{
-            alert("La pieza seleccionada no tiene una figura");
-        }
-        if (result) {
-            if (id_player && figCardId) {
-                callUseFigCard(id_player, figCardId);
+
+            if (pieces[index].color !== targetColor) {
+                continue;
+            }
+            visited.add(index);
+            if (index % 6 !== 0) {
+                toVisit.push(index - 1);
+            }
+            if ((index + 1) % 6 !== 0) {
+                toVisit.push(index + 1);
+            }
+            if (index - 6 >= 0) {
+                toVisit.push(index - 6);
+            }
+            if (index + 6 < pieces.length) {
+                toVisit.push(index + 6);
             }
         }
+        return Array.from(visited);
     }
+
+    useEffect(() => {
+        unselectpieces();
+    }, [mode]);
 
     return (
-        <div className="flex w-full h-full item justify-center content-center p-8">
-            <motion.div
-                role="grid"
-                layout
-                className="w-auto h-auto grid grid-cols-6"
-                style={{ aspectRatio: "1 / 1" }}>
-                {figures.map(({ color }, index) => (
-                    <Piece
-                        color={color}
-                        key={index}
-                        selected={highlightedPieces.includes(index)}
-                        index={index}
-                        setSelected={setSelected}
-                        isSwapping={swappingPieces.includes(index)}
-                        verifyMovement={verifyMovement}
-                        verifyFigure={verifyFigure}
-                        isFigCardSelected={figCard !== ""}
-                        isMoveCardSelected={moveCard !== ""}
-                        cardSelected={ moveCard !== "" ? moveCard : figCard}
-                        selectedTurn={selectedTurn} // Aquí se pasa el turno actual
-                        playerTurn={playerTurn} // Aquí se pasa el turno del jugador
-                        setSelectedPiece={setSelectedPiece}
-                        selectedPiece={selectedPiece}
-                    />
+        <main className="flex flex-col gap-3">
+            <div
+                style={{ aspectRatio: '1/1' }}
+                className="border p-2 grid grid-cols-6 grid-rows-6 w-full h-full gap-1"
+            >
+                {pieces.map((figure, index) => (
+                    <figure
+                        key={'pieces' + index}
+                        className="w-full h-full grid-"
+                    >
+                        <button
+                            className="w-full h-full"
+                            onClick={() => selectpieces(index, figure.color)}
+                        >
+                            <PieceComponent
+                                color={figure.color}
+                                selected={figure.selected}
+                            />
+                        </button>
+                    </figure>
                 ))}
-            </motion.div>
-        </div>
+            </div>
+            <div className="border">
+                <header className="flex justify-around border-b divide-x-2">
+                    <button
+                        className={`w-full p-2 ${mode === true ? 'bg-slate-100' : ''}`}
+                        onClick={() => setMode(false)}
+                    >
+                        Figuras
+                    </button>
+                    <button
+                        className={`w-full p-2 ${mode === false ? 'bg-slate-100' : ''}`}
+                        onClick={() => setMode(true)}
+                    >
+                        Movimientos
+                    </button>
+                </header>
+                {!mode && (
+                    <div className="p-2">
+                        <ul>
+                            {players.map((player, index) => (
+                                <li
+                                    key={'player' + index}
+                                    className="flex gap-4"
+                                >
+                                    <p className="items-center flex">
+                                        {player.player_name}
+                                    </p>
+                                    <figure className="flex gap-2">
+                                        {figureCards
+                                            .filter(
+                                                (card) =>
+                                                    card.player_id ===
+                                                    player.player_id,
+                                            )
+                                            .map((card, index) => (
+                                                <div
+                                                    key={'movement' + index}
+                                                    className="w-full h-full"
+                                                >
+                                                    <FigureCardComponent
+                                                        card={card}
+                                                    />
+                                                </div>
+                                            ))}
+                                    </figure>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+                {mode && (
+                    <div className="p-2 flex">
+                        {movementCards.map((card, index) => (
+                            <div
+                                key={'figure' + index}
+                                className="w-full h-full"
+                            >
+                                <MovementCardComponent card={card} />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </main>
     );
 }
 
