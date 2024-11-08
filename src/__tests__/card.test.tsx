@@ -15,37 +15,67 @@ const id_game = 1;
 const id_player = 1;
 
 describe("fetch_figure_cards", () => {
-  it("url should be correct with a GET ", async () => {
-    fetchMock.mockResponseOnce(JSON.stringify({ status: "OK" }));
+  it('debería devolver las cartas de figura correctamente cuando la respuesta es exitosa', async () => {
+    const mockResponse = { cards: ['card1', 'card2'] };
 
-    await fetch_figure_cards({ id_game });
+    // Mock de fetch para devolver una respuesta exitosa
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    ) as jest.Mock;
 
-
-    expect(fetch).toHaveBeenCalledWith(
-      `http://localhost:8000/games/${id_game}/figure-cards`,
-    );
-  });
-
-  it("should throw an error when the server response is not successful", async () => {
-    fetchMock.mockRejectedValueOnce(new Error('An error occurred while fetching the figure cards'));
-    const result = await fetch_figure_cards({ id_game });
-    expect(result).toEqual({
-      status: "ERROR",
-      message: "An error occurred while fetching the figure cards",
-    });
-  });
-
-  it("should return success when the fetch request is successful", async () => {
-    const mockResponse = {
-      status: "OK",
-      message: "Figure cards fetched successfully",
-    };
-
-    fetchMock.mockResponseOnce(JSON.stringify(mockResponse));
-
-    const result = await fetch_figure_cards({ id_game });
+    const result = await fetch_figure_cards({ id_game: 1 });
 
     expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/figure-cards');
+  });
+
+  it('debería devolver un mensaje de error si el servidor responde con un error', async () => {
+    const mockErrorResponse = { detail: 'Error fetching figure cards' };
+
+    // Mock de fetch para devolver una respuesta de error
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve(mockErrorResponse),
+      })
+    ) as jest.Mock;
+
+    const result = await fetch_figure_cards({ id_game: 1 });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Error fetching figure cards',
+    });
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/figure-cards');
+  });
+
+  it('debería devolver un mensaje de error si ocurre una excepción durante la solicitud', async () => {
+    // Mock de fetch para simular un error de red
+    global.fetch = jest.fn(() => Promise.reject(new Error('Network Error'))) as jest.Mock;
+
+    const result = await fetch_figure_cards({ id_game: 1 });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Network Error',
+    });
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/figure-cards');
+  });
+
+  it('debería devolver "Ocurrio un error desconocido" si el error no es una instancia de Error', async () => {
+    // Mock de fetch para simular un error no estándar (por ejemplo, un error que no sea una instancia de Error)
+    global.fetch = jest.fn(() => Promise.reject('Unknown Error')) as jest.Mock;
+
+    const result = await fetch_figure_cards({ id_game: 1 });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Ocurrio un error desconocido',
+    });
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/figure-cards');
   });
 });
 
@@ -53,24 +83,77 @@ describe("GetMoveCard", () => {
   beforeEach(() => {
     fetchMock.resetMocks();
   });
-  test('url should be correct', async () => {
-    const result = await fetch_movement_cards({ id_player });
-    console.log(result);
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${id_player}/move-cards`);
+  it('debería devolver un mensaje de error si id_player es inválido o no está definido', async () => {
+    const result = await fetch_movement_cards({ id_player: 0 });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'id de jugador invalido',
+    });
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test('should return success when the fetch request is successful', async () => {
-    const mockResponse = { status: 'OK', message: 'Movement cards fetched successfully' };
-    fetchMock.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
-    const result = await fetch_movement_cards({ id_player });
+  it('debería devolver las cartas de movimiento correctamente cuando la respuesta es exitosa', async () => {
+    const mockResponse = { cards: ['move1', 'move2'] };
+
+    // Mock de fetch para devolver una respuesta exitosa
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    ) as jest.Mock;
+
+    const result = await fetch_movement_cards({ id_player: 1 });
+
     expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/move-cards');
   });
 
-  test('should return error when the fetch request fails', async () => {
-    const mockResponse = { status: 'ERROR', message: 'An error occurred while getting the movement cards' };
-    fetchMock.mockRejectOnce(new Error('An error occurred while getting the movement cards'));
-    const result = await fetch_movement_cards({ id_player });
-    expect(result).toEqual(mockResponse);
+  it('debería devolver un mensaje de error si el servidor responde con un error', async () => {
+    const mockErrorResponse = { detail: 'Error fetching movement cards' };
+
+    // Mock de fetch para devolver una respuesta de error
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve(mockErrorResponse),
+      })
+    ) as jest.Mock;
+
+    const result = await fetch_movement_cards({ id_player: 1 });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Error fetching movement cards',
+    });
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/move-cards');
+  });
+
+  it('debería devolver un mensaje de error si ocurre una excepción durante la solicitud', async () => {
+    // Mock de fetch para simular un error de red
+    global.fetch = jest.fn(() => Promise.reject(new Error('Network Error'))) as jest.Mock;
+
+    const result = await fetch_movement_cards({ id_player: 1 });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Network Error',
+    });
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/move-cards');
+  });
+
+  it('debería devolver "Ocurrio un error desconocido" si el error no es una instancia de Error', async () => {
+    // Mock de fetch para simular un error no estándar (por ejemplo, un error que no sea una instancia de Error)
+    global.fetch = jest.fn(() => Promise.reject('Unknown Error')) as jest.Mock;
+
+    const result = await fetch_movement_cards({ id_player: 1 });
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Ocurrio un error desconocido',
+    });
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/move-cards');
   });
 });
 
@@ -95,126 +178,210 @@ describe('use_movement_cards', () => {
     fetchMock.resetMocks();
   });
   const id_player = 1, id_card = 1;
-  test('status 200', async () => {
-    fetchMock.mockResponse(JSON.stringify({ status: "ERROR", message: "invalid player id" }), { status: 200 });
-    const result = await use_movement_cards({ id_player: id_player, id_card: id_card, index1: 1, index2: 2 });
-    expect(result?.toString()).toBe("Carta usada con exito!");
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/movement-cards/${id_card}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id_player: id_player,
-        index1: 1,
-        index2: 2,
+  it('debería devolver un mensaje de éxito cuando la respuesta es 200', async () => {
+    // Mock de fetch para devolver una respuesta exitosa
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        status: 200,
       })
+    ) as jest.Mock;
+
+    const result = await use_movement_cards({
+      id_player: 1,
+      id_card: 10,
+      index1: 0,
+      index2: 1,
     });
+
+    expect(result).toBe("Carta usada con exito!");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/movement-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+          index1: 0,
+          index2: 1,
+        }),
+      }
+    );
   });
-  test('status 404', async () => {
-    fetchMock.mockResponse(JSON.stringify({ status: "ERROR", message: "invalid player id" }), { status: 404 });
-    const result = await use_movement_cards({ id_player: id_player, id_card: id_card, index1: 1, index2: 2 });
-    expect(result?.toString()).toBe("La carta enviada no existe o no se puede usar");
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/movement-cards/${id_card}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id_player: id_player,
-        index1: 1,
-        index2: 2,
+
+  it('debería devolver "La carta enviada no existe o no se puede usar" si la respuesta es 404', async () => {
+    // Mock de fetch para devolver una respuesta con error 404
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        status: 404,
       })
+    ) as jest.Mock;
+
+    const result = await use_movement_cards({
+      id_player: 1,
+      id_card: 10,
+      index1: 0,
+      index2: 1,
     });
+
+    expect(result).toBe("La carta enviada no existe o no se puede usar");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/movement-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+          index1: 0,
+          index2: 1,
+        }),
+      }
+    );
   });
-  test('status 401', async () => {
-    fetchMock.mockResponse(JSON.stringify({ status: "ERROR", message: "invalid player id" }), { status: 401 });
-    const result = await use_movement_cards({ id_player: id_player, id_card: id_card, index1: 1, index2: 2 });
-    expect(result?.toString()).toBe("No tienes permisos para usar esta carta");
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/movement-cards/${id_card}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id_player: id_player,
-        index1: 1,
-        index2: 2,
+
+  it('debería devolver "No tienes permisos para usar esta carta" si la respuesta es 401', async () => {
+    // Mock de fetch para devolver una respuesta con error 401
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        status: 401,
       })
+    ) as jest.Mock;
+
+    const result = await use_movement_cards({
+      id_player: 1,
+      id_card: 10,
+      index1: 0,
+      index2: 1,
     });
+
+    expect(result).toBe("No tienes permisos para usar esta carta");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/movement-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+          index1: 0,
+          index2: 1,
+        }),
+      }
+    );
   });
-  test('error while fetching', async () => {
-    fetchMock.mockReject(new Error('Network error'));
-    const error = "Error: Network error";
-    const result = await use_movement_cards({ id_player: id_player, id_card: id_card, index1: 1, index2: 2 });
-    if (typeof result === 'object' && 'message' in result) {
-      expect(result.message).toBe(`Error al intentar usar la carta id: ${id_card}, ${error}`);
-    }
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/movement-cards/${id_card}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id_player: id_player,
-        index1: 1,
-        index2: 2,
-      })
+
+  it('debería devolver "Ocurrio un error desconocido" si ocurre una excepción durante la solicitud', async () => {
+    // Mock de fetch para simular una excepción de red
+    global.fetch = jest.fn(() => Promise.reject(new Error('Network Error'))) as jest.Mock;
+
+    const result = await use_movement_cards({
+      id_player: 1,
+      id_card: 10,
+      index1: 0,
+      index2: 1,
     });
+
+    expect(result).toBe("Ocurrio un error desconocido");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/movement-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+          index1: 0,
+          index2: 1,
+        }),
+      }
+    );
   });
 });
 
 describe('use_figure_cards', () => {
-  it('debería retornar el resultado cuando la respuesta es exitosa', async () => {
-    const mockResponse = { status: 'OK', data: 'Resultado exitoso' };
-    fetchMock.mockResponseOnce(JSON.stringify(mockResponse));
-
-    const result = await use_figure_cards({
-      id_player: 123,
-      id_card: 1,
-    });
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      'http://localhost:8000/figure-cards/1/',
-      expect.objectContaining({
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id_player: 123 }),
+  it('debería devolver un mensaje de éxito cuando la respuesta es 200', async () => {
+    // Mock de fetch para devolver una respuesta exitosa
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        status: 200,
       })
+    ) as jest.Mock;
+
+    const result = await use_figure_cards({ id_player: 1, id_card: 10 });
+
+    expect(result).toBe("Carta usada con exito!");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/figure-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+        }),
+      }
     );
-    expect(result).toEqual(mockResponse);
   });
 
-  it('debería lanzar un error con el mensaje adecuado cuando la respuesta no es exitosa', async () => {
-    const mockErrorResponse = { detail: 'Error al usar la carta' };
-    fetchMock.mockResponseOnce(JSON.stringify(mockErrorResponse), { status: 400 });
+  it('debería devolver "La carta enviada no existe o no se puede usar" si la respuesta es 404', async () => {
+    // Mock de fetch para devolver una respuesta con error 404
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        status: 404,
+      })
+    ) as jest.Mock;
 
-    const result = await use_figure_cards({
-      id_player: 123,
-      id_card: 1,
-    });
+    const result = await use_figure_cards({ id_player: 1, id_card: 10 });
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(result).toEqual({
-      status: 'ERROR',
-      message: 'Error al usar la carta',
-    });
+    expect(result).toBe("La carta enviada no existe o no se puede usar");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/figure-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+        }),
+      }
+    );
   });
 
-  it('debería manejar un error desconocido correctamente', async () => {
-    fetchMock.mockReject(new Error('Error de red'));
+  it('debería devolver "No tienes permisos para usar esta carta" si la respuesta es 401', async () => {
+    // Mock de fetch para devolver una respuesta con error 401
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        status: 401,
+      })
+    ) as jest.Mock;
 
-    const result = await use_figure_cards({
-      id_player: 123,
-      id_card: 1,
-    });
+    const result = await use_figure_cards({ id_player: 1, id_card: 10 });
 
-    expect(result).toEqual({
-      status: 'ERROR',
-      message: 'Error de red',
-    });
+    expect(result).toBe("No tienes permisos para usar esta carta");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/figure-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+        }),
+      }
+    );
+  });
+
+  it('debería devolver "Ocurrio un error desconocido" si ocurre una excepción durante la solicitud', async () => {
+    // Mock de fetch para simular una excepción de red
+    global.fetch = jest.fn(() => Promise.reject(new Error('Network Error'))) as jest.Mock;
+
+    const result = await use_figure_cards({ id_player: 1, id_card: 10 });
+
+    expect(result).toBe("Ocurrio un error desconocido");
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8000/figure-cards/10/status',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: 1,
+        }),
+      }
+    );
   });
 });
 

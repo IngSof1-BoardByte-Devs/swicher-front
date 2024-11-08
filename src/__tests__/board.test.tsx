@@ -13,21 +13,69 @@ describe('fetch_board', () => {
         fetchMock.resetMocks();  
     });
 
-    test('url should be correct', async () => {
-        fetchMock.mockResponseOnce(JSON.stringify({ board: [] })); 
-
-        const result = await fetch_board({ id_game });
-        expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${id_game}/board`);
-    });
-
-    test('should return success when the fetch request is successful', async () => {
-        const mockResponse = { board: Array(36).fill({ color: 1 }) };
-        fetchMock.mockResponseOnce(JSON.stringify(mockResponse));  
-
-        const result = await fetch_board({ id_game });
+    it('debería devolver el tablero correctamente cuando la respuesta es exitosa', async () => {
+        const mockResponse = { board: 'mocked_board_data' };
+    
+        // Mock de fetch para devolver una respuesta exitosa
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockResponse),
+          })
+        ) as jest.Mock;
+    
+        const result = await fetch_board({ id_game: 1 });
+    
         expect(result).toEqual(mockResponse);
+        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/board');
+      });
+    
+      it('debería devolver un mensaje de error si el servidor responde con un error', async () => {
+        const mockErrorResponse = { detail: 'Error fetching board' };
+    
+        // Mock de fetch para devolver una respuesta de error
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            ok: false,
+            json: () => Promise.resolve(mockErrorResponse),
+          })
+        ) as jest.Mock;
+    
+        const result = await fetch_board({ id_game: 1 });
+    
+        expect(result).toEqual({
+          status: 'ERROR',
+          message: 'Error fetching board',
+        });
+        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/board');
+      });
+    
+      it('debería devolver un mensaje de error si ocurre una excepción durante la solicitud', async () => {
+        // Mock de fetch para simular un error de red
+        global.fetch = jest.fn(() => Promise.reject(new Error('Network Error'))) as jest.Mock;
+    
+        const result = await fetch_board({ id_game: 1 });
+    
+        expect(result).toEqual({
+          status: 'ERROR',
+          message: 'Network Error',
+        });
+        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/board');
+      });
+      
+      it('debería devolver "Ocurrio un error desconocido" si el error no es una instancia de Error', async () => {
+        // Mock de fetch para simular un error no estándar (por ejemplo, un error que no sea una instancia de Error)
+        global.fetch = jest.fn(() => Promise.reject('Unknown Error')) as jest.Mock;
+    
+        const result = await fetch_board({ id_game: 1 });
+    
+        expect(result).toEqual({
+          status: 'ERROR',
+          message: 'Ocurrio un error desconocido',
+        });
+        expect(global.fetch).toHaveBeenCalledWith('http://localhost:8000/games/1/board');
+      });
     });
-});
 
 describe("Gameboard Component", () => {
     beforeEach(() => {
