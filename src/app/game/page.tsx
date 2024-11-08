@@ -12,6 +12,7 @@ import clsx from "clsx";
 import { fetch_figure_cards, fetch_movement_cards, use_figure_cards, use_movement_cards } from "@/lib/card";
 import { useRouter } from "next/navigation";
 import { a } from "framer-motion/client";
+import CountDown from "@components/countDown";
 
 export function Game() {
     const { socket } = useWebSocket();
@@ -41,6 +42,11 @@ export function Game() {
     const [socketDataCancel, setSocketDataCancel] = useState<any>(null);
     const [socketDataFigure, setSocketDataFigure] = useState<any>(null);
 
+
+    const [isTimerRunning, setIsTimerRunning] = useState(true);
+    const [turnStartTime, setTurnStartTime] = useState<number | null>(null);
+    const [turnDuration, setTurnDuration] = useState(120); // Duración del turno en segundos
+
     interface Player {
         id: number;
         username: string;
@@ -68,6 +74,8 @@ export function Game() {
                 setGameName(data.name);
                 setColor(data.bloqued_color);
                 setSelectedTurn(data.turn);
+                setTurnStartTime(Date.now() / 1000);
+                setIsTimerRunning(true);
                 for (const player of data.players) {
                     if (player.id === id_player) {
                         setPlayerTurn(player.turn);
@@ -110,9 +118,13 @@ export function Game() {
                 if (command[0] === "game") {
                     if (command[1] === "turn") {
                         setSelectedTurn(socketData.payload.turn);
+                        setIsTimerRunning(true);
+                        setTurnStartTime(Date.now() / 1000); // tiempo en segundos
+                        setTurnDuration(120); 
+                    
                         if (id_player) {
                             fetch_movement_cards({ id_player }).then((data: MoveCard[]) => {
-                                setMovementCards(data)
+                                setMovementCards(data);
                             });
                         }
                     } else if (command[1] === "winner") {
@@ -187,8 +199,24 @@ export function Game() {
                 </div>
             )}
             {/* Header: Turno Actual, Nombre de Partida y Color Bloqueado */}
-            <div className="col-span-12 place-content-center text-center h-full grid grid-cols-2">
+            <div className={clsx("col-span-12 place-content-center text-center h-full grid", {
+                "grid-cols-3": isTimerRunning,
+                "grid-cols-2": !isTimerRunning,
+            })}>
                 <p className="text-2xl font-bold">Partida: {gameName}</p>
+                {isTimerRunning && turnStartTime && (
+                     <CountDown
+                     startTime={turnStartTime} 
+                     duration={turnDuration} 
+                     onEnd={() => {
+                        const endTurnButton = document.getElementById("end-turn-button");
+                        if (endTurnButton && playerTurn === selectedTurn) {
+                            endTurnButton.click();
+                        }
+                        setIsTimerRunning(false);
+                    }} 
+                    />
+                    )}
                 <div>
                     <p className="text-2xl font-bold">Bloqueado: {clsx({
                         "red ": color === 0,
@@ -339,6 +367,7 @@ export function Game() {
                     >Salir</button> : <>
                     <button
                         className={`${playerTurn !== selectedTurn ? "hidden" : "md:justify-start p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 disabled:hover:dark:bg-inherit disabled:opacity-50"}`}
+                        id="end-turn-button"
                         onClick={async () => {
                             if (id_player !== null) {
                                 const resp = await end_turn(id_player);
