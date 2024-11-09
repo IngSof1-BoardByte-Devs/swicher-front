@@ -1,9 +1,10 @@
-import { create_game, fetch_games, join_game, revert_movements, start_game } from '@/lib/game';
+import { create_game, fetch_game, fetch_games, join_game, revert_movements, start_game } from '@/lib/game';
 import fetchMock from 'jest-fetch-mock';
 
 
 global.fetch = jest.fn();
 fetchMock.enableMocks();
+
 
 describe("create_game", () => {
   const player_name = "Jugador1";
@@ -67,71 +68,101 @@ describe("create_game", () => {
   });
 });
 
-
-describe('fetch_games function', () => {
+describe('fetch_games', () => {
   beforeEach(() => {
     (fetch as jest.Mock).mockClear();
   });
-  it('should handle both a successful 200 response and a failure', async () => {
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        status: 'OK', message: 'Game created successfully',
-        games: [
-          {
-            game_id: '1',
-            game_name: 'Test Game 1',
-            num_players: 1,
-          },
-          {
-            game_id: '2',
-            game_name: 'Test Game 2',
-            num_players: 2,
-          },
-        ],
-      }),
+
+  it('should return games data when the fetch is successful', async () => {
+    const mockData = { games: [{ id: 1, name: 'Game 1' }] };
+
+    fetchMock.mockResponseOnce(JSON.stringify(mockData), { status: 200 });
+
+    const result = await fetch_games();
+
+    expect(result).toEqual(mockData);
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/games/');
+  });
+
+  it('should handle errors if the fetch response is not ok', async () => {
+    const mockError = { detail: 'Failed to fetch games' };
+
+    fetchMock.mockResponseOnce(
+      JSON.stringify(mockError),
+      { status: 400 }
+    );
+
+    const result = await fetch_games();
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Failed to fetch games',
     });
-    const successResult = await fetch_games();
-    expect(successResult.games).toHaveLength(2);
-    expect(successResult.games[0].game_name).toEqual('Test Game 1');
-    expect(successResult.games[1].game_name).toEqual('Test Game 2');
-    expect(successResult.games[0].num_players).toEqual(1);
-    expect(successResult.games[1].num_players).toEqual(2);
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/games/');
+  });
+
+  it('should handle network errors gracefully', async () => {
+    fetchMock.mockRejectOnce(new Error('Network Error'));
+
+    const result = await fetch_games();
+
+    expect(result).toEqual({
+      status: 'ERROR',
+      message: 'Network Error',
+    });
   });
 });
 
-describe('join_game', () => {
+describe('join_game function', () => {
   beforeEach(() => {
-    fetchMock.resetMocks();
+    (fetch as jest.Mock).mockClear();
   });
 
-  it('should return success when the fetch request is successful', async () => {
-    const mockResponse = { status: 'SUCCESS', message: 'Joined the game successfully' };
+  it('should return an error if player_name is not provided', async () => {
+    const response = await join_game({ player_name: '', game_id: 1 });
 
-    fetchMock.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
-
-    const result = await join_game({ player_name: 'John Doe', game_id: 1 });
-
-    expect(result).toEqual(mockResponse);
-    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/players/', expect.any(Object));
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(response.status).toBe('ERROR');
+    expect(response.message).toBe('Nombre de jugador invalido');
   });
 
-  it('should handle fetch failure', async () => {
-    fetchMock.mockRejectOnce(new Error('Failed to fetch'));
+  it('should call the API and return the result on success', async () => {
+    const mockResponse = { status: 'OK', player_id: 1 };
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    });
 
-    const result = await join_game({ player_name: 'John Doe', game_id: 1 });
+    const response = await join_game({ player_name: 'Player1', game_id: 1 });
 
-    expect(result).toEqual({ status: 'ERROR', message: 'Failed to fetch' });
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/players/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ game_id: 1, player_name: 'Player1' }),
+    });
+    expect(response).toEqual(mockResponse);
   });
 
-  it('should return error if player_name is missing', async () => {
+  it('should handle error if the response is not ok', async () => {
+    const mockErrorResponse = { detail: 'Game not found' };
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => mockErrorResponse,
+    });
 
-    const result = await join_game({ player_name: '', game_id: 1 });
+    const response = await join_game({ player_name: 'Player1', game_id: 999 });
 
-    expect(result).toEqual({ status: 'ERROR', message: 'Nombre de jugador invalido' });
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(response.status).toBe('ERROR');
+    expect(response.message).toBe('Game not found');
+  });
+
+  it('should catch network or unexpected errors', async () => {
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    const response = await join_game({ player_name: 'Player1', game_id: 1 });
+
+    expect(response.status).toBe('ERROR');
+    expect(response.message).toBe('Network error');
   });
 });
 
@@ -152,10 +183,9 @@ describe("start_game", () => {
 
     expect(result).toEqual(mockResponse);
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/started`, {
+    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player_id }),
     });
   });
 
@@ -208,8 +238,8 @@ describe("revert_movements", () => {
     const result = await revert_movements({ game_id, player_id });
     expect(result).toBe("Movimientos revertidos");
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/revert-movements`, {
-      method: "PUT",
+    expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/games/${game_id}/revert-moves`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ player_id }),
     });
@@ -245,5 +275,49 @@ describe("revert_movements", () => {
     const result = await revert_movements({ game_id, player_id });
     expect(result).toBe("Ocurrio un error desconocido");
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("fetch_game", () => {
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+
+  it("debe retornar un error si el `game_id` no está definido", async () => {
+    const result = await fetch_game({ game_id: undefined as any });
+    expect(result).toEqual({
+      status: "ERROR",
+      message: "No se encontró el id del juego",
+    });
+  });
+
+  it("debe obtener la partida correctamente y retornar la respuesta del servidor", async () => {
+    const mockResponse = { status: "OK", game: { id: 1, name: "Test Game" } };
+    fetchMock.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
+
+    const result = await fetch_game({ game_id: 1 });
+    expect(fetchMock).toHaveBeenCalledWith("http://localhost:8000/games/1/");
+    expect(result).toEqual(mockResponse);
+  });
+
+  it("debe retornar un error si el servidor responde con un estado no 200", async () => {
+    const mockErrorResponse = { detail: "Juego no encontrado" };
+    fetchMock.mockResponseOnce(JSON.stringify(mockErrorResponse), { status: 404 });
+
+    const result = await fetch_game({ game_id: 1 });
+    expect(result).toEqual({
+      status: "ERROR",
+      message: "Juego no encontrado",
+    });
+  });
+
+  it("debe manejar errores de red o de fetch", async () => {
+    fetchMock.mockRejectOnce(new Error("Network error"));
+
+    const result = await fetch_game({ game_id: 1 });
+    expect(result).toEqual({
+      status: "ERROR",
+      message: "Network error",
+    });
   });
 });

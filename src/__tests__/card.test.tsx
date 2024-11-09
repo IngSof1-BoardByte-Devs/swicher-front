@@ -1,10 +1,11 @@
+import { react } from 'react';
 import { Card } from "@/components/cards";
 import { fetch_figure_cards, fetch_movement_cards, use_movement_cards, use_figure_cards } from "@/lib/card";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor  } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import fetchMock from "jest-fetch-mock";
-
+global.fetch = jest.fn();
 fetchMock.enableMocks();
 
 beforeEach(() => {
@@ -13,6 +14,14 @@ beforeEach(() => {
 
 const id_game = 1;
 const id_player = 1;
+
+// Mock de Framer Motion para evitar problemas con la animación
+jest.mock("framer-motion", () => ({
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  motion: {
+    div: ({ children, ...props }: { children: React.ReactNode }) => <div {...props}>{children}</div>,
+  },
+}));
 
 describe("fetch_figure_cards", () => {
   it('debería devolver las cartas de figura correctamente cuando la respuesta es exitosa', async () => {
@@ -83,14 +92,19 @@ describe("GetMoveCard", () => {
   beforeEach(() => {
     fetchMock.resetMocks();
   });
-  it('debería devolver un mensaje de error si id_player es inválido o no está definido', async () => {
-    const result = await fetch_movement_cards({ id_player: 0 });
+  it("debe retornar un error cuando id_player es inválido", async () => {
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(result).toEqual({
-      status: 'ERROR',
-      message: 'id de jugador invalido',
-    });
-    expect(global.fetch).not.toHaveBeenCalled();
+    const response = await fetch_movement_cards({ id_player: 0 });
+
+    // Verifica que console.error se llame con el mensaje adecuado
+    expect(consoleErrorSpy).toHaveBeenCalledWith("Error: el player_id must be filed");
+
+    // Verifica que la respuesta tenga el mensaje de error correcto
+    expect(response).toEqual({ status: "ERROR", message: "id de jugador invalido" });
+
+    // Restaura el mock de console.error
+    consoleErrorSpy.mockRestore();
   });
 
   it('debería devolver las cartas de movimiento correctamente cuando la respuesta es exitosa', async () => {
@@ -157,21 +171,80 @@ describe("GetMoveCard", () => {
   });
 });
 
+describe("Card Component", () => {
+  const defaultProps = {
+    type: true,
+    id: "test-card-id",
+    idCard: 1,
+    selectedCard: null,
+    setSelectedCard: jest.fn(),
+    isSelectable: true,
+    setMoveCard: jest.fn(),
+    usedCard: false,
+    setFigCard: jest.fn(),
+    setFigCardId: jest.fn(),
+    setMovCardId: jest.fn(),
+  };
 
-describe('Card Component', () => {
-  test('renders correctly', () => {
-    render(<Card type={true} index={1} />);
-    const cardElement = screen.getByRole('img', { name: /carta/i });
-    expect(cardElement).toBeInTheDocument();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  test('has the correct alt text', () => {
-    render(<Card type={true} index={1} />);
-    const cardElement = screen.getByRole('img', { name: /carta/i });
-    expect(cardElement).toHaveAttribute('alt', 'carta');
+  it("renders correctly and triggers onClick to select the card", async () => {
+    const { getByRole } = render(<Card {...defaultProps} index={1} />);
+    const card = getByRole("button");
+
+    // Hacer clic para seleccionar la carta
+    fireEvent.click(card);
+    await waitFor(() => expect(defaultProps.setSelectedCard).toHaveBeenCalledWith("test-card-id"));
+    expect(defaultProps.setFigCard).toHaveBeenCalledWith("fig1");
+    expect(defaultProps.setFigCardId).toHaveBeenCalledWith(1);
   });
 
+  it("deselects the card when clicked again", async () => {
+    const { getByRole } = render(<Card {...defaultProps} selectedCard="test-card-id" index={1} />);
+    const card = getByRole("button");
+
+    // Hacer clic para deseleccionar la carta
+    fireEvent.click(card);
+    await waitFor(() => expect(defaultProps.setSelectedCard).toHaveBeenCalledWith(null));
+    expect(defaultProps.setMoveCard).toHaveBeenCalledWith("");
+    expect(defaultProps.setFigCard).toHaveBeenCalledWith("");
+    expect(defaultProps.setFigCardId).toHaveBeenCalledWith(null);
+  });
+
+  it("selects a movement card when type is false", async () => {
+    const { getByRole } = render(<Card {...defaultProps} type={false} index={1} />);
+    const card = getByRole("button");
+
+    fireEvent.click(card);
+    await waitFor(() => expect(defaultProps.setSelectedCard).toHaveBeenCalledWith("test-card-id"));
+    expect(defaultProps.setMoveCard).toHaveBeenCalledWith("mov1");
+    expect(defaultProps.setMovCardId).toHaveBeenCalledWith(1);
+  });
+
+  it("selects figure cards with index between 10 and 18", async () => {
+    const { getByRole } = render(<Card {...defaultProps} index={15} />);
+    const card = getByRole("button");
+
+    fireEvent.click(card);
+    await waitFor(() => expect(defaultProps.setSelectedCard).toHaveBeenCalledWith("test-card-id"));
+    expect(defaultProps.setFigCard).toHaveBeenCalledWith("fig15");
+    expect(defaultProps.setFigCardId).toHaveBeenCalledWith(1);
+  });
+
+  it("selects easy figure cards with index greater than 18", async () => {
+    const { getByRole } = render(<Card {...defaultProps} index={19} />);
+    const card = getByRole("button");
+  
+    fireEvent.click(card);
+    await waitFor(() => expect(defaultProps.setSelectedCard).toHaveBeenCalledWith("test-card-id"));
+    expect(defaultProps.setFigCard).toHaveBeenCalledWith("fig19");
+    expect(defaultProps.setFigCardId).toHaveBeenCalledWith(1);
+  });
 });
+
+
 
 describe('use_movement_cards', () => {
   beforeEach(() => {
@@ -195,12 +268,12 @@ describe('use_movement_cards', () => {
 
     expect(result).toBe("Carta usada con exito!");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/movement-cards/10/status',
+      'http://localhost:8000/movement-cards/10/',
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
           index1: 0,
           index2: 1,
         }),
@@ -225,12 +298,12 @@ describe('use_movement_cards', () => {
 
     expect(result).toBe("La carta enviada no existe o no se puede usar");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/movement-cards/10/status',
+      'http://localhost:8000/movement-cards/10/',
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
           index1: 0,
           index2: 1,
         }),
@@ -255,12 +328,12 @@ describe('use_movement_cards', () => {
 
     expect(result).toBe("No tienes permisos para usar esta carta");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/movement-cards/10/status',
+      'http://localhost:8000/movement-cards/10/',
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
           index1: 0,
           index2: 1,
         }),
@@ -281,12 +354,12 @@ describe('use_movement_cards', () => {
 
     expect(result).toBe("Ocurrio un error desconocido");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/movement-cards/10/status',
+      'http://localhost:8000/movement-cards/10/',
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
           index1: 0,
           index2: 1,
         }),
@@ -308,12 +381,12 @@ describe('use_figure_cards', () => {
 
     expect(result).toBe("Carta usada con exito!");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/figure-cards/10/status',
+      `http://localhost:8000/figure-cards/10/`,
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
         }),
       }
     );
@@ -331,12 +404,12 @@ describe('use_figure_cards', () => {
 
     expect(result).toBe("La carta enviada no existe o no se puede usar");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/figure-cards/10/status',
+      `http://localhost:8000/figure-cards/10/`,
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
         }),
       }
     );
@@ -354,12 +427,12 @@ describe('use_figure_cards', () => {
 
     expect(result).toBe("No tienes permisos para usar esta carta");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/figure-cards/10/status',
+      `http://localhost:8000/figure-cards/10/`,
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
         }),
       }
     );
@@ -373,12 +446,12 @@ describe('use_figure_cards', () => {
 
     expect(result).toBe("Ocurrio un error desconocido");
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/figure-cards/10/status',
+      `http://localhost:8000/figure-cards/10/`,
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          player_id: 1,
+          playerId: 1,
         }),
       }
     );

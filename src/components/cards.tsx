@@ -80,19 +80,27 @@ export function Card({ type, index, id, idCard, selectedCard, setSelectedCard, i
  { type: boolean; index: number; id: string; idCard: number; selectedCard: string | null; setSelectedCard: (id: string | null) => void;
    isSelectable: boolean; setMoveCard: (id: string) => void; usedCard: boolean; setFigCard: (id: string) => void; setFigCardId: (id: number | null) => void, setMovCardId: (id: number | null) => void; }) {
   let cardPic;
+
   if (!type) {
     cardPic = movementCards[`mov${index}`];
-  } else if (index <= 9) {
-    cardPic = figureCards[`fig0${index}`];
-  } else if (index <= 18) {
-    cardPic = figureCards[`fig${index}`];
-  } else {
-    cardPic = figureCards[`fige${index - 18}`];
+  }else{
+    if (index >= 0 && index <= 9) {
+      console.log("ENTRA ACA")
+      cardPic = figureCards[`fig0${index}`];
+    } else if (index >= 10 && index <= 18) {
+      console.log("ENTRA ACA")
+      cardPic = figureCards[`fig${index}`];
+    } else if (index >= 19) {
+      console.log("ENTRA ACA")
+      const indexEasy = index - 18;
+      cardPic = figureCards[`fige${indexEasy}`];
+    }
   }
 
   return (
     <AnimatePresence>
       <motion.div
+        role= "button"
         className="w-full h-full bg-gray-100 rounded-[35px] shadow-lg relative"
         layout
         onClick={() => {
