@@ -121,6 +121,10 @@ export async function start_game({ player_id }: { player_id: number }) {
 }
 
 export async function fetch_game({ game_id }: { game_id: number }) {
+  if (!game_id) {
+    return { status: "ERROR", message: "No se encontró el id del juego" };
+  }
+
   try {
     const response = await fetch(`http://localhost:8000/games/${game_id}/`);
 

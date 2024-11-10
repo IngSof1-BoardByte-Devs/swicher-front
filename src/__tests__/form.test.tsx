@@ -1,97 +1,171 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { CreateGameForm, UserForm } from '@/components/form';
-import { GameInfoProvider } from '@/app/contexts/GameInfoContext';
-import { WebSocketProvider } from '@/app/contexts/WebSocketContext';
+import { UserForm, CreateGameForm } from '@/components/form';
+import { join_game, create_game } from '@/lib/game';
 import { useRouter } from 'next/navigation';
+import { useWebSocket } from '@/app/contexts/WebSocketContext';
+import { useGameInfo } from '@/app/contexts/GameInfoContext';
+
+jest.mock('@/lib/game', () => ({
+  join_game: jest.fn(),
+  create_game: jest.fn(),
+}));
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
-const renderWithProviders = (ui: React.ReactElement) => {
-  return render(
-    <GameInfoProvider>
-      <WebSocketProvider>
-        {ui}
-      </WebSocketProvider>
-    </GameInfoProvider>
-  );
-};
+jest.mock('@/app/contexts/WebSocketContext', () => ({
+  useWebSocket: jest.fn(),
+}));
 
-describe('CreateGameForm', () => {
-  test('should render the form', () => {
-      renderWithProviders(<CreateGameForm />);
-      const inputGameName = screen.getByRole('textbox', { name: /Nombre de la partida/i });
-      const inputPlayerName = screen.getByRole('textbox', { name: /Nombre de usuario/i });
-      expect (inputGameName).toBeInTheDocument();
-      expect (inputPlayerName).toBeInTheDocument();
+jest.mock('@/app/contexts/GameInfoContext', () => ({
+  useGameInfo: jest.fn(),
+}));
+
+describe('UserForm', () => {
+  const mockPush = jest.fn();
+  const mockSetIdGame = jest.fn();
+  const mockSetIdPlayer = jest.fn();
+  const mockSend = jest.fn();
+
+  beforeEach(() => {
+    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
+    (useGameInfo as jest.Mock).mockReturnValue({
+      setIdGame: mockSetIdGame,
+      setIdPlayer: mockSetIdPlayer,
+    });
+    (useWebSocket as jest.Mock).mockReturnValue({ socket: { send: mockSend } });
+    jest.clearAllMocks();
   });
 
-  test('should be required', () => {
-      renderWithProviders(<CreateGameForm />);
-  
-  const inputGameName = screen.getByRole('textbox', { name: /Nombre de la partida/i });
-  const inputPlayerName = screen.getByRole('textbox', { name: /Nombre de usuario/i });
-  const submitButton = screen.getByRole('button', { name: /Crear partida/i });
+  test('muestra un error si el campo de nombre de jugador está vacío', async () => {
+    render(<UserForm gameId={1} />);
 
-  fireEvent.change(inputGameName, { target: { value: 'Game123' } });
-  fireEvent.change(inputPlayerName, { target: { value: '' } });
-  fireEvent.click(submitButton);
-  expect(screen.getByText('Todos los campos son obligatorios')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
 
-  fireEvent.change(inputGameName, { target: { value: 'Game@123' } });
-  fireEvent.change(inputPlayerName, { target: { value: 'Player123' } });
-  fireEvent.click(submitButton);
-  expect(screen.queryByText('Todos los campos son obligatorios')).not.toBeInTheDocument();
+    expect(await screen.findByText('Completar el campo')).toBeInTheDocument();
   });
-  test('should show error message when fields are empty', () => {
-      renderWithProviders(<CreateGameForm />);
-      const inputGameName = screen.getByRole('textbox', { name: /Nombre de la partida/i });
-      fireEvent.change(inputGameName, { target: { value: '' } });
-      const inputPlayerName = screen.getByRole('textbox', { name: /Nombre de usuario/i });
-      fireEvent.change(inputPlayerName, { target: { value: '' } });
-      const submitButton = screen.getByRole('button', { name: /Crear partida/i });
-      fireEvent.click(submitButton);
-  
-      const errorMessage = screen.getByText('Todos los campos son obligatorios');
-      expect(errorMessage).toBeInTheDocument();
+
+  test('muestra un error si el nombre de jugador tiene caracteres no alfanuméricos', async () => {
+    render(<UserForm gameId={1} />);
+
+    fireEvent.change(screen.getByTestId('playerName'), { target: { value: 'Jugador!' } });
+    fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
+
+    expect(await screen.findByText('Solo se permiten caracteres alfanuméricos')).toBeInTheDocument();
+  });
+
+  test('llama a join_game y maneja el error si la respuesta tiene un estado de ERROR', async () => {
+    (join_game as jest.Mock).mockResolvedValue({
+      status: 'ERROR',
+      message: 'Error al unirse a la partida',
+    });
+
+    render(<UserForm gameId={1} />);
+    
+    fireEvent.change(screen.getByTestId('playerName'), { target: { value: 'Jugador1' } });
+    fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
+
+    expect(join_game).toHaveBeenCalledWith({
+      player_name: 'Jugador1',
+      game_id: 1,
+    });
+    expect(await screen.findByText('Error al unirse a la partida')).toBeInTheDocument();
+  });
+
+  test('redirecciona al lobby y envía el mensaje de socket en caso de éxito', async () => {
+    (join_game as jest.Mock).mockResolvedValue({
+      status: 'OK',
+      player_id: 123,
+    });
+
+    render(<UserForm gameId={1} />);
+    
+    fireEvent.change(screen.getByTestId('playerName'), { target: { value: 'Jugador1' } });
+    fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
+
+    await waitFor(() => {
+      expect(mockSetIdPlayer).toHaveBeenCalledWith(123);
+      expect(mockSetIdGame).toHaveBeenCalledWith(1);
+      expect(mockSend).toHaveBeenCalledWith('/join 1');
+      expect(mockPush).toHaveBeenCalledWith('/lobby/');
+    });
   });
 });
 
-describe('UserForm', () => {
-  const gameId = 1;
+describe('CreateGameForm', () => {
+  const mockPush = jest.fn();
+  const mockSetIdGame = jest.fn();
+  const mockSetIdPlayer = jest.fn();
+  const mockSend = jest.fn();
 
   beforeEach(() => {
-    renderWithProviders(<UserForm gameId={gameId} />);
+    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
+    (useGameInfo as jest.Mock).mockReturnValue({
+      setIdGame: mockSetIdGame,
+      setIdPlayer: mockSetIdPlayer,
+    });
+    (useWebSocket as jest.Mock).mockReturnValue({ socket: { send: mockSend } });
+    jest.clearAllMocks();
   });
 
-  it('should render input and button', () => {
-    const input = screen.getByTestId("playerName");
-    const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
+  test('muestra un error si los campos están vacíos', async () => {
+    render(<CreateGameForm />);
 
-    expect(input).toBeInTheDocument();
-    expect(button).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
+
+    expect(await screen.findByText('Todos los campos son obligatorios')).toBeInTheDocument();
   });
 
-  it('should show error if player name is empty', async () => {
-    const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
-    fireEvent.click(button);
+  test('muestra un error si los campos tienen caracteres no alfanuméricos', async () => {
+    render(<CreateGameForm />);
 
-    const errorMessage = await screen.findByText(/Completar el campo/i);
-    expect(errorMessage).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Nombre de usuario'), { target: { value: 'Jugador!' } });
+    fireEvent.change(screen.getByLabelText('Nombre de la partida'), { target: { value: 'Partida!' } });
+    fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
+
+    expect(await screen.findByText('Solo se permiten caracteres alfanuméricos')).toBeInTheDocument();
   });
 
-  it('should show error if player name is not alphanumeric', async () => {
-    const input = screen.getByTestId("playerName");
-    const button = screen.getByRole('button', { name: /Unirse a la Partida/i });
+  test('llama a create_game y maneja el error si la respuesta tiene un estado de ERROR', async () => {
+    (create_game as jest.Mock).mockResolvedValue({
+      status: 'ERROR',
+      message: 'Error al crear la partida',
+    });
 
-    fireEvent.change(input, { target: { value: 'Nombre@123' } });
-    fireEvent.click(button);
+    render(<CreateGameForm />);
+    
+    fireEvent.change(screen.getByLabelText('Nombre de usuario'), { target: { value: 'Jugador1' } });
+    fireEvent.change(screen.getByLabelText('Nombre de la partida'), { target: { value: 'Partida1' } });
+    fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
 
-    const errorMessage = await screen.findByText(/Solo se permiten caracteres alfanuméricos/i);
-    expect(errorMessage).toBeInTheDocument();
+    expect(create_game).toHaveBeenCalledWith({
+      player_name: 'Jugador1',
+      game_name: 'Partida1',
+    });
+    expect(await screen.findByText('Error al crear la partida')).toBeInTheDocument();
   });
 
+  test('redirecciona al lobby y envía el mensaje de socket en caso de éxito', async () => {
+    (create_game as jest.Mock).mockResolvedValue({
+      status: 'OK',
+      player_id: 123,
+      game_id: 456,
+    });
+
+    render(<CreateGameForm />);
+    
+    fireEvent.change(screen.getByLabelText('Nombre de usuario'), { target: { value: 'Jugador1' } });
+    fireEvent.change(screen.getByLabelText('Nombre de la partida'), { target: { value: 'Partida1' } });
+    fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
+
+    await waitFor(() => {
+      expect(mockSetIdPlayer).toHaveBeenCalledWith(123);
+      expect(mockSetIdGame).toHaveBeenCalledWith(456);
+      expect(mockSend).toHaveBeenCalledWith('/join 456');
+      expect(mockPush).toHaveBeenCalledWith('/lobby/');
+    });
+  });
 });

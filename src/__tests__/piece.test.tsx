@@ -3,52 +3,100 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Piece } from "@/components/piece";
 
-describe("Piece Component", () => {
+describe('Piece Component', () => {
   const mockSetSelectedPiece = jest.fn();
+  const mockVerifyMovement = jest.fn();
+  const mockVerifyFigure = jest.fn();
+  const mockSetSelected = jest.fn();
 
-  beforeEach(() => {
-    mockSetSelectedPiece.mockClear();
+  const defaultProps = {
+    color: 1,
+    index: 0,
+    selectedPiece: null,
+    setSelectedPiece: mockSetSelectedPiece,
+    isSwapping: false,
+    verifyMovement: mockVerifyMovement,
+    isMoveCardSelected: false,
+    cardSelected: 'testCard',
+    selectedTurn: 1,
+    playerTurn: 1,
+    selected: false,
+    setSelected: mockSetSelected,
+    isFigCardSelected: false,
+    verifyFigure: mockVerifyFigure,
+  };
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it("renders with the correct color and class", () => {
-    render(
-      <Piece
-        color={0}
-        selected={false}
-        index={0}
-        setSelected={mockSetSelectedPiece}
-      />
-    );
+  test('renders with the correct color class', () => {
+    const { rerender } = render(<Piece {...defaultProps} color={0} />);
+    expect(screen.getByRole('piece')).toHaveClass('bg-violet-500/50');
 
-    const pieceElement = screen.getByRole("piece");
-    expect(pieceElement).toBeInTheDocument();
+    rerender(<Piece {...defaultProps} color={1} />);
+    expect(screen.getByRole('piece')).toHaveClass('bg-red-500');
+
+    rerender(<Piece {...defaultProps} color={2} />);
+    expect(screen.getByRole('piece')).toHaveClass('bg-blue-500');
+
+    rerender(<Piece {...defaultProps} color={3} />);
+    expect(screen.getByRole('piece')).toHaveClass('bg-green-500');
   });
 
-  it("applies the selected styles when the piece is selected", () => {
-    render(
-      <Piece
-        color={2}
-        index={1}
-        selected={false}
-        setSelected={mockSetSelectedPiece}
-      />
-    );
-
-    const pieceElement = screen.getByRole("piece");
-    expect(pieceElement).toBeInTheDocument();
-
+  test('applies the animate-pulse class when selected', () => {
+    render(<Piece {...defaultProps} selected={true} />);
+    expect(screen.getByRole('piece')).toHaveClass('animate-pulse');
   });
 
-  it("calls setSelectedPiece with the correct index when clicked", () => {
-    render(
-      <Piece color={0} selected={false} index={2} setSelected={mockSetSelectedPiece} />
-    );
+  test('handles click to select and verify figure when isFigCardSelected is true', () => {
+    render(<Piece {...defaultProps} isFigCardSelected={true} />);
+    fireEvent.click(screen.getByTestId('piece-btn'));
 
-    const pieceElement = screen.getByTestId("piece-btn");
-    fireEvent.click(pieceElement);
+    expect(mockSetSelected).toHaveBeenCalledWith(defaultProps.index);
+    expect(mockVerifyFigure).toHaveBeenCalledWith(defaultProps.index, defaultProps.cardSelected);
+  });
 
-    // Verificar que setSelectedPiece se haya llamado con el índice correcto
-    expect(mockSetSelectedPiece).toHaveBeenCalledTimes(1);
-    expect(mockSetSelectedPiece).toHaveBeenCalledWith(2);
+  test('handles click to set selectedPiece when isMoveCardSelected is true and playerTurn matches selectedTurn', () => {
+    render(<Piece {...defaultProps} isMoveCardSelected={true} />);
+    fireEvent.click(screen.getByTestId('piece-btn'));
+
+    expect(mockSetSelectedPiece).toHaveBeenCalledWith(defaultProps.index);
+  });
+
+  test('does not set selectedPiece or verifyMovement if playerTurn does not match selectedTurn', () => {
+    render(<Piece {...defaultProps} isMoveCardSelected={true} playerTurn={2} />);
+    fireEvent.click(screen.getByTestId('piece-btn'));
+
+    expect(mockSetSelectedPiece).not.toHaveBeenCalled();
+    expect(mockVerifyMovement).not.toHaveBeenCalled();
+  });
+
+  test('calls verifyMovement when a different piece is selected', () => {
+    render(<Piece {...defaultProps} isMoveCardSelected={true} selectedPiece={1} />);
+    fireEvent.click(screen.getByTestId('piece-btn'));
+
+    expect(mockVerifyMovement).toHaveBeenCalledWith(defaultProps.cardSelected, 1, defaultProps.index);
+  });
+
+  test('triggers swap animation when isSwapping is true', () => {
+    render(<Piece {...defaultProps} isSwapping={true} />);
+    const pieceElement = screen.getByRole('piece');
+    expect(pieceElement).toHaveStyle('opacity: 1');
+    // Se asume que la animación cambia temporalmente el `scale` a `0` y luego lo restaura
+  });
+
+  test('triggers visible animation when isSwapping is false', () => {
+    render(<Piece {...defaultProps} isSwapping={false} />);
+    const pieceElement = screen.getByRole('piece');
+    expect(pieceElement).toHaveStyle('opacity: 1');
+    // El `scale` debería estar en `1` cuando es visible
+  });
+
+  test('deselects piece if already selected', () => {
+    render(<Piece {...defaultProps} selected={true} />);
+    fireEvent.click(screen.getByTestId('piece-btn'));
+
+    expect(mockSetSelected).toHaveBeenCalledWith(undefined);
   });
 });

@@ -9,29 +9,86 @@ describe('end turn function', () => {
         (fetch as jest.Mock).mockClear();
       });
 
-      it('should handle both a successful 200 response and a failure', async () => {
-
-        (fetch as jest.Mock).mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ status: 'OK', message: 'End turn successfully' }),
-        });
-        const player_id = 1;
-        const successResult = await end_turn(player_id);
+      it('debería devolver un mensaje de error si no se proporciona el id del jugador', async () => {
+        const result = await end_turn(0); // Simula que no se proporciona un id válido
     
-        expect(fetch).toHaveBeenCalledWith(`http://localhost:8000/players/${player_id}/turn`, {
-          method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ player_id })
-        });
-    
-        expect(successResult).toEqual({ status: 'OK', message: 'End turn successfully' });
-    
-        fetchMock.mockRejectedValueOnce(new Error('An error occurred while ending the turn'));
-        
-        const failResult = await end_turn(1);
-    
-        expect(failResult).toEqual({ status: 'ERROR', message: 'An error occurred while ending the turn' });
+        expect(result).toBe('No se proporciono el id del jugador');
       });
+    
+      it('debería devolver "Turno finalizado" cuando la respuesta es 200', async () => {
+        // Mock de fetch para simular éxito
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            status: 200,
+          })
+        ) as jest.Mock;
+    
+        const result = await end_turn(1);
+    
+        expect(result).toBe('Turno finalizado');
+        expect(global.fetch).toHaveBeenCalledWith(
+          'http://localhost:8000/players/1/turn',
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ player_id: 1 }),
+          }
+        );
+      });
+    
+      it('debería devolver "Jugador no encontrado" cuando la respuesta es 404', async () => {
+        // Mock de fetch para simular un error 404
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            status: 404,
+          })
+        ) as jest.Mock;
+    
+        const result = await end_turn(1);
+    
+        expect(result).toBe('Jugador no encontrado');
+      });
+    
+      it('debería devolver "No es tu turno" cuando la respuesta es 401', async () => {
+        // Mock de fetch para simular un error 401
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            status: 401,
+          })
+        ) as jest.Mock;
+    
+        const result = await end_turn(1);
+    
+        expect(result).toBe('No es tu turno');
+      });
+    
+      it('debería devolver "Ocurrio un error desconocido" cuando la respuesta no es manejada', async () => {
+        // Mock de fetch para simular un error desconocido (500)
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            status: 500,
+          })
+        ) as jest.Mock;
+    
+        const result = await end_turn(1);
+    
+        expect(result).toBe('Ocurrio un error desconocido');
+      });
+    
+      it('debería devolver "Ocurrio un error desconocido" cuando ocurre una excepción', async () => {
+        // Mock de fetch para simular un error de red
+        global.fetch = jest.fn(() => Promise.reject(new Error('Network Error'))) as jest.Mock;
+    
+        const result = await end_turn(1);
+    
+        expect(result).toBe('Ocurrio un error desconocido');
+        expect(global.fetch).toHaveBeenCalledWith(
+          'http://localhost:8000/players/1/turn',
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ player_id: 1 }),
+          }
+        );
+  });
 });
