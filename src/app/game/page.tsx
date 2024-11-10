@@ -37,6 +37,7 @@ export function Game() {
     const [movCardId, setMovCardId] = useState<number | null>(null);
     const [usedCards, setUsedCards] = useState<number[]>([]);
     const [blockedCards, setBlockedCards] = useState<number[]>([]);
+    const [lockedPlayers, setLockedPlayers] = useState<number[]>([]);
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
@@ -142,6 +143,7 @@ export function Game() {
                 }else if (command[0] === "figure") {
                     if (command[1] === "card") {
                       if(command[2] === "used"){
+                        console.log(socketData);
                         if (socketData.payload.loked) {
                             setBlockedCards([...blockedCards, socketData.payload.card_id]);
                         }else{
@@ -150,8 +152,9 @@ export function Game() {
                         setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
                         setUsedCards([]);
                         setColor(socketData.payload.color);
-                      }else if(command[2] === "unblocked"){
+                      }else if(command[2] === "unlocked"){
                         setBlockedCards(blockedCards.filter(card => card !== socketData.payload.card_id));
+                        setLockedPlayers(lockedPlayers.filter(player => player !== socketData.payload.player_id));
                       }
                     }
                 } else if (command[0] === "movement") {
@@ -184,11 +187,19 @@ export function Game() {
         }
     }
 
-    async function callUseFigCard(id_player: number, id_card: number, color: number) {
-        if (id_player !== null && id_card !== null) {
-             const resp = await use_figure_cards({ id_player, id_card: id_card, color });
-             console.log(resp);
-             if (resp === "Carta usada con exito!") {
+    async function callUseFigCard(id_playerr: number, id_card: number, color: number) {
+        const figureCard = figureCards.find(card => card.id_figure === id_card);
+        if (figureCard && lockedPlayers.includes(figureCard.player_id)) {
+         alert("El jugador ya tiene una carta bloqueada");   
+         return;
+        }
+        if (id_playerr !== null && id_card !== null) {
+            const resp = await use_figure_cards({ id_playerr, id_card: id_card, color });
+            console.log(resp);
+            if (resp === "Carta usada con exito!") {
+                 if (figureCard && figureCard.player_id !== id_player) {
+                    setLockedPlayers([...lockedPlayers, figureCard.player_id]);
+                 }
                  setHasMovement(false);
              } else {
                  alert(resp);
