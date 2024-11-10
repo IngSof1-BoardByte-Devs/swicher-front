@@ -16,7 +16,7 @@ export function Piece(
   { color: number, index: number, selectedPiece: number | null, setSelectedPiece: (index: number | null ) => void, 
     isSwapping: boolean, verifyMovement: (cardSelected: string , selectedPiece: number, index: number) => void, isMoveCardSelected: boolean, cardSelected: string,
     selectedTurn: number, playerTurn: number, selected: boolean, setSelected: (id: number | undefined) => void, isFigCardSelected: boolean,
-    verifyFigure: (index: number, card: string) => void }  
+    verifyFigure: (index: number, card: string, blockedColor: number) => void }  
 ) 
 {
  
@@ -28,7 +28,7 @@ export function Piece(
       setSelected(selected ? undefined : index)
       if (isFigCardSelected) {
         console.log("figCardSelected", cardSelected);
-        verifyFigure(index, cardSelected);
+        verifyFigure(index, cardSelected, color);
       }
     }else if (isMoveCardSelected) {
       if (playerTurn !== selectedTurn) {

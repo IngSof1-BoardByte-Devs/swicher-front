@@ -3,13 +3,13 @@ import React, { useEffect, useState } from "react";
 import { Piece } from "@components/piece";
 import { fetch_board } from "@/lib/board";
 import { useGameInfo } from '@app/contexts/GameInfoContext';
-import { motion } from "framer-motion";
+import { color, motion } from "framer-motion";
 
-export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, figCard, figCardId, movCardId, callUseFigCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel, socketDataFigure, setSocketDataFigure }:
+export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard, figCard, figCardId, movCardId, callUseFigCard, socketDataMove, setSocketDataMove, socketDataCancel, setSocketDataCancel, socketDataFigure, setSocketDataFigure, blockedColor }:
     { id_game: number, id_player: number, selectedTurn: number, playerTurn: number, socketDataMove: any,
      setSocketDataMove: (data: any) => void, setSocketDataCancel: (data: any) => void, socketDataCancel: any, moveCard: string,
      callUseMoveCard: (id_player: number, index1: number, index2: number, card_id: number)=>void, socketDataFigure: any, setSocketDataFigure: (data: any) => void,
-     figCard: string, figCardId: number | null, movCardId: number | null, callUseFigCard: (id_player: number, id_card: number) => void }) {
+     figCard: string, figCardId: number | null, movCardId: number | null, callUseFigCard: (id_player: number, id_card: number, color: number) => void, blockedColor: number }) {
     const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Piezas seleccionadas
     const [figures, setFigures] = useState<{ color: number }[]>([]);
     const [selected, setSelected] = useState<number | undefined>();
@@ -167,12 +167,16 @@ export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard,
         }
     }
 
-    const verifyFigure = (index: number, card:string) => {
+    const verifyFigure = (index: number, card:string, color: number) => {
         let result = false;
         const figure = figuresInBoard.find((fig: Figure) => fig.indexes.includes(index));
         if (figure) {
             if (figure.type === card) {
-                result = true;
+                if(color != blockedColor){
+                    result = true;
+                }else{
+                    alert("El color de la figura esta bloqueado");
+                }
             }else{
                 alert("La figura seleccionada no coincide con la carta seleccionada");
             }
@@ -181,7 +185,7 @@ export function Gameboard({ selectedTurn, playerTurn, moveCard, callUseMoveCard,
         }
         if (result) {
             if (id_player && figCardId) {
-                callUseFigCard(id_player, figCardId);
+                callUseFigCard(id_player, figCardId, color);
             }
         }
     }
