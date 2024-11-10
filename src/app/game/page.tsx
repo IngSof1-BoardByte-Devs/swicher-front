@@ -72,7 +72,6 @@ export function Game() {
                 const data = await fetch_game({ game_id: id_game });
                 setPlayers(data.players);
                 setGameName(data.name);
-                setColor(data.bloqued_color);
                 setSelectedTurn(data.turn);
                 setTurnStartTime(Date.now() / 1000);
                 setIsTimerRunning(true);
@@ -144,7 +143,8 @@ export function Game() {
                       if(command[2] === "used"){
                         setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.card_id && card.player_id !== socketData.payload.player_id)); 
                         setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
-                        setUsedCards([]); 
+                        setUsedCards([]);
+                        setColor(socketData.payload.color);
                       }
                     }
                 } else if (command[0] === "movement") {
@@ -177,9 +177,9 @@ export function Game() {
         }
     }
 
-    async function callUseFigCard(id_player: number, id_card: number) {
+    async function callUseFigCard(id_player: number, id_card: number, color: number) {
         if (id_player !== null && id_card !== null) {
-             const resp = await use_figure_cards({ id_player, id_card: id_card });
+             const resp = await use_figure_cards({ id_player, id_card: id_card, color });
              console.log(resp);
              if (resp === "Carta usada con exito!") {
                  setHasMovement(false);
@@ -218,13 +218,22 @@ export function Game() {
                     />
                     )}
                 <div>
-                    <p className="text-2xl font-bold">Bloqueado: {clsx({
-                        "red ": color === 0,
-                        "green": color === 1,
-                        "blue": color === 2,
-                        "violet": color === 3,
-                        "-": color === null,
-                    })}</p>
+                    <p className="text-2xl font-bold">
+                        BLOQUEADO:{" "}
+                        <span className={clsx(
+                            {
+                                "text-purple-500": color === 0,
+                                "text-red-500": color === 1,
+                                "text-blue-500": color === 2,
+                                "text-green-500": color === 3,
+                            }
+                        )}>
+                            {color === 0 ? "VIOLETA" :
+                            color === 1 ? "ROJO" :
+                            color === 2 ? "AZUL" :
+                            color === 3 ? "VERDE" : "-"}
+                        </span>
+                    </p>
                 </div>
             </div>
             {/* Tablero de juego */}
@@ -246,6 +255,7 @@ export function Game() {
                                                                 setSocketDataCancel={setSocketDataCancel}
                                                                 socketDataFigure={socketDataFigure}
                                                                 setSocketDataFigure={setSocketDataFigure}
+                                                                blockedColor={color}
                                                                 />}
             </div>
             {/* current player */}
