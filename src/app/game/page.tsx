@@ -36,6 +36,7 @@ export function Game() {
     const [figCatdId, setFigCardId] = useState<number | null>(null);
     const [movCardId, setMovCardId] = useState<number | null>(null);
     const [usedCards, setUsedCards] = useState<number[]>([]);
+    const [blockedCards, setBlockedCards] = useState<number[]>([]);
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
 
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
@@ -141,10 +142,16 @@ export function Game() {
                 }else if (command[0] === "figure") {
                     if (command[1] === "card") {
                       if(command[2] === "used"){
-                        setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.card_id && card.player_id !== socketData.payload.player_id)); 
+                        if (socketData.payload.loked) {
+                            setBlockedCards([...blockedCards, socketData.payload.card_id]);
+                        }else{
+                            setFigureCards(figureCards.filter(card => card.id_figure !== socketData.payload.card_id && card.player_id !== socketData.payload.player_id)); 
+                        }
                         setMovementCards(movementCards.filter(card => !usedCards.includes(card.id_movement)));
                         setUsedCards([]);
                         setColor(socketData.payload.color);
+                      }else if(command[2] === "unblocked"){
+                        setBlockedCards(blockedCards.filter(card => card !== socketData.payload.card_id));
                       }
                     }
                 } else if (command[0] === "movement") {
@@ -160,7 +167,7 @@ export function Game() {
                 } 
             };
         }
-    }, [socket, players, usedCards, figureCards, movementCards]);
+    }, [socket, players, usedCards, figureCards, movementCards, blockedCards, turnStartTime, isTimerRunning]);
 
     async function callUseMoveCard(id_player: number, index1: number, index2: number, id_card: number ) {
         if (id_player !== null) {
@@ -287,7 +294,8 @@ export function Game() {
                                     setFigCard={setFigCard}
                                     setFigCardId={setFigCardId}
                                     setMovCardId={()=>{}}
-                                    usedCard = {false}/>
+                                    usedCard = {false}
+                                    blockedCard = {blockedCards.includes(figure.id_figure)}/>
                                 </button>
                             ))}
                             {movementCards.map((movement: MoveCard, index_id) => (
@@ -304,7 +312,8 @@ export function Game() {
                                     setFigCard={()=>{}}
                                     setFigCardId={()=>{}}
                                     setMovCardId={setMovCardId}
-                                    usedCard={usedCards.includes(movement.id_movement)}/>                                    
+                                    usedCard={usedCards.includes(movement.id_movement)}
+                                    blockedCard = {false}/>
                                 </button>
                             ))}
                         </div>
@@ -354,9 +363,10 @@ export function Game() {
                                         isSelectable={selectedTurn === playerTurn}
                                         setMoveCard={()=>{}}
                                         setFigCard={setFigCard}
-                                        setFigCardId={()=>{}}
+                                        setFigCardId={setFigCardId}
                                         setMovCardId={()=>{}}
-                                        usedCard={false}/>
+                                        usedCard={false}
+                                        blockedCard = {blockedCards.includes(figure.id_figure)}/>
                                     </button>
                                 ))}
                             </div>
