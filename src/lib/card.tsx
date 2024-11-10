@@ -92,7 +92,7 @@ export async function use_movement_cards(
 
 }
 
-export async function use_figure_cards({ id_player, id_card }: { id_player: number; id_card: number }) {
+export async function use_figure_cards({ id_player, id_card, color }: { id_player: number; id_card: number; color: number }) {
   const playerId = id_player;
   const card_id = id_card;
   console.log("playerId", playerId);
@@ -106,6 +106,7 @@ export async function use_figure_cards({ id_player, id_card }: { id_player: numb
         },
         body: JSON.stringify({
           playerId,
+          color,
         }),
       }
     );
