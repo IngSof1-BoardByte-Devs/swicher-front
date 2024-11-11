@@ -148,6 +148,7 @@ export function Game() {
                     }
                 } else if (command[0] === "figure") {
                     if (command[1] === "card") {
+                        console.log(socketData);
                         if (command[2] === "used") {
                             console.log(socketData);
                             if (socketData.payload.locked === true) {
@@ -159,6 +160,7 @@ export function Game() {
                             setUsedCards([]);
                             setColor(socketData.payload.color);
                         } else if (command[2] === "unlocked") {
+                            console.log("asdfffffffffffasdfsdaasdfasdf");
                             setBlockedCards(blockedCards.filter(card => card !== socketData.payload.card_id));
                             setLockedPlayers(lockedPlayers.filter(player => player !== socketData.payload.player_id));
                         }else if (command[2] === "deck") {
@@ -178,7 +180,7 @@ export function Game() {
                 }
             };
         }
-    }, [socket, players, usedCards, figureCards, movementCards, blockedCards, turnStartTime, isTimerRunning, figDeck]);
+    }, [socket, players, usedCards, figureCards, movementCards, blockedCards, turnStartTime, isTimerRunning, figDeck, lockedPlayers]);
 
     async function callUseMoveCard(id_player: number, index1: number, index2: number, id_card: number) {
         if (id_player !== null) {
@@ -305,7 +307,7 @@ export function Game() {
                         </div>
                         <div className="col-span-6 grid grid-cols-6 w-full h-full gap-1 md:grid-rows-1">
                             {figureCards.filter(card => card.player_id === currentPlayer.id).map((figure: FigureCard, index_id) => (
-                                <button key={figure.id_figure} className="w-full h-full" disabled={figure.locked}>
+                                <button key={figure.id_figure} className="w-full h-full" >
                                     <Card
                                         type={true}
                                         index={parseInt(figure.type_figure.split(" ")[1], 10)}
@@ -381,7 +383,7 @@ export function Game() {
 
                             )}>
                                 {figureCards.filter(card => card.player_id === player.id).map((figure: FigureCard, index_id) => (
-                                    <button key={figure.id_figure} className="w-full h-full" disabled={figure.locked}>
+                                    <button key={figure.id_figure} className="w-full h-full" >
                                         <Card
                                             type={true}
                                             index={parseInt(figure.type_figure.split(" ")[1], 10)}
