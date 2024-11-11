@@ -13,6 +13,8 @@ import { fetch_figure_cards, fetch_movement_cards, use_figure_cards, use_movemen
 import { useRouter } from "next/navigation";
 import { a } from "framer-motion/client";
 import CountDown from "@components/countDown";
+import ChatComponent from "@/components/chat";
+import { useChat } from "../contexts/ChatContext";
 
 export function Game() {
     const { socket } = useWebSocket();
@@ -46,6 +48,9 @@ export function Game() {
     const [isTimerRunning, setIsTimerRunning] = useState(true);
     const [turnStartTime, setTurnStartTime] = useState<number | null>(null);
     const [turnDuration, setTurnDuration] = useState(120); // Duración del turno en segundos
+
+    const [isChatOpen, setIsChatOpen] = useState(false); 
+    const { messages, addMessage } = useChat();
 
     interface Player {
         id: number;
@@ -156,11 +161,29 @@ export function Game() {
                     if (command[1] === "cancelled") {
                         setSocketDataCancel(socketData.payload);
                     }
-
-                } 
+                }
             };
         }
     }, [socket, players, usedCards, figureCards, movementCards]);
+
+    useEffect(() => {
+        if (socket) {
+            const handleMessage = (event: MessageEvent) => {
+                const socketData = JSON.parse(event.data);
+                const command = socketData.event.split(".");
+                if (command[0] === "message" && command[1] === "chat") {
+                    const newMessage = socketData.payload.username + ": " + socketData.payload.message;
+                    addMessage(newMessage);
+                }
+            };
+
+            socket.addEventListener("message", handleMessage);
+
+            return () => {
+                socket.removeEventListener("message", handleMessage);
+            };
+        }
+    }, [socket, addMessage]);
 
     async function callUseMoveCard(id_player: number, index1: number, index2: number, id_card: number ) {
         if (id_player !== null) {
@@ -203,7 +226,13 @@ export function Game() {
                 "grid-cols-3": isTimerRunning,
                 "grid-cols-2": !isTimerRunning,
             })}>
-                <p className="text-2xl font-bold">Partida: {gameName}</p>
+                <div><p className="text-2xl font-bold">Partida: {gameName}</p>
+                <button 
+                    className="mt-2 text-white py-1 px-4 border rounded hover:bg-slate-400" 
+                    onClick={() => setIsChatOpen(true)}
+                >
+                Abrir Chat
+                </button></div>
                 {isTimerRunning && turnStartTime && (
                      <CountDown
                      startTime={turnStartTime} 
@@ -309,6 +338,17 @@ export function Game() {
                             ))}
                         </div>
                     </div>
+                </div>
+            )}
+            {isChatOpen && (
+                <div className="fixed w-full h-full z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur">
+                    <ChatComponent messages={messages} addMessages={addMessage} />
+                    <button 
+                        className="absolute top-4 right-4 bg-red-500 text-white py-1 px-4 rounded" 
+                        onClick={() => setIsChatOpen(false)}
+                    >
+                        Cerrar Chat
+                    </button>
                 </div>
             )}
             {/* rivales */}
