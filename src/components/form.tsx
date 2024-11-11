@@ -8,11 +8,11 @@ import { useGameInfo } from "@/app/contexts/GameInfoContext";
 export function UserForm({ gameId }: { gameId: number }) {
   const { setIdGame, setIdPlayer } = useGameInfo();
   const [playerName, setPlayerName] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
   const { socket } = useWebSocket();
 
-  const router = useRouter()
-
+  const router = useRouter();
 
   const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
@@ -20,11 +20,11 @@ export function UserForm({ gameId }: { gameId: number }) {
     e.preventDefault();
 
     if (!playerName) {
-      setError("Completar el campo");
+      setError("Completar todos los campos");
       return;
     }
 
-    if (!alphanumericRegex.test(playerName)) {
+    if (!alphanumericRegex.test(playerName) || (password !== '' && !alphanumericRegex.test(password))) {
       setError("Solo se permiten caracteres alfanuméricos");
       return;
     }
@@ -34,8 +34,8 @@ export function UserForm({ gameId }: { gameId: number }) {
     const result = await join_game({
       player_name: playerName,
       game_id: gameId,
+      password: password,
     });
-
 
     if (result.status === "ERROR") {
       setError(result.message);
@@ -62,6 +62,16 @@ export function UserForm({ gameId }: { gameId: number }) {
           type="text"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
+          className="w-full p-2 border border-gray-900 dark:bg-black dark:text-white dark:border-gray-300 rounded"
+        />
+        <label htmlFor="password" className="block">
+          Contraseña
+        </label>
+        <input
+          data-testid="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 border border-gray-900 dark:bg-black dark:text-white dark:border-gray-300 rounded"
         />
         {error && <p className="text-red-500 max-w-full text-sm">{error}</p>}

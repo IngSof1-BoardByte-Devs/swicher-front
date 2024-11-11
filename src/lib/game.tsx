@@ -42,9 +42,11 @@ export async function create_game({
 export async function join_game({
   player_name,
   game_id,
+  password
 }: {
   player_name: string;
   game_id: number;
+  password: string;
 }) {
   if (!player_name) {
     console.error("Error: player_name must be provided and cannot be empty");
@@ -57,7 +59,7 @@ export async function join_game({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ game_id, player_name }),
+      body: JSON.stringify({ game_id, player_name, password }),
     });
 
     if (!response.ok) {
