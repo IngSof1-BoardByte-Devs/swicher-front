@@ -90,6 +90,7 @@ export function CreateGameForm() {
   const { setIdGame, setIdPlayer } = useGameInfo();
   const [formData, setFormData] = useState({ player_name: '', gameName: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
+  const [isPrivate, setIsPrivate] = useState<boolean>(false);
   const router = useRouter();
   const { socket } = useWebSocket();
 
@@ -98,15 +99,15 @@ export function CreateGameForm() {
   const create = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.gameName === '' || formData.player_name === '') {
-      setErrorMessage('Todos los campos son obligatorios');
+    if (formData.gameName === '' || formData.player_name === '' || (isPrivate && !formData.password)) {
+      setErrorMessage('Todos los campos deben ser completados');
       return;
     }
 
     if (
       !alphanumericRegex.test(formData.gameName) ||
       !alphanumericRegex.test(formData.player_name) ||
-      (formData.password !== '' && !alphanumericRegex.test(formData.password))
+      (isPrivate && formData.password && !alphanumericRegex.test(formData.password))
     ) {
       setErrorMessage("Solo se permiten caracteres alfanuméricos");
       return;
@@ -115,7 +116,7 @@ export function CreateGameForm() {
       send({
         player_name: formData.player_name,
         game_name: formData.gameName,
-        password: formData.password,
+        password: isPrivate ? formData.password : "",
       });
     }
   };
@@ -167,17 +168,31 @@ export function CreateGameForm() {
           autoComplete="off"
         />
 
-        <label htmlFor="password" className="block dark:text-white mb-2">
-          Contraseña
-        </label>
-        <input
-          className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
-          type="password"
-          id="password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          autoComplete="off"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isPrivate}
+            onChange={() => setIsPrivate(!isPrivate)}
+            id="privateGame"
+          />
+          <label htmlFor="privateGame">Partida Privada</label>
+        </div>
+
+        {isPrivate && (
+          <>
+            <label htmlFor="password" className="block dark:text-white mb-2">
+              Contraseña
+            </label>
+            <input
+              className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              autoComplete="off"
+            />
+          </>
+        )}
 
         {errorMessage && <p className="text-red-500 max-w-full text-sm">{errorMessage}</p>}
 
