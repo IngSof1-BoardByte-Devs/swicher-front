@@ -123,7 +123,7 @@ export function Card({ type, index, id, idCard, selectedCard, setSelectedCard, i
         whileTap={{ scale: 0.8 }}
         animate={{
           scale: (selectedCard === id) && isSelectable ? 1.3 : 1,
-          opacity: usedCard || blockedCard ? 0.3 : 1, 
+          opacity: blockedCard ? 0.1 : (usedCard ? 0.3 : 1),
         }}
         style={{
           position: type ? "static" : "relative",
