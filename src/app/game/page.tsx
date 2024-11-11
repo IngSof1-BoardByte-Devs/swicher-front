@@ -189,9 +189,14 @@ export function Game() {
 
     async function callUseFigCard(id_playerr: number, id_card: number, color: number) {
         const figureCard = figureCards.find(card => card.id_figure === id_card);
-        if (figureCard && lockedPlayers.includes(figureCard.player_id)) {
+        const playersCards = figureCards.filter(card => card.player_id === figureCard?.player_id);
+
+        if (figureCard && lockedPlayers.includes(figureCard.player_id) && figureCard.player_id !== id_player) {
          alert("El jugador ya tiene una carta bloqueada");   
          return;
+        }else if (playersCards.length === 1 && figureCard && figureCard.player_id !== id_player) {
+            alert("No se puede bloquear un jugador con una sola carta");
+            return;
         }
         if (id_playerr !== null && id_card !== null) {
             const resp = await use_figure_cards({ id_playerr, id_card: id_card, color });
