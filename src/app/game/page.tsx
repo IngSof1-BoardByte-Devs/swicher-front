@@ -29,8 +29,7 @@ export function Game() {
     const [players, setPlayers] = useState<Player[]>([]);
     const [movementCards, setMovementCards] = useState<MoveCard[]>([]);
     const [figureCards, setFigureCards] = useState<FigureCard[]>([]);
-    const [selectedMovementCard, setSelectedMovementCard] = useState<string | null>(null);
-    const [selectedFigureCard, setSelectedFigureCard] = useState<string | null>(null);
+    const [selectedCard, setSelectedCard] = useState<string | null>(null);
     const [moveCard, setMoveCard] = useState<string>("");
     const [figCard, setFigCard] = useState<string>("");
     const [figCatdId, setFigCardId] = useState<number | null>(null);
@@ -303,8 +302,8 @@ export function Game() {
                                     index={parseInt(figure.type_figure.split(" ")[1], 10)} 
                                     id = {`figure-${index_id}`} 
                                     idCard={figure.id_figure}
-                                    selectedCard={selectedFigureCard} 
-                                    setSelectedCard={setSelectedFigureCard}
+                                    selectedCard={selectedCard} 
+                                    setSelectedCard={setSelectedCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
                                     setMoveCard={()=>{}}
                                     setFigCard={setFigCard}
@@ -321,8 +320,8 @@ export function Game() {
                                     index={parseInt(movement.type_movement.split(" ")[1], 10)} 
                                     id = {`movement-${index_id}`} 
                                     idCard={movement.id_movement}
-                                    selectedCard={selectedMovementCard} 
-                                    setSelectedCard={setSelectedMovementCard}
+                                    selectedCard={selectedCard} 
+                                    setSelectedCard={setSelectedCard}
                                     isSelectable={selectedTurn === currentPlayer.turn}
                                     setMoveCard={setMoveCard}
                                     setFigCard={()=>{}}
@@ -374,8 +373,8 @@ export function Game() {
                                         index={parseInt(figure.type_figure.split(" ")[1], 10)} 
                                         id = {`rival-${index}-figure-${index_id}`} 
                                         idCard={figure.id_figure}
-                                        selectedCard={selectedFigureCard} 
-                                        setSelectedCard={setSelectedFigureCard}
+                                        selectedCard={selectedCard} 
+                                        setSelectedCard={setSelectedCard}
                                         isSelectable={selectedTurn === playerTurn}
                                         setMoveCard={()=>{}}
                                         setFigCard={setFigCard}
