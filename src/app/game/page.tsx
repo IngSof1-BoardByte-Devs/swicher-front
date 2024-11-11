@@ -38,6 +38,7 @@ export function Game() {
     const [blockedCards, setBlockedCards] = useState<number[]>([]);
     const [lockedPlayers, setLockedPlayers] = useState<number[]>([]);
     const [winnerPlayer, setWinnerPlayer] = useState<Player | null>(null);
+    const [figDeck, setFigDeck] = useState<FigDeck[]>([]);
 
     const [socketDataMove, setSocketDataMove] = useState<any>(null);
     const [socketDataCancel, setSocketDataCancel] = useState<any>(null);
@@ -64,6 +65,11 @@ export function Game() {
         id_movement: number;
         type_movement: string;
         // Add other properties as needed
+    }
+
+    interface FigDeck {
+        player_id: number;
+        deck: number;
     }
 
 
@@ -155,6 +161,9 @@ export function Game() {
                         } else if (command[2] === "unlocked") {
                             setBlockedCards(blockedCards.filter(card => card !== socketData.payload.card_id));
                             setLockedPlayers(lockedPlayers.filter(player => player !== socketData.payload.player_id));
+                        }else if (command[2] === "deck") {
+                            setFigDeck(socketData.payload);
+                            console.log(socketData);
                         }
                     }
                 } else if (command[0] === "movement") {
@@ -170,7 +179,7 @@ export function Game() {
                 }
             };
         }
-    }, [socket, players, usedCards, figureCards, movementCards, blockedCards, turnStartTime, isTimerRunning]);
+    }, [socket, players, usedCards, figureCards, movementCards, blockedCards, turnStartTime, isTimerRunning, figDeck]);
 
     async function callUseMoveCard(id_player: number, index1: number, index2: number, id_card: number) {
         if (id_player !== null) {
@@ -335,7 +344,7 @@ export function Game() {
                         </div>
                         <div className=" grid col-start-13 md:bottom-0 md:right-0 md:top-auto md:left-auto ">
                             <div className="w-8 h-11 border-2 border-gray-700 dark:border-gray-100 rounded-md flex items-center justify-center">
-                                <p className="text-gray-700 dark:text-gray-100 font-bold text-lg">30</p>
+                                <p className="text-gray-700 dark:text-gray-100 font-bold text-lg">{figDeck.find(deck => deck.player_id === id_player)?.deck || 0}</p>
                             </div>
                         </div>
                     </div>
@@ -397,7 +406,7 @@ export function Game() {
                                     "md:col-start-3": index === 1 || index === 2,
                                 })}>
                                 <div className="w-8 h-10 border-2 border-gray-700 dark:border-gray-100 rounded-md flex items-center justify-center">
-                                    <p className="text-gray-700 dark:text-gray-100 font-bold text-lg">30</p>
+                                    <p className="text-gray-700 dark:text-gray-100 font-bold text-lg">{figDeck.find(deck => deck.player_id === player.id)?.deck || 0}</p>
                                 </div>
                             </div>
                         </div>
