@@ -13,6 +13,7 @@ import { fetch_figure_cards, fetch_movement_cards, use_figure_cards, use_movemen
 import { useRouter } from "next/navigation";
 import { a } from "framer-motion/client";
 import CountDown from "@components/countDown";
+import ChatComponent from "@/components/chat";
 
 export function Game() {
     const { socket } = useWebSocket();
@@ -156,8 +157,7 @@ export function Game() {
                     if (command[1] === "cancelled") {
                         setSocketDataCancel(socketData.payload);
                     }
-
-                } 
+                }
             };
         }
     }, [socket, players, usedCards, figureCards, movementCards]);
@@ -411,6 +411,9 @@ export function Game() {
                         }}
                         className={`md:justify-end p-1 border-2 text-white rounded bg-slate-700 hover:hover:bg-gray-700/95 dark:rounded-none dark:bg-inherit dark:hover:bg-gray-600 ${playerTurn !== selectedTurn ? "col-span-2" : ""}`}>abandonar partida</button>
                 </>}
+            </div>
+            <div className="col-span-12">
+            <ChatComponent />
             </div>
         </div>
     );
