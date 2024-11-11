@@ -1,9 +1,11 @@
 export async function create_game({
   player_name,
   game_name,
+  password,
 }: {
   player_name: string;
   game_name: string;
+  password: string;
 }) {
   if (!player_name || !game_name) {
     console.error(
@@ -18,7 +20,7 @@ export async function create_game({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ player_name, game_name }),
+      body: JSON.stringify({ player_name, game_name, password }),
     });
 
     if (!response.ok) {
