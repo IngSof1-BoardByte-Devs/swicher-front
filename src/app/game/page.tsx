@@ -163,7 +163,6 @@ export function Game() {
                             setLockedPlayers(lockedPlayers.filter(player => player !== socketData.payload.player_id));
                         }else if (command[2] === "deck") {
                             setFigDeck(socketData.payload);
-                            console.log(socketData);
                         }
                     }
                 } else if (command[0] === "movement") {
