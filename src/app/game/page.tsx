@@ -175,6 +175,10 @@ export function Game() {
                     const newMessage = socketData.payload.username + ": " + socketData.payload.message;
                     addMessage(newMessage);
                 }
+                if (command[0] === "message" && command[1] === "action") {
+                    const newMessage = "_"+socketData.payload.message+"_";
+                    addMessage(newMessage);
+                }
             };
 
             socket.addEventListener("message", handleMessage);
