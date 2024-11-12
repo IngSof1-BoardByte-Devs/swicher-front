@@ -85,13 +85,10 @@ export function Card({ type, index, id, idCard, selectedCard, setSelectedCard, i
     cardPic = movementCards[`mov${index}`];
   }else{
     if (index >= 0 && index <= 9) {
-      console.log("ENTRA ACA")
       cardPic = figureCards[`fig0${index}`];
     } else if (index >= 10 && index <= 18) {
-      console.log("ENTRA ACA")
       cardPic = figureCards[`fig${index}`];
     } else if (index >= 19) {
-      console.log("ENTRA ACA")
       const indexEasy = index - 18;
       cardPic = figureCards[`fige${indexEasy}`];
     }

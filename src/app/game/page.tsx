@@ -148,7 +148,6 @@ export function Game() {
                     }
                 } else if (command[0] === "figure") {
                     if (command[1] === "card") {
-                        console.log(socketData);
                         if (command[2] === "used") {
                             console.log(socketData);
                             if (socketData.payload.locked === true) {
@@ -206,6 +205,9 @@ export function Game() {
             return;
         } else if (playersCards.length === 1 && figureCard && figureCard.player_id !== id_player) {
             alert("No se puede bloquear un jugador con una sola carta");
+            return;
+        } else if (blockedCards.includes(id_card)) {
+            alert("Esta carta esta bloqueada");
             return;
         }
         if (id_playerr !== null && id_card !== null) {
