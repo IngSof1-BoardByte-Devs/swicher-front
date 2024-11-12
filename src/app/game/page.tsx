@@ -175,6 +175,10 @@ export function Game() {
                     const newMessage = socketData.payload.username + ": " + socketData.payload.message;
                     addMessage(newMessage);
                 }
+                if (command[0] === "message" && command[1] === "action") {
+                    const newMessage = "_"+socketData.payload.message+"_";
+                    addMessage(newMessage);
+                }
             };
 
             socket.addEventListener("message", handleMessage);
@@ -228,7 +232,7 @@ export function Game() {
             })}>
                 <div><p className="text-2xl font-bold">Partida: {gameName}</p>
                 <button 
-                    className="mt-2 text-white py-1 px-4 border rounded hover:bg-slate-400" 
+                    className="mt-2 text-black border-neutral-500 dark:text-white  py-1 px-4 border rounded hover:bg-slate-400" 
                     onClick={() => setIsChatOpen(true)}
                 >
                 Abrir Chat
