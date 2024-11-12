@@ -346,7 +346,7 @@ export function Game() {
             )}
             {isChatOpen && (
                 <div className="fixed w-full h-full z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur">
-                    <ChatComponent messages={messages} addMessages={addMessage} />
+                    <ChatComponent messages={messages}/>
                     <button 
                         className="absolute top-4 right-4 bg-red-500 text-white py-1 px-4 rounded" 
                         onClick={() => setIsChatOpen(false)}
