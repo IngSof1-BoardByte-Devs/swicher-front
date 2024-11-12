@@ -58,7 +58,9 @@ export default function LobbyPage() {
           } else if (command[1] === "left") {          // player left
             setPlayers(players => players.filter(player => player.username !== socketData.payload.username));
           }
+        }else if (command[0]==="figure") {
         } else {
+          
           throw new Error("Se recibio un comando invalido");
         }
       };

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { ChatProvider } from "@app/contexts/ChatContext";
 import { WebSocketProvider } from '@app/contexts/WebSocketContext';
 import { GameInfoProvider } from "./contexts/GameInfoContext";
 
@@ -32,7 +33,9 @@ export default function RootLayout({
       >
         <GameInfoProvider>
           <WebSocketProvider>
-            {children}
+            <ChatProvider>
+              {children}
+            </ChatProvider>
           </WebSocketProvider>
         </GameInfoProvider>
       </body>

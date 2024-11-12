@@ -1,9 +1,11 @@
 export async function create_game({
   player_name,
   game_name,
+  password,
 }: {
   player_name: string;
   game_name: string;
+  password: string;
 }) {
   if (!player_name || !game_name) {
     console.error(
@@ -18,7 +20,7 @@ export async function create_game({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ player_name, game_name }),
+      body: JSON.stringify({ player_name, game_name, password }),
     });
 
     if (!response.ok) {
@@ -40,9 +42,11 @@ export async function create_game({
 export async function join_game({
   player_name,
   game_id,
+  password
 }: {
   player_name: string;
   game_id: number;
+  password: string;
 }) {
   if (!player_name) {
     console.error("Error: player_name must be provided and cannot be empty");
@@ -55,7 +59,7 @@ export async function join_game({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ game_id, player_name }),
+      body: JSON.stringify({ game_id, player_name, password }),
     });
 
     if (!response.ok) {
@@ -121,6 +125,10 @@ export async function start_game({ player_id }: { player_id: number }) {
 }
 
 export async function fetch_game({ game_id }: { game_id: number }) {
+  if (!game_id) {
+    return { status: "ERROR", message: "No se encontró el id del juego" };
+  }
+
   try {
     const response = await fetch(`http://localhost:8000/games/${game_id}/`);
 
