@@ -92,8 +92,8 @@ export async function use_movement_cards(
 
 }
 
-export async function use_figure_cards({ id_player, id_card, color }: { id_player: number; id_card: number; color: number }) {
-  const playerId = id_player;
+export async function use_figure_cards({ id_playerr, id_card, color }: { id_playerr: number; id_card: number; color: number }) {
+  const playerId = id_playerr;
   const card_id = id_card;
   console.log("playerId", playerId);
   try {

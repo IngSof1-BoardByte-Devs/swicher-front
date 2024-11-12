@@ -76,22 +76,19 @@ const movementCards: { [key: string]: string } = {
   mov7: mov7,
 };
 
-export function Card({ type, index, id, idCard, selectedCard, setSelectedCard, isSelectable, setMoveCard, setFigCard, setFigCardId, setMovCardId, usedCard }:
+export function Card({ type, index, id, idCard, selectedCard, setSelectedCard, isSelectable, setMoveCard, setFigCard, setFigCardId, setMovCardId, usedCard, blockedCard }:
  { type: boolean; index: number; id: string; idCard: number; selectedCard: string | null; setSelectedCard: (id: string | null) => void;
-   isSelectable: boolean; setMoveCard: (id: string) => void; usedCard: boolean; setFigCard: (id: string) => void; setFigCardId: (id: number | null) => void, setMovCardId: (id: number | null) => void; }) {
+   isSelectable: boolean; setMoveCard: (id: string) => void; usedCard: boolean; blockedCard: boolean; setFigCard: (id: string) => void; setFigCardId: (id: number | null) => void, setMovCardId: (id: number | null) => void; }) {
   let cardPic;
 
   if (!type) {
     cardPic = movementCards[`mov${index}`];
   }else{
     if (index >= 0 && index <= 9) {
-      console.log("ENTRA ACA")
       cardPic = figureCards[`fig0${index}`];
     } else if (index >= 10 && index <= 18) {
-      console.log("ENTRA ACA")
       cardPic = figureCards[`fig${index}`];
     } else if (index >= 19) {
-      console.log("ENTRA ACA")
       const indexEasy = index - 18;
       cardPic = figureCards[`fige${indexEasy}`];
     }
@@ -123,7 +120,7 @@ export function Card({ type, index, id, idCard, selectedCard, setSelectedCard, i
         whileTap={{ scale: 0.8 }}
         animate={{
           scale: (selectedCard === id) && isSelectable ? 1.3 : 1,
-          opacity: usedCard ? 0.3 : 1,
+          opacity: blockedCard ? 0.1 : (usedCard ? 0.3 : 1),
         }}
         style={{
           position: type ? "static" : "relative",
