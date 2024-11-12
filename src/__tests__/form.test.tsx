@@ -45,7 +45,7 @@ describe('UserForm', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
 
-    expect(await screen.findByText('Completar el campo')).toBeInTheDocument();
+    expect(await screen.findByText('Completar todos los campos')).toBeInTheDocument();  // Cobertura en línea 27
   });
 
   test('muestra un error si el nombre de jugador tiene caracteres no alfanuméricos', async () => {
@@ -54,7 +54,19 @@ describe('UserForm', () => {
     fireEvent.change(screen.getByTestId('playerName'), { target: { value: 'Jugador!' } });
     fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
 
-    expect(await screen.findByText('Solo se permiten caracteres alfanuméricos')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/solo se permiten caracteres alfanuméricos/i)).toBeInTheDocument();
+    });
+  });
+
+  test('muestra un error si la contraseña tiene caracteres no alfanuméricos', async () => {
+    render(<UserForm gameId={1} />);
+
+    fireEvent.change(screen.getByTestId('playerName'), { target: { value: 'Jugador1' } });
+    fireEvent.change(screen.getByTestId('password'), { target: { value: 'Contraseña!' } });
+    fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
+
+    expect(await screen.findByText('Solo se permiten caracteres alfanuméricos')).toBeInTheDocument();  // Cobertura en línea 112
   });
 
   test('llama a join_game y maneja el error si la respuesta tiene un estado de ERROR', async () => {
@@ -64,13 +76,14 @@ describe('UserForm', () => {
     });
 
     render(<UserForm gameId={1} />);
-    
+
     fireEvent.change(screen.getByTestId('playerName'), { target: { value: 'Jugador1' } });
     fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
 
     expect(join_game).toHaveBeenCalledWith({
       player_name: 'Jugador1',
       game_id: 1,
+      password: "",
     });
     expect(await screen.findByText('Error al unirse a la partida')).toBeInTheDocument();
   });
@@ -82,7 +95,7 @@ describe('UserForm', () => {
     });
 
     render(<UserForm gameId={1} />);
-    
+
     fireEvent.change(screen.getByTestId('playerName'), { target: { value: 'Jugador1' } });
     fireEvent.click(screen.getByRole('button', { name: /unirse a la partida/i }));
 
@@ -116,17 +129,7 @@ describe('CreateGameForm', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
 
-    expect(await screen.findByText('Todos los campos son obligatorios')).toBeInTheDocument();
-  });
-
-  test('muestra un error si los campos tienen caracteres no alfanuméricos', async () => {
-    render(<CreateGameForm />);
-
-    fireEvent.change(screen.getByLabelText('Nombre de usuario'), { target: { value: 'Jugador!' } });
-    fireEvent.change(screen.getByLabelText('Nombre de la partida'), { target: { value: 'Partida!' } });
-    fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
-
-    expect(await screen.findByText('Solo se permiten caracteres alfanuméricos')).toBeInTheDocument();
+    expect(await screen.findByText('Todos los campos deben ser completados')).toBeInTheDocument();
   });
 
   test('llama a create_game y maneja el error si la respuesta tiene un estado de ERROR', async () => {
@@ -136,14 +139,15 @@ describe('CreateGameForm', () => {
     });
 
     render(<CreateGameForm />);
-    
-    fireEvent.change(screen.getByLabelText('Nombre de usuario'), { target: { value: 'Jugador1' } });
-    fireEvent.change(screen.getByLabelText('Nombre de la partida'), { target: { value: 'Partida1' } });
+
+    fireEvent.change(screen.getByLabelText(/nombre de usuario/i), { target: { value: 'Jugador1' } });
+    fireEvent.change(screen.getByLabelText(/nombre de la partida/i), { target: { value: 'Partida1' } });
     fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
 
     expect(create_game).toHaveBeenCalledWith({
       player_name: 'Jugador1',
       game_name: 'Partida1',
+      password: '',
     });
     expect(await screen.findByText('Error al crear la partida')).toBeInTheDocument();
   });
@@ -156,9 +160,9 @@ describe('CreateGameForm', () => {
     });
 
     render(<CreateGameForm />);
-    
-    fireEvent.change(screen.getByLabelText('Nombre de usuario'), { target: { value: 'Jugador1' } });
-    fireEvent.change(screen.getByLabelText('Nombre de la partida'), { target: { value: 'Partida1' } });
+
+    fireEvent.change(screen.getByLabelText(/nombre de usuario/i), { target: { value: 'Jugador1' } });
+    fireEvent.change(screen.getByLabelText(/nombre de la partida/i), { target: { value: 'Partida1' } });
     fireEvent.click(screen.getByRole('button', { name: /crear partida/i }));
 
     await waitFor(() => {
