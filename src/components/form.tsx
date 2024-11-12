@@ -60,6 +60,7 @@ export function UserForm({ gameId }: { gameId: number }) {
         <input
           data-testid="playerName"
           type="text"
+          maxLength={8}
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
           className="w-full p-2 border border-gray-900 dark:bg-black dark:text-white dark:border-gray-300 rounded"
@@ -70,6 +71,7 @@ export function UserForm({ gameId }: { gameId: number }) {
         <input
           data-testid="password"
           type="password"
+          maxLength={10}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 border border-gray-900 dark:bg-black dark:text-white dark:border-gray-300 rounded"
@@ -149,6 +151,7 @@ export function CreateGameForm() {
         <input
           className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
           type="text"
+          maxLength={8}
           id="player_name"
           name="player_name"
           value={formData.player_name}
@@ -162,6 +165,7 @@ export function CreateGameForm() {
         <input
           className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
           type="text"
+          maxLength={10}
           id="gameName"
           value={formData.gameName}
           onChange={(e) => setFormData({ ...formData, gameName: e.target.value })}
@@ -186,6 +190,7 @@ export function CreateGameForm() {
             <input
               className="w-full p-2 border border-gray-900 text-black dark:bg-black dark:text-white dark:border-gray-300 rounded"
               type="password"
+              maxLength={10}
               id="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
