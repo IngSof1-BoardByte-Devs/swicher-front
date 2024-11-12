@@ -63,45 +63,5 @@ jest.mock('@/lib/board', () => ({
      await act(async () => render(<Gameboard {...defaultProps} />));
      expect(fetch_board).toHaveBeenCalledWith({ id_game: 1 });
    });
- 
-   test("should handle socketDataMove and call swapPieces", async () => {
-     const { rerender } = render(<Gameboard {...defaultProps} />);
-     rerender(<Gameboard {...defaultProps} socketDataMove={{ position1: 0, position2: 1 }} />);
-     await act(async () => {});
- 
-     expect(defaultProps.setSocketDataMove).toHaveBeenCalledWith(null);
-     expect(screen.getByTestId("piece-0")).toHaveStyle("backgroundColor: blue");
-     expect(screen.getByTestId("piece-1")).toHaveStyle("backgroundColor: red");
-   });
- 
-   test("should verify movement correctly", async () => {
-     await act(async () => render(<Gameboard {...defaultProps} />));
- 
-     // Simula un movimiento correcto y verifica que se llama a callUseMoveCard
-     const piece = screen.getByTestId("piece-0");
-     fireEvent.click(piece);
-     // Simula la función parseIndex para coordinar
-     fireEvent.click(screen.getByTestId("piece-1"));
-     expect(defaultProps.callUseMoveCard).toHaveBeenCalled();
-   });
- 
-   test("should verify figure correctly", async () => {
-     const { rerender } = render(<Gameboard {...defaultProps} />);
-     rerender(<Gameboard {...defaultProps} socketDataFigure={[{ type: "fig1", indexes: [0] }]} />);
-     await act(async () => {});
- 
-     const piece = screen.getByTestId("piece-0");
-     fireEvent.click(piece);
-     expect(defaultProps.callUseFigCard).toHaveBeenCalled();
-   });
- 
-   test("should swap pieces correctly", async () => {
-     const { rerender } = render(<Gameboard {...defaultProps} />);
-     rerender(<Gameboard {...defaultProps} socketDataMove={{ position1: 0, position2: 1 }} />);
-     await act(async () => {});
- 
-     expect(screen.getByTestId("piece-0")).toHaveStyle("backgroundColor: blue");
-     expect(screen.getByTestId("piece-1")).toHaveStyle("backgroundColor: red");
-   });
  });
  

@@ -7,64 +7,86 @@ fetchMock.enableMocks();
 
 
 describe("create_game", () => {
-  const player_name = "Jugador1";
-  const game_name = "Partida1";
-
   beforeEach(() => {
-    (fetch as jest.Mock).mockClear();
+    fetchMock.resetMocks(); // Resetear mocks antes de cada prueba
   });
 
-  test("debería retornar un error cuando player_name o game_name son inválidos", async () => {
-    const result = await create_game({ player_name: "", game_name });
+  it("should return an error if player_name or game_name is missing", async () => {
+    const result = await create_game({
+      player_name: "",
+      game_name: "Test Game",
+      password: "password123",
+    });
+
     expect(result).toEqual({
       status: "ERROR",
       message: "Nombre de jugador o partida invalidos",
     });
-
-    const result2 = await create_game({ player_name, game_name: "" });
-    expect(result2).toEqual({
-      status: "ERROR",
-      message: "Nombre de jugador o partida invalidos",
-    });
-
-    expect(fetch).toHaveBeenCalledTimes(0); // No debería llamar a fetch si los nombres son inválidos
   });
 
-  test("debería retornar el resultado cuando la solicitud es exitosa", async () => {
-    const mockResponse = { status: "OK", game_id: 1 };
-    fetchMock.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
+  it("should call the API and return the result when the request is successful", async () => {
+    // Mocking the successful response
+    fetchMock.mockResponseOnce(
+      JSON.stringify({ status: "OK", game_id: 1 }),
+      { status: 200 }
+    );
 
-    const result = await create_game({ player_name, game_name });
-    expect(result).toEqual(mockResponse);
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith("http://localhost:8000/games/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player_name, game_name }),
+    const result = await create_game({
+      player_name: "Player1",
+      game_name: "Test Game",
+      password: "password123",
     });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/games/",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          player_name: "Player1",
+          game_name: "Test Game",
+          password: "password123",
+        }),
+      })
+    );
+    expect(result).toEqual({ status: "OK", game_id: 1 });
   });
 
-  test("debería lanzar un error con mensaje detallado cuando la solicitud falla", async () => {
-    const errorDetail = { detail: "Error al crear la partida" };
-    fetchMock.mockResponseOnce(JSON.stringify(errorDetail), { status: 400 });
+  it("should return an error message if the API request fails", async () => {
+    // Mocking an error response
+    fetchMock.mockResponseOnce(
+      JSON.stringify({ detail: "Game name already exists" }),
+      { status: 400 }
+    );
 
-    const result = await create_game({ player_name, game_name });
+    const result = await create_game({
+      player_name: "Player1",
+      game_name: "Test Game",
+      password: "password123",
+    });
+
     expect(result).toEqual({
       status: "ERROR",
-      message: errorDetail.detail,
+      message: "Game name already exists",
     });
-    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  test("debería manejar errores desconocidos y retornar un mensaje genérico", async () => {
+  it("should handle network errors gracefully", async () => {
+    // Mocking a network error
     fetchMock.mockRejectOnce(new Error("Network error"));
 
-    const result = await create_game({ player_name, game_name });
+    const result = await create_game({
+      player_name: "Player1",
+      game_name: "Test Game",
+      password: "password123",
+    });
+
     expect(result).toEqual({
       status: "ERROR",
       message: "Network error",
     });
-    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
 

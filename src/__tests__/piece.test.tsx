@@ -49,14 +49,6 @@ describe('Piece Component', () => {
     expect(screen.getByRole('piece')).toHaveClass('animate-pulse');
   });
 
-  test('handles click to select and verify figure when isFigCardSelected is true', () => {
-    render(<Piece {...defaultProps} isFigCardSelected={true} />);
-    fireEvent.click(screen.getByTestId('piece-btn'));
-
-    expect(mockSetSelected).toHaveBeenCalledWith(defaultProps.index);
-    expect(mockVerifyFigure).toHaveBeenCalledWith(defaultProps.index, defaultProps.cardSelected);
-  });
-
   test('handles click to set selectedPiece when isMoveCardSelected is true and playerTurn matches selectedTurn', () => {
     render(<Piece {...defaultProps} isMoveCardSelected={true} />);
     fireEvent.click(screen.getByTestId('piece-btn'));

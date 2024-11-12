@@ -1,58 +1,36 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import ChatComponent from "../components/chat";
-import "@testing-library/jest-dom";
-import { useGameInfo } from "@/app/contexts/GameInfoContext";
-import { useWebSocket } from "@/app/contexts/WebSocketContext";
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import ChatComponent from '@components/chat';
+import { GameInfoProvider } from '@/app/contexts/GameInfoContext';
+import { ChatProvider } from '@/app/contexts/ChatContext';
+import '@testing-library/jest-dom';
+import fetchMock from 'jest-fetch-mock';
 
-jest.mock("@/app/contexts/GameInfoContext");
-jest.mock("@/app/contexts/WebSocketContext");
+// Mock de `fetch`
+global.fetch = jest.fn();
 
-describe("ChatComponent", () => {
-    const mockUseGameInfo = useGameInfo as jest.MockedFunction<typeof useGameInfo>;
-    const mockUseWebSocket = useWebSocket as jest.MockedFunction<typeof useWebSocket>;
+// Helper para envolver el componente con ambos proveedores
+const renderWithContext = (ui: JSX.Element) => {
+  return render(
+    <GameInfoProvider>
+      <ChatProvider>
+        {ui}
+      </ChatProvider>
+    </GameInfoProvider>
+  );
+};
 
-    beforeEach(() => {
-        mockUseGameInfo.mockReturnValue({
-            id_player: 1,
-            id_game: 1,
-            setIdGame: jest.fn(),
-            setIdPlayer: jest.fn(),
-        });
-        mockUseWebSocket.mockReturnValue({ socket: new WebSocket("ws://localhost:8000") });
-    });
+describe('ChatComponent', () => {
+  beforeEach(() => {
+    // Limpiar los mocks antes de cada test
+    jest.clearAllMocks();
+  });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
+  it('muestra los mensajes en el chat', () => {
+    const messages = ["Hola", "_Acción ejecutada_"];
+    renderWithContext(<ChatComponent messages={messages} />);
 
-    test("renders chat component", () => {
-        render(<ChatComponent />);
-        expect(screen.getByRole("textbox")).toBeInTheDocument();
-        expect(screen.getByRole("button")).toBeInTheDocument();
-        expect(screen.getByText("Chat")).toBeInTheDocument();
-    });
-
-    test("handles incoming WebSocket messages", async () => {
-        render(<ChatComponent />);
-        const socket = mockUseWebSocket().socket;
-
-        // Simulate a WebSocket message event
-        const messageEvent = new MessageEvent("message", {
-            data: JSON.stringify({
-                event: "message.chat",
-                payload: {
-                    username: "testuser",
-                    message: "Hello, world!"
-                }
-            })
-        });
-        if (socket) {
-            socket.dispatchEvent(messageEvent);
-        }
-
-        // Wait for the message to be added to the chat
-        await waitFor(() => {
-            expect(screen.getByText("testuser: Hello, world!")).toBeInTheDocument();
-        });
-    });
+    // Verificar que los mensajes estén en pantalla
+    expect(screen.getByText("Hola")).toBeInTheDocument();
+    expect(screen.getByText("Acción ejecutada")).toHaveClass("text-purple-400 italic");
+  });
 });
